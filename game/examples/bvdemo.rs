@@ -25,47 +25,47 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 	commands.spawn_bundle(Camera2dBundle::default());
 	commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P1.png"),
+			texture: asset_server.load("Mark_Marquez.png"),
 			..default()
 		});
 	commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P2.png"),
+			texture: asset_server.load("Yuanheng_Qu.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
 		.insert(PopupTimer(Timer::from_seconds(5., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P3.png"),
+			texture: asset_server.load("John_Stroud.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
 		.insert(PopupTimer(Timer::from_seconds(10., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P4.png"),
+			texture: asset_server.load("Brian_Lucas.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
 		.insert(PopupTimer(Timer::from_seconds(10., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P5.png"),
+			texture: asset_server.load("Yanding_Liu.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
 		.insert(PopupTimer(Timer::from_seconds(10., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P6.png"),
+			texture: asset_server.load("Mike_Schafer.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
 		.insert(PopupTimer(Timer::from_seconds(10., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("P7.png"),
+			texture: asset_server.load("Qirui_Liu.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
