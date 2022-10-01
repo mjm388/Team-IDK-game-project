@@ -58,7 +58,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 		.insert(PopupTimer(Timer::from_seconds(20., false)));
     commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load("Mike_Schafer.png"),
+			texture: asset_server.load("Michael_Schafer.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
