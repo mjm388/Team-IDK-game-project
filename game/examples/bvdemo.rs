@@ -48,28 +48,28 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
-		.insert(PopupTimer(Timer::from_seconds(10., false)));
+		.insert(PopupTimer(Timer::from_seconds(15., false)));
     commands
 		.spawn_bundle(SpriteBundle {
 			texture: asset_server.load("Yanding_Liu.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
-		.insert(PopupTimer(Timer::from_seconds(10., false)));
+		.insert(PopupTimer(Timer::from_seconds(20., false)));
     commands
 		.spawn_bundle(SpriteBundle {
 			texture: asset_server.load("Mike_Schafer.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
-		.insert(PopupTimer(Timer::from_seconds(10., false)));
+		.insert(PopupTimer(Timer::from_seconds(25., false)));
     commands
 		.spawn_bundle(SpriteBundle {
 			texture: asset_server.load("Qirui_Liu.png"),
 			transform: Transform::from_xyz(0., 0., -1.),
 			..default()
 		})
-		.insert(PopupTimer(Timer::from_seconds(10., false)));
+		.insert(PopupTimer(Timer::from_seconds(30., false)));
     
 	info!("Hello world!");
 }
