@@ -20,10 +20,13 @@ pub enum GameState{
 mod tilemap;
 use tilemap::TileMapPlugin;
 
+mod movement;
+use movement::MovementPlugin;
+
 fn main() {
 	App::new()
 		.insert_resource(WindowDescriptor {
-			title: String::from("Hello World!"),
+			title: String::from("Game"),
 			width: 1280.,
 			height: 720.,
 			present_mode: PresentMode::Fifo,
@@ -36,6 +39,7 @@ fn main() {
 		.add_startup_system(setup)
 		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
+		.add_plugin(MovementPlugin)
 		.add_plugin(CombatPlugin)
 		.run();
 
@@ -44,8 +48,7 @@ fn main() {
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 	let camera = Camera2dBundle{
-		..default()	
+		..default()
 	};
 	commands.spawn_bundle(camera);
 }
-

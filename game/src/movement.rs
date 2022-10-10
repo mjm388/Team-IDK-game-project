@@ -15,12 +15,13 @@ impl Plugin for MovementPlugin{
 struct Player;
 
 const PLAYER_SZ: f32 = 100.;
+const PLAYER_SPEED: f32 = 100.;
 
 fn setup_player(mut commands: Commands) {
 	commands
 		.spawn_bundle(SpriteBundle {
 			sprite: Sprite {
-				color: Color::SEA_GREEN,
+				color: Color::CRIMSON,
 				custom_size: Some(Vec2::splat(PLAYER_SZ)),
 				..default()
 			},
@@ -41,19 +42,19 @@ fn move_player(
 	let mut y_vel = 0.;
 
 	if input.pressed(KeyCode::A) {
-		x_vel -= 5.;
+		x_vel -= PLAYER_SPEED;
 	}
 
 	if input.pressed(KeyCode::D) {
-		x_vel += 5.;
+		x_vel += PLAYER_SPEED;
 	}
 
 	if input.pressed(KeyCode::W) {
-		y_vel += 5.;
+		y_vel += PLAYER_SPEED;
 	}
 
 	if input.pressed(KeyCode::S) {
-		y_vel -= 5.;
+		y_vel -= PLAYER_SPEED;
 	}
 
 	player_transform.translation.x += x_vel * time.delta_seconds();
