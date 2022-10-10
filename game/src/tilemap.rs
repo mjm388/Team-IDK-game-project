@@ -5,7 +5,7 @@ const TITLE: &str = "Tiling";
 const WIN_W: f32 = 1280.;
 const WIN_H: f32 = 720.;
 
-const TILE_SIZE: f32 = 50.;
+const TILE_SIZE: f32 = 25.;
 
 #[derive(Component)]
 struct WallTile;
@@ -40,14 +40,14 @@ fn create_random_room(
     let mut rng = rand::thread_rng();
 
     // Create bounds on where to put in window
-    let x_bound = WIN_W/4. - TILE_SIZE/2.;  
-	let y_bound = WIN_H/4.;
-    //let x_bound = 10.;  
-	//let y_bound = 10.;
+    // let x_bound = WIN_W/4. - TILE_SIZE/2.;  
+	// let y_bound = WIN_H/4.;
+    let x_bound = 1.;  
+	let y_bound = 1.;
 
     // Create bounds on size of room
     let size_lower_bound = 6;       
-    let size_upper_bound = 10;     
+    let size_upper_bound = 15;     
 
     // Randomly generate dimensions of the room
     let x_len = rng.gen_range(size_lower_bound..size_upper_bound);
