@@ -3,8 +3,19 @@ use bevy::{
 	window::PresentMode,
 };
 
+pub const RESOLUTION: f32 = 16.0/9.0;
+
 mod credits;
 use credits::CreditsPlugin;
+mod combat;
+use combat::CombatPlugin;
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
+pub enum GameState{
+	Overworld,
+	Combat,
+	Credits,
+}
 
 mod tilemap;
 use tilemap::TileMapPlugin;
@@ -18,13 +29,23 @@ fn main() {
 			present_mode: PresentMode::Fifo,
 			..default()
 		})
+		//.add_state(GameState::Overworld)
+		.add_state(GameState::Combat)
+		//.add_state(GameState::Credits)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
 		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
+		.add_plugin(CombatPlugin)
 		.run();
+
+	}
+
+
+fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
+	let camera = Camera2dBundle{
+		..default()	
+	};
+	commands.spawn_bundle(camera);
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-	commands.spawn_bundle(Camera2dBundle::default());
-}

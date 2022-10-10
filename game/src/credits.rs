@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 
+use crate::{
+	GameState,
+};
+
 pub struct CreditsPlugin;
 
 #[derive(Component, Deref, DerefMut)]
@@ -8,12 +12,17 @@ struct PopupTimer(Timer);
 impl Plugin for CreditsPlugin{
     fn build(&self, app: &mut App){
         app
-            .add_startup_system(play_credits)
-            .add_system(show_popup);
+			.add_system_set(SystemSet::on_update(GameState::Credits)
+				.with_system(show_popup)
+			)
+			.add_system_set(SystemSet::on_enter(GameState::Credits)
+				.with_system(play_credits)
+			)
+			.add_system_set(SystemSet::on_exit(GameState::Credits));
     }
 }
 
-fn play_credits(mut commands: Commands, asset_server: Res<AssetServer>){
+fn play_credits(mut commands: Commands, asset_server: Res<AssetServer>,){
 	commands
 		.spawn_bundle(SpriteBundle {
 			texture: asset_server.load("Mark_Marquez.png"),
