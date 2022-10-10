@@ -6,6 +6,9 @@ use bevy::{
 mod credits;
 use credits::CreditsPlugin;
 
+mod tilemap;
+use tilemap::TileMapPlugin;
+
 fn main() {
 	App::new()
 		.insert_resource(WindowDescriptor {
@@ -17,6 +20,7 @@ fn main() {
 		})
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
+		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
 		.run();
 }
