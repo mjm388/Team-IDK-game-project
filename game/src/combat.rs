@@ -3,11 +3,20 @@ use bevy::{
 };
 use std::convert::From;
 
+use crate::{
+	GameState,
+};
+
 pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin{
     fn build(&self, app: &mut App){
-        app.add_startup_system(set_combat);
+        app
+		.add_system_set(SystemSet::on_update(GameState::Combat))
+		.add_system_set(SystemSet::on_enter(GameState::Combat)
+			.with_system(set_combat)
+		)
+		.add_system_set(SystemSet::on_exit(GameState::Combat));
     }
 }
 
@@ -27,7 +36,7 @@ fn set_combat(
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
 ){
-	commands.spawn_bundle(Camera2dBundle::default());
+	//commands.spawn_bundle(Camera2dBundle::default());
 
 	let player_handle = asset_server.load("Player_Combat.png");
 	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
@@ -85,6 +94,4 @@ fn set_combat(
 
 		i += 1;
 	}
-
-	
 }
