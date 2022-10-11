@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 use rand::Rng;
 
+use crate::{
+	GameState,
+};
+
 const TITLE: &str = "Tiling";
 const WIN_W: f32 = 1280.;
 const WIN_H: f32 = 720.;
@@ -18,7 +22,16 @@ pub struct TileMapPlugin;
 
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(create_random_room);
+        app
+        .add_system_set(SystemSet::on_update(GameState::Overworld)
+            
+		)
+		.add_system_set(SystemSet::on_enter(GameState::Overworld)
+            .with_system(create_random_room)
+		)
+		.add_system_set(SystemSet::on_exit(GameState::Overworld)
+        
+        );
     }
 }
 

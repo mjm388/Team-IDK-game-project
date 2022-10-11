@@ -12,11 +12,15 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin{
     fn build(&self, app: &mut App){
         app
-		.add_system_set(SystemSet::on_update(GameState::Combat))
+		.add_system_set(SystemSet::on_update(GameState::Combat)
+	
+		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
 		)
-		.add_system_set(SystemSet::on_exit(GameState::Combat));
+		.add_system_set(SystemSet::on_exit(GameState::Combat)
+	
+		);
     }
 }
 
@@ -95,3 +99,4 @@ fn set_combat(
 		i += 1;
 	}
 }
+
