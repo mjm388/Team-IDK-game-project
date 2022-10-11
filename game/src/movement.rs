@@ -65,7 +65,7 @@ fn move_player(
 	if input.pressed(KeyCode::S) {
 		y_vel -= PLAYER_SPEED;
 	}
-
+	/*
 	if input.pressed(KeyCode::Z) {
 		game_state.set(GameState::Combat).unwrap();
 	}
@@ -77,7 +77,7 @@ fn move_player(
 	if input.pressed(KeyCode::C) {
 		game_state.set(GameState::Credits).unwrap();
 	}
-
+	*/
 	player_transform.translation.x += x_vel * time.delta_seconds();
 	player_transform.translation.y += y_vel * time.delta_seconds();
 }

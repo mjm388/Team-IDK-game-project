@@ -35,6 +35,7 @@ fn main() {
 		.add_state(GameState::Overworld)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
+		.add_system(change_state)
 		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
@@ -50,3 +51,22 @@ fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 	};
 	commands.spawn_bundle(camera);
 }
+
+fn change_state(
+	input: Res<Input<KeyCode>>,
+	mut game_state: ResMut<State<GameState>>,
+){
+	if input.just_pressed(KeyCode::Z) {
+		game_state.set(GameState::Combat).unwrap();
+	}
+	
+	if input.just_pressed(KeyCode::X) {
+		game_state.set(GameState::Overworld).unwrap();
+	}
+	
+	if input.just_pressed(KeyCode::C) {
+		game_state.set(GameState::Credits).unwrap();
+	}
+}
+
+
