@@ -32,9 +32,7 @@ fn main() {
 			present_mode: PresentMode::Fifo,
 			..default()
 		})
-		//.add_state(GameState::Overworld)
-		.add_state(GameState::Combat)
-		//.add_state(GameState::Credits)
+		.add_state(GameState::Overworld)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
 		.add_plugin(TileMapPlugin)

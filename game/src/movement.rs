@@ -1,13 +1,21 @@
 use bevy::prelude::*;
 
+use crate::{
+	GameState,
+};
 
 pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
-            .add_startup_system(setup_player)
-            .add_system(move_player);
+			.add_system_set(SystemSet::on_update(GameState::Overworld)
+				.with_system(move_player)
+			)
+			.add_system_set(SystemSet::on_enter(GameState::Overworld)
+				.with_system(setup_player)
+			)
+			.add_system_set(SystemSet::on_exit(GameState::Credits));
     }
 }
 
@@ -35,6 +43,7 @@ fn move_player(
 	input: Res<Input<KeyCode>>,
 	mut player: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
+	mut game_state: ResMut<State<GameState>>,
 ){
 	let mut player_transform = player.single_mut();
 
@@ -57,6 +66,20 @@ fn move_player(
 		y_vel -= PLAYER_SPEED;
 	}
 
+	if input.pressed(KeyCode::Z) {
+		game_state.set(GameState::Combat).unwrap();
+	}
+	
+	if input.pressed(KeyCode::X) {
+		game_state.set(GameState::Overworld).unwrap();
+	}
+	
+	if input.pressed(KeyCode::C) {
+		game_state.set(GameState::Credits).unwrap();
+	}
+
 	player_transform.translation.x += x_vel * time.delta_seconds();
 	player_transform.translation.y += y_vel * time.delta_seconds();
 }
+
+
