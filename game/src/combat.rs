@@ -7,6 +7,14 @@ use crate::{
 	GameState,
 };
 
+#[derive(Component)]
+pub struct CombatStats {
+    pub health: isize,
+    pub max_health: isize,
+	pub tp: isize,
+	pub max_tp: isize,
+}
+
 #[derive(Component, PartialEq, Clone, Copy)]
 pub enum CombatOptions{
 	Attack,
