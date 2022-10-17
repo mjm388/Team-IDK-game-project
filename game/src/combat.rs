@@ -117,7 +117,7 @@ fn set_combat(
 	top = Val::Px(200.0);
 	combat_opt_txt = "Recover";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::Recover,
         left,
@@ -129,7 +129,7 @@ fn set_combat(
 	top = Val::Px(200.0);
 	combat_opt_txt = "Heal";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::Heal,
         left,
@@ -141,7 +141,7 @@ fn set_combat(
 	top = Val::Px(320.0);
 	combat_opt_txt = "Guard";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::Guard,
         left,
@@ -153,7 +153,7 @@ fn set_combat(
 	top = Val::Px(320.0);
 	combat_opt_txt = "Anti-Mage";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::AntiMage,
         left,
@@ -165,7 +165,7 @@ fn set_combat(
 	top = Val::Px(440.0);
 	combat_opt_txt = "Double";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::Double,
         left,
@@ -177,7 +177,7 @@ fn set_combat(
 	top = Val::Px(440.0);
 	combat_opt_txt = "Block";
 	spawn_combat_buttons(
-		&mut commands,
+	&mut commands,
         &asset_server,
         CombatOptions::Block,
         left,
@@ -188,11 +188,11 @@ fn set_combat(
 
 fn spawn_combat_buttons(
 	commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    id: CombatOptions,
-    left_val: Val,
-    top_val: Val,
-    text: &str,
+    	asset_server: &Res<AssetServer>,
+   	id: CombatOptions,
+    	left_val: Val,
+    	top_val: Val,
+    	text: &str,
 ){
 	let button_entity = 
 	commands
@@ -242,13 +242,13 @@ fn button_system(
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
-				*color = PRESSED_BUTTON.into();
+		*color = PRESSED_BUTTON.into();
             }
             Interaction::Hovered => {
-				*color = COMBAT_BUTTON.into();
+		*color = COMBAT_BUTTON.into();
             }
             Interaction::None => {
-				*color = COMBAT_BUTTON.into();
+		*color = COMBAT_BUTTON.into();
             }
         }
     }
@@ -263,29 +263,29 @@ fn combat_button_system2(
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
             match button{
-				//TODO: Add Combat functions
+		//TODO: Add Combat functions
                 CombatOptions::Attack => {
                     
                 }
                 CombatOptions::Charge => {
 
                 }
-				CombatOptions::Recover => {
+		CombatOptions::Recover => {
 
                 }
-				CombatOptions::Heal => {
+		CombatOptions::Heal => {
 
                 }
-				CombatOptions::Guard => {
+		CombatOptions::Guard => {
 
                 }
-				CombatOptions::AntiMage => {
+		CombatOptions::AntiMage => {
 
                 }
-				CombatOptions::Double => {
+		CombatOptions::Double => {
 
                 }
-				CombatOptions::Block=> {
+		CombatOptions::Block=> {
 
                 }
             }
