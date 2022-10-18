@@ -15,6 +15,12 @@ pub struct CombatStats {
 	pub max_tp: isize,
 }
 
+
+#[derive(Clone, Copy)]
+pub enum EnemyType{
+	Square,
+}
+
 #[derive(Component, PartialEq, Clone, Copy)]
 pub enum CombatOptions{
 	Attack,
@@ -41,6 +47,7 @@ impl Plugin for CombatPlugin{
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Combat)
 			.with_system(despawn_button)
+			.with_system(despawn_enemy)
 		);
     }
 }
@@ -52,6 +59,9 @@ const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 #[derive(Component)]
 struct Player;
+
+#[derive(Component)]
+struct Enemy;
 
 #[derive(Component)]
 struct Background;
@@ -79,8 +89,16 @@ fn set_combat(
 			},
 			..default()
 		});
-
-	let enemy_handle = asset_server.load("Enemy_Combat.png");
+	let enemy_translation = Vec3::new(-50., 100., 900.);
+	let enemy = EnemyType::Square;
+	spawn_enemy_sprite(
+		&mut commands,
+		&asset_server,
+		&mut texture_atlases,
+		enemy_translation,
+		enemy,
+	);
+	/*let enemy_handle = asset_server.load("Enemy_Combat.png");
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
 	commands
@@ -95,7 +113,8 @@ fn set_combat(
 				..default()
 			},
 			..default()
-		});
+		});*/
+	
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(80.0);
@@ -125,7 +144,7 @@ fn set_combat(
 	top = Val::Px(200.0);
 	combat_opt_txt = "Recover";
 	spawn_combat_buttons(
-	&mut commands,
+		&mut commands,
         &asset_server,
         CombatOptions::Recover,
         left,
@@ -137,7 +156,7 @@ fn set_combat(
 	top = Val::Px(200.0);
 	combat_opt_txt = "Heal";
 	spawn_combat_buttons(
-	&mut commands,
+		&mut commands,
         &asset_server,
         CombatOptions::Heal,
         left,
@@ -161,7 +180,7 @@ fn set_combat(
 	top = Val::Px(320.0);
 	combat_opt_txt = "Anti-Mage";
 	spawn_combat_buttons(
-	&mut commands,
+		&mut commands,
         &asset_server,
         CombatOptions::AntiMage,
         left,
@@ -173,7 +192,7 @@ fn set_combat(
 	top = Val::Px(440.0);
 	combat_opt_txt = "Double";
 	spawn_combat_buttons(
-	&mut commands,
+		&mut commands,
         &asset_server,
         CombatOptions::Double,
         left,
@@ -185,7 +204,7 @@ fn set_combat(
 	top = Val::Px(440.0);
 	combat_opt_txt = "Block";
 	spawn_combat_buttons(
-	&mut commands,
+		&mut commands,
         &asset_server,
         CombatOptions::Block,
         left,
@@ -196,11 +215,11 @@ fn set_combat(
 
 fn spawn_combat_buttons(
 	commands: &mut Commands,
-    	asset_server: &Res<AssetServer>,
+    asset_server: &Res<AssetServer>,
    	id: CombatOptions,
-    	left_val: Val,
-    	top_val: Val,
-    	text: &str,
+    left_val: Val,
+    top_val: Val,
+    text: &str,
 ){
 	let button_entity = 
 	commands
@@ -250,13 +269,13 @@ fn button_system(
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
-		*color = PRESSED_BUTTON.into();
+				*color = PRESSED_BUTTON.into();
             }
             Interaction::Hovered => {
-		*color = COMBAT_BUTTON.into();
+				*color = COMBAT_BUTTON.into();
             }
             Interaction::None => {
-		*color = COMBAT_BUTTON.into();
+				*color = COMBAT_BUTTON.into();
             }
         }
     }
@@ -271,32 +290,82 @@ fn combat_button_system2(
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
             match button{
-		//TODO: Add Combat functions
                 CombatOptions::Attack => {
                     
                 }
                 CombatOptions::Charge => {
 
                 }
-		CombatOptions::Recover => {
+				CombatOptions::Recover => {
 
                 }
-		CombatOptions::Heal => {
+				CombatOptions::Heal => {
 
                 }
-		CombatOptions::Guard => {
+				CombatOptions::Guard => {
 
                 }
-		CombatOptions::AntiMage => {
+				CombatOptions::AntiMage => {
 
                 }
-		CombatOptions::Double => {
+				CombatOptions::Double => {
 
                 }
-		CombatOptions::Block=> {
+				CombatOptions::Block=> {
 
                 }
             }
         }
     }
+}
+
+fn spawn_enemy_sprite(
+	commands: &mut Commands,
+	asset_server: &Res<AssetServer>,
+	texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+	translation_val: Vec3,
+	enemy_type: EnemyType,
+){
+	let stats = match enemy_type {
+		EnemyType::Square => CombatStats{
+			health: 5,
+			max_health: 5,
+			tp: 10,
+			max_tp: 10,
+		},
+	};
+	let enemy_handle = match enemy_type{
+		EnemyType::Square => asset_server.load("Enemy_Combat.png"),
+	};
+	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
+	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
+	let enemy_sprite = commands
+		.spawn_bundle(SpriteSheetBundle {
+			texture_atlas: enemy_atlas_handle.clone(),
+			sprite: TextureAtlasSprite {
+				index: 0,
+				..default()
+			},
+			transform: Transform {
+				translation: translation_val,
+				..default()
+			},
+			..default()
+		})
+		.insert(Enemy)
+		.insert(stats)
+		.id();
+}
+
+fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>){
+    for entity in enemy_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+fn attack_tp(
+	mut commands: Commands,
+	
+){
+
 }
