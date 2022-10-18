@@ -1,7 +1,8 @@
+use std::{i64::MAX, cmp::min_by};
+
 use bevy::{
 	prelude::*,
 };
-use std::convert::From;
 
 use crate::{
 	GameState,
@@ -13,8 +14,18 @@ pub struct CombatStats {
     pub max_health: isize,
 	pub tp: isize,
 	pub max_tp: isize,
+	pub token: isize,
+	pub max_token: isize,
+	pub guard: bool,
+	pub double: bool,
+	pub block: bool,
+	pub tp_cost_mult: isize,
 }
 
+pub struct CombatLog {
+	pub player_damage: isize,
+	pub enemy_damage: isize,
+}
 
 #[derive(Clone, Copy)]
 pub enum EnemyType{
@@ -49,12 +60,12 @@ impl Plugin for CombatPlugin{
 		.add_system_set(SystemSet::on_exit(GameState::Combat)
 			.with_system(despawn_button)
 			.with_system(despawn_enemy)
+			.with_system(despawn_player)
 		);
     }
 }
 
 
-const BUTTON_NUM: u16 = 8;
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
@@ -98,6 +109,13 @@ fn set_combat(
 		&mut texture_atlases,
 		enemy_translation,
 		enemy,
+	);
+	let player_translation = Vec3::new(-450., 100., 900.);
+	spawn_player_sprite(
+		&mut commands, 
+		&asset_server, 
+		&mut texture_atlases, 
+		player_translation,
 	);
 	/*let enemy_handle = asset_server.load("Enemy_Combat.png");
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
@@ -222,7 +240,7 @@ fn spawn_combat_buttons(
     top_val: Val,
     text: &str,
 ){
-	let button_entity = 
+	let _button_entity = 
 	commands
 		.spawn_bundle(ButtonBundle {
             style: Style {
@@ -265,7 +283,6 @@ fn button_system(
         (&Interaction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
@@ -284,45 +301,135 @@ fn button_system(
 //Can probably put this with the other button system
 //This checks which button was clicked
 fn combat_button_system2(
-    mut commands: Commands,
     query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,
 	mut enemy_query: Query<&mut CombatStats, With<Enemy>>,
+	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
     //mut state: ResMut<State<GameState>>,
 ) {
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
+			let mut log = CombatLog{
+				player_damage:0,
+				enemy_damage:0,
+			};
+			let mut player_stats = player_query.single_mut();
+			let mut enemy_stats = enemy_query.single_mut();
+			let mut valid = false;
             match button{
                 CombatOptions::Attack => {
 					//Will put into separate functions later
 					println!("Attack");
-					let mut enemy_stats = enemy_query.single_mut();
-					enemy_stats.health -=5 ;
+					log.player_damage = if player_stats.double {10} else {5} ;
+					valid = true;
+					player_stats.double = false;
                 }
                 CombatOptions::Charge => {
 					//Will put into separate functions later
 					println!("Charge");
-					let mut enemy_stats = enemy_query.single_mut();
-					enemy_stats.health -=10 ;
+					if player_stats.tp >= 20*player_stats.tp_cost_mult {
+						player_stats.tp -= 20*player_stats.tp_cost_mult;
+						log.player_damage = if player_stats.double {60} else {30} ;
+						valid = true;
+						player_stats.double = false;
+					} else {
+						println!("TP Low!")
+					}
                 }
 				CombatOptions::Recover => {
-
+					println!("Recover");
+					player_stats.tp = std::cmp::min(player_stats.tp+20, player_stats.max_tp);
+					valid = true;
+					player_stats.double = false;
                 }
 				CombatOptions::Heal => {
-
+					println!("Heal");
+					if player_stats.tp >= 10 {
+						player_stats.tp -= 10;
+						player_stats.health = std::cmp::min(player_stats.max_health, player_stats.health+20);
+						valid = true;
+						player_stats.double = false;
+					} else {
+						println!("TP Low!")
+					}
                 }
 				CombatOptions::Guard => {
-
+					println!("Guard");
+					if player_stats.tp >= 30 {
+						player_stats.tp -= 30;
+						player_stats.guard = true;
+						valid = true;
+						player_stats.double = false;
+					} else {
+						println!("TP Low!")
+					}
                 }
 				CombatOptions::AntiMage => {
-
+					println!("AntiMage");
+					if player_stats.tp >= 5*player_stats.tp_cost_mult {
+						player_stats.tp -= 5*player_stats.tp_cost_mult;
+						enemy_stats.tp = std::cmp::max(0, enemy_stats.tp-10);
+						log.player_damage = if player_stats.double {10} else {5};
+						valid = true;
+						player_stats.double = false;
+					} else {
+						println!("TP Low!")
+					}
                 }
 				CombatOptions::Double => {
-
+					println!("Double");
+					if player_stats.tp >= 5 {
+						player_stats.tp -= 5;
+						player_stats.double = true;
+						player_stats.tp_cost_mult = 2;
+						valid = true;
+					} else {
+						println!("TP Low!")
+					}
                 }
 				CombatOptions::Block=> {
-
+					println!("Block");
+					if player_stats.tp >= 10 {
+						player_stats.tp -= 10;
+						player_stats.block = true;
+						valid = true;
+						player_stats.double = false;
+					} else {
+						println!("TP Low!")
+					}
                 }
             }
+
+			// TODO: Implement Token manipulations
+			if valid {
+				if log.player_damage > log.enemy_damage {
+					if enemy_stats.block { 
+						enemy_stats.health -= log.player_damage/2;
+					} else if enemy_stats.guard {
+						player_stats.health -= log.player_damage*2;
+					} else {
+						enemy_stats.health -= log.player_damage - log.enemy_damage;
+					}
+				} else if log.enemy_damage > log.player_damage {
+					if enemy_stats.block { 
+						player_stats.health -= log.enemy_damage/2;
+					} else if enemy_stats.guard {
+						enemy_stats.health -= log.enemy_damage*2;
+					} else {
+						player_stats.health -= log.enemy_damage - log.player_damage;
+					}
+				}
+				if player_stats.health <= 0 {
+					println!("You Lose!")
+				} else if enemy_stats.health <= 0 {
+					println!("Victory!")
+				}
+				player_stats.block = false;
+				player_stats.guard = false;
+				enemy_stats.block = false;
+				enemy_stats.guard = false;
+				println!("Your health is {}", player_stats.health);
+				println!("Enemy health is {}", enemy_stats.health);
+			}
         }
     }
 }
@@ -336,10 +443,16 @@ fn spawn_enemy_sprite(
 ){
 	let stats = match enemy_type {
 		EnemyType::Square => CombatStats{
-			health: 5,
-			max_health: 5,
-			tp: 10,
-			max_tp: 10,
+			health: 50,
+			max_health: 50,
+			tp: 50,
+			max_tp: 50,
+			token: 2,
+			max_token: 5,
+			guard: false,
+			block: false,
+			double: false,
+			tp_cost_mult: 1,
 		},
 	};
 	let enemy_handle = match enemy_type{
@@ -347,7 +460,7 @@ fn spawn_enemy_sprite(
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
-	let mut enemy_sprite = commands
+	let _enemy_sprite = commands
 		.spawn_bundle(SpriteSheetBundle {
 			texture_atlas: enemy_atlas_handle.clone(),
 			sprite: TextureAtlasSprite {
@@ -367,6 +480,51 @@ fn spawn_enemy_sprite(
 
 fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>){
     for entity in enemy_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+fn spawn_player_sprite(
+	commands: &mut Commands,
+	asset_server: &Res<AssetServer>,
+	texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+	translation_val: Vec3,
+){
+	let stats = CombatStats{
+			health: 100,
+			max_health: 100,
+			tp: 50,
+			max_tp: 50,
+			token: 2,
+			max_token: 5,
+			guard: false,
+			double: false,
+			block: false,
+			tp_cost_mult: 1,
+	};
+	let player_handle = asset_server.load("Player_Combat.png");
+	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
+	let player_atlas_handle = texture_atlases.add(player_atlas);
+	let _player_sprite = commands
+		.spawn_bundle(SpriteSheetBundle {
+			texture_atlas: player_atlas_handle.clone(),
+			sprite: TextureAtlasSprite {
+				index: 0,
+				..default()
+			},
+			transform: Transform {
+				translation: translation_val,
+				..default()
+			},
+			..default()
+		})
+		.insert(Player)
+		.insert(stats)
+		.id();
+}
+
+fn despawn_player(mut commands: Commands, player_query: Query<Entity, Without<Enemy>>){
+    for entity in player_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
 }
