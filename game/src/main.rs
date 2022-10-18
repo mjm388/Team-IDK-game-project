@@ -6,9 +6,14 @@ use bevy::{
 pub const RESOLUTION: f32 = 16.0/9.0;
 
 mod credits;
-use credits::CreditsPlugin;
 mod combat;
+mod tilemap;
+mod movement;
+
+use credits::CreditsPlugin;
 use combat::CombatPlugin;
+use tilemap::TileMapPlugin;
+use movement::MovementPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -17,11 +22,6 @@ pub enum GameState{
 	Credits,
 }
 
-mod tilemap;
-use tilemap::TileMapPlugin;
-
-mod movement;
-use movement::MovementPlugin;
 
 fn main() {
 	App::new()
@@ -53,21 +53,22 @@ fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 }
 
 fn change_state(
-	input: Res<Input<KeyCode>>,
+	mut input: ResMut<Input<KeyCode>>,
 	mut game_state: ResMut<State<GameState>>,
 ){
 	if input.just_pressed(KeyCode::Z) {
 		game_state.set(GameState::Combat).unwrap();
+		 input.reset(KeyCode::Z);
 	}
-	
+
 	if input.just_pressed(KeyCode::X) {
 		game_state.set(GameState::Overworld).unwrap();
+		 input.reset(KeyCode::X);
 	}
-	
+
 	if input.just_pressed(KeyCode::C) {
 		game_state.set(GameState::Credits).unwrap();
+		 input.reset(KeyCode::C);
 	}
-	
+
 }
-
-

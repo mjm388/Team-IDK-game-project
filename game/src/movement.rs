@@ -9,13 +9,16 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
+			.add_startup_system(setup_player)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
 			)
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
-				.with_system(setup_player)
+				.with_system(activate_player)
 			)
-			.add_system_set(SystemSet::on_exit(GameState::Credits));
+			.add_system_set(SystemSet::on_exit(GameState::Overworld)
+				.with_system(remove_player)
+			);
     }
 }
 
@@ -33,9 +36,26 @@ fn setup_player(mut commands: Commands) {
 				custom_size: Some(Vec2::splat(PLAYER_SZ)),
 				..default()
 			},
+			visibility: Visibility {
+				is_visible: false
+			},
 			..default()
 		})
 		.insert(Player);
+}
+
+fn activate_player(
+	mut player: Query<&mut Visibility, With<Player>>,
+){
+	let mut player_vis = player.single_mut();
+	player_vis.is_visible = true;
+}
+
+fn remove_player(
+	mut player: Query<&mut Visibility, With<Player>>,
+){
+	let mut player_vis = player.single_mut();
+	player_vis.is_visible = false;
 }
 
 
@@ -65,9 +85,7 @@ fn move_player(
 	if input.pressed(KeyCode::S) {
 		y_vel -= PLAYER_SPEED;
 	}
-	
+
 	player_transform.translation.x += x_vel * time.delta_seconds();
 	player_transform.translation.y += y_vel * time.delta_seconds();
 }
-
-
