@@ -40,6 +40,7 @@ impl Plugin for CombatPlugin{
         app
 		.add_system_set(SystemSet::on_update(GameState::Combat)
 			.with_system(button_system)
+			.with_system(combat_button_system2)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
@@ -285,16 +286,23 @@ fn button_system(
 fn combat_button_system2(
     mut commands: Commands,
     query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,
+	mut enemy_query: Query<&mut CombatStats, With<Enemy>>,
     //mut state: ResMut<State<GameState>>,
 ) {
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
             match button{
                 CombatOptions::Attack => {
-                    
+					//Will put into separate functions later
+					println!("Attack");
+					let mut enemy_stats = enemy_query.single_mut();
+					enemy_stats.health -=5 ;
                 }
                 CombatOptions::Charge => {
-
+					//Will put into separate functions later
+					println!("Charge");
+					let mut enemy_stats = enemy_query.single_mut();
+					enemy_stats.health -=10 ;
                 }
 				CombatOptions::Recover => {
 
@@ -339,7 +347,7 @@ fn spawn_enemy_sprite(
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
-	let enemy_sprite = commands
+	let mut enemy_sprite = commands
 		.spawn_bundle(SpriteSheetBundle {
 			texture_atlas: enemy_atlas_handle.clone(),
 			sprite: TextureAtlasSprite {
@@ -361,11 +369,4 @@ fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>
     for entity in enemy_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
-}
-
-fn attack_tp(
-	mut commands: Commands,
-	
-){
-
 }
