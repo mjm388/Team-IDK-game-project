@@ -5,18 +5,16 @@ use crate::{
 	GameState,
 };
 
-const TITLE: &str = "Tiling";
-const WIN_W: f32 = 1280.;
-const WIN_H: f32 = 720.;
-
-const TILE_SIZE: f32 = 25.;
+pub const TILE_SIZE: f32 = 25.;
 
 #[derive(Component)]
-struct WallTile;
+pub struct WallTile;
+
+#[derive(Component)]
+pub struct TileCollider;
 
 #[derive(Component)]
 struct FloorTile;
-
 
 pub struct TileMapPlugin;
 
@@ -24,7 +22,6 @@ impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_system_set(SystemSet::on_update(GameState::Overworld)
-            
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
             .with_system(create_random_room)
@@ -70,8 +67,8 @@ fn create_random_room(
     let mut x = rng.gen_range(-x_bound..x_bound);
     let mut y = rng.gen_range(-y_bound..y_bound);
 
-    // Draws bottom wall
-    for i in 0..x_len {
+   // Draws bottom wall
+   for i in 0..x_len {
         let t = Vec3::new(
             x,
             y,
@@ -90,7 +87,8 @@ fn create_random_room(
                 },
                 ..default()
             })
-            .insert(WallTile);
+            .insert(WallTile)
+            .insert(TileCollider);
         x = x + TILE_SIZE;
     }
     // Draws right wall
@@ -113,7 +111,8 @@ fn create_random_room(
                 },
                 ..default()
             })
-            .insert(WallTile);
+            .insert(WallTile)
+            .insert(TileCollider);
         y = y + TILE_SIZE;
     }
     // Draws top wall
@@ -136,7 +135,8 @@ fn create_random_room(
                 },
                 ..default()
             })
-            .insert(WallTile);
+            .insert(WallTile)
+            .insert(TileCollider);
         x = x - TILE_SIZE;
     }
     // Draws left wall
@@ -159,7 +159,8 @@ fn create_random_room(
                 },
                 ..default()
             })
-            .insert(WallTile);
+            .insert(WallTile)
+            .insert(TileCollider);
         y = y - TILE_SIZE;
     }
     x = x + TILE_SIZE;
