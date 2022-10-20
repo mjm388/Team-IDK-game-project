@@ -44,7 +44,7 @@ fn setup_player(mut commands: Commands) {
 			transform: Transform {
 				translation: Vec3::new(-360., 0., 0.),
 				..default()
-
+			},
 			visibility: Visibility {
 				is_visible: false
 
@@ -71,6 +71,7 @@ fn collision_check(
 		}
 	}
 	true
+}
 
 fn activate_player(
 	mut player: Query<&mut Visibility, With<Player>>,
@@ -124,9 +125,9 @@ fn move_player(
 		player_transform.translation.z,
 	);
 	// needs fix when map is bigger than screen
-	if collision_check(new_pos, &collision_tiles) 
-		&& new_pos.x.abs() <= (window.width()/2.- PLAYER_SZ/2.) 
-		&& new_pos.y.abs() <= (window.height()/2.- PLAYER_SZ/2.) 
+	if collision_check(new_pos, &collision_tiles)
+		&& new_pos.x.abs() <= (window.width()/2.- PLAYER_SZ/2.)
+		&& new_pos.y.abs() <= (window.height()/2.- PLAYER_SZ/2.)
 	{
 		player_transform.translation = new_pos;
 	}
