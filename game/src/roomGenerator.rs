@@ -25,8 +25,20 @@ impl Plugin for RoomGenPlugin {
 
 pub const TILE_SIZE: f32 = 3.;
 
+// #[derive(Component)]
+// pub struct Coords;
+
+// #[derive(Component)]
+// pub struct Dimensions;
+
+// #[derive(Component)]
+// pub struct Room {
+//     coord: Coords,
+//     dim: Dimensions,
+// }
+
 #[derive(Component)]
-struct Room {
+pub struct Room {
     coord: Vec3,
     size: Vec2,
 }
@@ -49,24 +61,26 @@ fn generateRooms(mut commands: Commands) {
         let y_bound = 30. * TILE_SIZE;
 
         // Create bounds on size of room
-        let size_lower_bound = 6;       
-        let size_upper_bound = 15;     
-
-        // windows: Res<Windows>
-        // let window = windows.get_primary().unwrap();
+        let size_lower_bound = 6.;       
+        let size_upper_bound = 15.;  
+        
+        let mut coords: Vec<Vec3<f32>> = Vec::new();
+        let mut sizes: Vec<Vec2<f32>> = Vec::new();
 
     for i in 0..10 {
         // Randomly generate location of the room
-        let coord = Vec3::new(rng.gen_range(-x_bound..x_bound), rng.gen_range(-y_bound..y_bound), 1);
+        let coord = Vec3::new(rng.gen_range(-x_bound..x_bound), rng.gen_range(-y_bound..y_bound), 1.0);
 
         // Randomly generate dimensions of the room
         let size = Vec2::new(rng.gen_range(size_lower_bound..size_upper_bound), rng.gen_range(size_lower_bound..size_upper_bound));
 
         // Check if this room overlaps another
-        if (!overlap(&coord, &size)) {
+        if (!overlap(coord, size, coords, sizes)) {
+            coords.push(coord);
+            sizes.push(size);
             commands
                 .spawn()
-                .insert(Room(coord, size));
+                .insert(Room{coord, size});
             print!("Added room");
         }
         else {
@@ -78,19 +92,32 @@ fn generateRooms(mut commands: Commands) {
 fn overlap(
 	room_pos: Vec3,
     room_length: Vec2,
-	existing_rooms: Query<&Room>,
+	pos_list: Vec<Vec3>,
+    size_list: Vec<Vec2>,
 ) -> bool {
-	for each_room in existing_rooms.iter() {
-		let overlap = collide (
-			room_pos,
-			room_length,
-			each_room.coord,
-			each_room.size, 
-		);
-		if overlap.is_some() {
-			return false;
-		}
-	}
-	true
+    for i in 0..size_list.len() {
+        let overlap = collide (
+        	room_pos,
+        	room_length,
+        	pos_list[i],
+           	size_list[i], 
+        );
+        if overlap.is_some() {
+            return false;
+        }
+    }
+    true
+	// for each_room in existing_rooms.iter() {
+	// 	let overlap = collide (
+	// 		room_pos,
+	// 		room_length,
+	// 		each_room.coord,
+	// 		each_room.size, 
+	// 	);
+	// 	if overlap.is_some() {
+	// 		return false;
+	// 	}
+	// }
+	// true
 }
     
