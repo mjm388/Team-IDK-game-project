@@ -86,22 +86,6 @@ fn set_combat(
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
 ){
-	let player_handle = asset_server.load("Player_Combat.png");
-	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
-	let player_atlas_handle = texture_atlases.add(player_atlas);
-	commands
-		.spawn_bundle(SpriteSheetBundle {
-			texture_atlas: player_atlas_handle.clone(),
-			sprite: TextureAtlasSprite {
-				index: 0,
-				..default()
-			},
-			transform: Transform {
-				translation: Vec3::new(-450., 100., 900.),
-				..default()
-			},
-			..default()
-		});
 	let enemy_translation = Vec3::new(-50., 100., 900.);
 	let enemy = EnemyType::Square;
 	spawn_enemy_sprite(
@@ -118,7 +102,7 @@ fn set_combat(
 		&mut texture_atlases, 
 		player_translation,
 	);
-	
+
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(80.0);

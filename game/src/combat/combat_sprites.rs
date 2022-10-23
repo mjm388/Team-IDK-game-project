@@ -94,7 +94,7 @@ pub fn spawn_player_sprite(
 		.id();
 }
 
-pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, Without<Enemy>>){
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>){
     for entity in player_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
