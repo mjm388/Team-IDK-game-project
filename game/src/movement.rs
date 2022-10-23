@@ -133,7 +133,4 @@ fn move_player(
 	}
 
 
-	player_transform.translation.x += x_vel * time.delta_seconds();
-	player_transform.translation.y += y_vel * time.delta_seconds();
-
 }

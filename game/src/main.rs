@@ -9,11 +9,13 @@ mod credits;
 mod combat;
 mod tilemap;
 mod movement;
+mod roomGenerator;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
 use tilemap::TileMapPlugin;
 use movement::MovementPlugin;
+use roomGenerator::RoomGenPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -40,6 +42,7 @@ fn main() {
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
 		.add_plugin(CombatPlugin)
+		.add_plugin(RoomGenPlugin)
 		.run();
 
 	}

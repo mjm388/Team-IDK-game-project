@@ -52,8 +52,8 @@ fn create_random_room(
     // Create bounds on where to put in window
     // let x_bound = WIN_W/4. - TILE_SIZE/2.;  
 	// let y_bound = WIN_H/4.;
-    let x_bound = 1.;  
-	let y_bound = 1.;
+    let x_bound = 10.;  
+	let y_bound = 5.;
 
     // Create bounds on size of room
     let size_lower_bound = 6;       
