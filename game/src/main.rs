@@ -59,19 +59,21 @@ fn change_state(
 	mut input: ResMut<Input<KeyCode>>,
 	mut game_state: ResMut<State<GameState>>,
 ){
-	if input.just_pressed(KeyCode::Z) {
-		game_state.set(GameState::Combat).unwrap();
-		 input.reset(KeyCode::Z);
-	}
+	if game_state.current() != &GameState::Credits{
+		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Overworld{
+			input.reset(KeyCode::X);
+			game_state.set(GameState::Combat).unwrap();
+		}
 
-	if input.just_pressed(KeyCode::X) {
-		game_state.set(GameState::Overworld).unwrap();
-		 input.reset(KeyCode::X);
-	}
+		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Combat{
+			input.reset(KeyCode::X);
+			game_state.set(GameState::Overworld).unwrap();
+		}
 
-	if input.just_pressed(KeyCode::C) {
-		game_state.set(GameState::Credits).unwrap();
-		 input.reset(KeyCode::C);
+		if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Credits && game_state.current() != &GameState::Combat{
+			input.reset(KeyCode::C);
+			game_state.set(GameState::Credits).unwrap();
+		}
 	}
 
 }
