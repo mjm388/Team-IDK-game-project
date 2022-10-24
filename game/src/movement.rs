@@ -27,7 +27,7 @@ impl Plugin for MovementPlugin{
 }
 
 #[derive(Component)]
-struct Player;
+struct OverworldPlayer;
 
 const PLAYER_SZ: f32 = 25.;
 const PLAYER_SPEED: f32 = 300.;
@@ -57,7 +57,7 @@ fn setup_player(mut commands: Commands) {
 
 fn collision_check(
 	target_player_pos: Vec3,
-	collision_tile: &Query<&Transform, (With<TileCollider>, Without<Player>)>,
+	collision_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>)>,
 ) -> bool {
 	for obs_transform in collision_tile.iter() {
 		let collision = collide (
@@ -74,14 +74,14 @@ fn collision_check(
 }
 
 fn activate_player(
-	mut player: Query<&mut Visibility, With<Player>>,
+	mut player: Query<&mut Visibility, With<OverworldPlayer>>,
 ){
 	let mut player_vis = player.single_mut();
 	player_vis.is_visible = true;
 }
 
 fn remove_player(
-	mut player: Query<&mut Visibility, With<Player>>,
+	mut player: Query<&mut Visibility, With<OverworldPlayer>>,
 ){
 	let mut player_vis = player.single_mut();
 	player_vis.is_visible = false;
@@ -91,11 +91,11 @@ fn remove_player(
 
 fn move_player(
 	input: Res<Input<KeyCode>>,
-	mut player: Query<&mut Transform, With<Player>>,
+	mut player: Query<&mut Transform, With<OverworldPlayer>>,
     time: Res<Time>,
 	//mut game_state: ResMut<State<GameState>>,
 	windows: Res<Windows>,
-	collision_tiles: Query<&Transform, (With<TileCollider>, Without<Player>)>,
+	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>)>,
 ){
 	let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
