@@ -51,7 +51,7 @@ fn setup_player(mut commands: Commands) {
 			},
 			..default()
 		})
-		.insert(Player);
+		.insert(OverworldPlayer);
 }
 
 
