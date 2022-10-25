@@ -10,12 +10,14 @@ mod combat;
 mod tilemap;
 mod movement;
 mod room_generator;
+mod room_renderer;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
 use tilemap::TileMapPlugin;
 use movement::MovementPlugin;
 use room_generator::RoomGenPlugin;
+use room_renderer::RoomRendPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -39,6 +41,7 @@ fn main() {
 		.add_startup_system(setup)
 		.add_system(change_state)
 		.add_plugin(RoomGenPlugin)
+		.add_plugin(RoomRendPlugin)
 		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
