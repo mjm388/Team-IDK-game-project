@@ -6,23 +6,14 @@ use crate::{
 	GameState,
 };
 
-mod combat_buttons;
-mod combat_sprites;
-mod combat_structs;
+pub(crate) mod combat_buttons;
+pub(crate) mod combat_sprites;
+pub(crate) mod combat_structs;
 
-use combat_buttons::{
-	spawn_combat_buttons,
-	despawn_button,
-	button_system,
-	combat_button_system2
-};
 
-use combat_sprites::{
-	spawn_enemy_sprite,
-	despawn_enemy,
-	spawn_player_sprite,
-	despawn_player
-};
+use combat_buttons::*;
+
+use combat_sprites::*;
 
 use combat_structs::{
 	CombatLog,
@@ -54,15 +45,16 @@ impl Plugin for CombatPlugin{
 		.add_system_set(SystemSet::on_update(GameState::Combat)
 			.with_system(button_system)
 			.with_system(combat_button_system2)
+			.with_system(update_text)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
-
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Combat)
 			.with_system(despawn_button)
 			.with_system(despawn_enemy)
 			.with_system(despawn_player)
+			.with_system(despawn_background)
 		);
     }
 }
@@ -79,13 +71,36 @@ pub struct Enemy;
 #[derive(Component)]
 pub struct Background;
 
-
+fn spawn_combat_background(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,    
+){
+    let background_handle = asset_server.load("Background_Combat.png");
+    let background_atlas = TextureAtlas::from_grid(background_handle, Vec2 {x:(1280.), y: (720.)}, 1,1);
+    let background_atlas_handle = texture_atlases.add(background_atlas);
+    commands
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: background_atlas_handle.clone(),
+            sprite: TextureAtlasSprite {
+                index: 0,
+                ..default()
+            },
+			transform: Transform {
+				translation: Vec3::new(0., 0., 500.),
+				..default()
+			},
+            ..default()
+        })
+        .insert(Background);
+}
 
 fn set_combat(
 	mut commands: Commands,
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
 ){
+	spawn_combat_background(&mut commands, &asset_server, &mut texture_atlases);
 	let enemy_translation = Vec3::new(-50., 100., 900.);
 	let enemy = EnemyType::Square;
 	spawn_enemy_sprite(
@@ -102,7 +117,6 @@ fn set_combat(
 		&mut texture_atlases, 
 		player_translation,
 	);
-
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(80.0);
@@ -199,4 +213,12 @@ fn set_combat(
         top,
         combat_opt_txt,
 	);
+}
+
+fn despawn_background(
+	mut commands: Commands, background_query: Query<Entity, With<Background>>
+){
+	for entity in background_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
 }
