@@ -6,23 +6,14 @@ use crate::{
 	GameState,
 };
 
-mod combat_buttons;
-mod combat_sprites;
-mod combat_structs;
+pub(crate) mod combat_buttons;
+pub(crate) mod combat_sprites;
+pub(crate) mod combat_structs;
+pub(crate) mod combat_resource;
 
-use combat_buttons::{
-	spawn_combat_buttons,
-	despawn_button,
-	button_system,
-	combat_button_system2
-};
+use combat_buttons::*;
 
-use combat_sprites::{
-	spawn_enemy_sprite,
-	despawn_enemy,
-	spawn_player_sprite,
-	despawn_player
-};
+use combat_sprites::*;
 
 use combat_structs::{
 	CombatLog,
@@ -57,7 +48,6 @@ impl Plugin for CombatPlugin{
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
-
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Combat)
 			.with_system(despawn_button)
@@ -127,7 +117,6 @@ fn set_combat(
 		&mut texture_atlases, 
 		player_translation,
 	);
-
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(80.0);
