@@ -29,7 +29,7 @@ impl Plugin for MovementPlugin{
 #[derive(Component)]
 struct Player;
 
-const PLAYER_SZ: f32 = 10.;
+const PLAYER_SZ: f32 = 21.;
 const PLAYER_SPEED: f32 = 300.;
 
 fn setup_player(mut commands: Commands) {

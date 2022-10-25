@@ -39,14 +39,14 @@ fn generate_rooms(mut commands: Commands) {
     let mut rng = rand::thread_rng();
 
         // Create bounds on where to put in window
-        let x_bound = 100.;  
-        let y_bound = 100.;
+        let x_bound = 50.;  
+        let y_bound = 50.;
 
         // Create bounds on size of room
         let size_lower_bound = 6.;
         let size_upper_bound = 15.;  
 
-        let num_of_rooms = 20;
+        let num_of_rooms = 15;
         
         let mut coords = Vec::new();
         let mut sizes = Vec::new();
@@ -87,7 +87,7 @@ fn overlap(
         	*room_pos,
         	*room_length,
         	pos_list[i],
-           	size_list[i], 
+           	Vec2::new(size_list[i].x+5., size_list[i].y+5.),
         );
         if overlap.is_some() {
             return true;

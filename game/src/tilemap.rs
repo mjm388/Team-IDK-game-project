@@ -5,7 +5,7 @@ use crate::{
     room_generator::Room,
 };
 
-pub const TILE_SIZE: f32 = 3.;
+pub const TILE_SIZE: f32 = 6.;
 
 #[derive(Component)]
 pub struct WallTile;
