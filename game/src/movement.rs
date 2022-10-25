@@ -105,7 +105,7 @@ fn adjust_camera (	// Stores current position of camera
 	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
 ){
 	let mut cam_transform = camera.single_mut();
-	cam_transform.translation = Vec3::new(0., 0., 100.)
+	cam_transform.translation = Vec3::new(0., 0., 999.)
 }
 
 fn put_back_camera (	// Resets camera position back to player
