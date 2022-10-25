@@ -100,6 +100,7 @@ pub fn spawn_player_sprite(
                 box_position.y + box_size.y / 2.0,
                 900.0,
             ),
+			visibility: Visibility { is_visible: (true) },
             ..default()
         })
 		.insert(PlayerHealthBar)
@@ -121,11 +122,13 @@ pub fn spawn_player_sprite(
 		.insert(Player)
 		.insert(stats)
 		.id();
-	commands.entity(_player_sprite).add_child(health_bar);
 }
 
-pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>){
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>, player_health: Query<Entity, With<PlayerHealthBar>>){
     for entity in player_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
+	for entity in player_health.iter(){
+		commands.entity(entity).despawn_recursive();
+	}
 }
