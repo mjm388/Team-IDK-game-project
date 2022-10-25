@@ -108,7 +108,7 @@ fn insert_timers(
 	mut commands: Commands,
 ){
 	let mut secs: u64 = 1;
-	for (mut c) in credits.iter_mut(){
+	for c in credits.iter_mut(){
 		commands.entity(c)
 		.insert(CreditsTimer {
 			timer: Timer::new(Duration::from_secs(secs),false)})
@@ -118,12 +118,12 @@ fn insert_timers(
 }
 
 fn check_if_done(
-	mut not: Query<(Entity), (With<Credit>, With<NotDone>)>,
+	mut not: Query<Entity, (With<Credit>, With<NotDone>)>,
 	mut game_state: ResMut<State<GameState>>,
 ){
 
 	match not.iter_mut().next() {
-		Some(a) => {
+		Some(_a) => {
 		},
 		None => {
 			game_state.set(GameState::Overworld).unwrap();
@@ -136,9 +136,9 @@ fn show_popup(
 	time: Res<Time>,
 	mut creditlist: Query<(&mut Visibility, &mut CreditsTimer, Entity), (With<Credit>, Without<OnScreen>)>,
 	mut commands: Commands,
-	mut onScreen: Query<(&mut Visibility, &mut CreditsTimer, Entity), (With<Credit>, With<OnScreen>)>,
+	mut on_screen: Query<(&mut Visibility, &mut CreditsTimer, Entity), (With<Credit>, With<OnScreen>)>,
 ) {
-	for (mut v, mut timer, s) in onScreen.iter_mut(){
+	for (mut v, mut timer, s) in on_screen.iter_mut(){
 		timer.tick(time.delta());
 		if timer.just_finished(){
 			print!("go away");

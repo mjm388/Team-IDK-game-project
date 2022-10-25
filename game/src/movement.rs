@@ -29,7 +29,7 @@ impl Plugin for MovementPlugin{
 #[derive(Component)]
 struct OverworldPlayer;
 
-const PLAYER_SZ: f32 = 25.;
+const PLAYER_SZ: f32 = 21.;
 const PLAYER_SPEED: f32 = 300.;
 
 fn setup_player(mut commands: Commands) {
@@ -42,7 +42,7 @@ fn setup_player(mut commands: Commands) {
 			},
 
 			transform: Transform {
-				translation: Vec3::new(-360., 0., 0.),
+				translation: Vec3::new(-360., 0., 100.),
 				..default()
 			},
 			visibility: Visibility {
@@ -64,7 +64,7 @@ fn collision_check(
 			target_player_pos,
 			Vec2::splat(PLAYER_SZ*0.9),
 			obs_transform.translation,
-			Vec2::splat(TILE_SIZE), // How do it get wall size from tilemap.rs?
+			Vec2::splat(TILE_SIZE),
 		);
 		if collision.is_some() {
 			return false;
