@@ -29,8 +29,8 @@ impl Plugin for MovementPlugin{
 #[derive(Component)]
 struct OverworldPlayer;
 
-const PLAYER_SZ: f32 = 32.;
-const PLAYER_SPEED: f32 = 200.;
+const PLAYER_SZ: f32 = 30.;
+const PLAYER_SPEED: f32 = 220.;
 
 fn setup_player(mut commands: Commands) {
 	commands
