@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
 	GameState,
-	tilemap::{TILE_SIZE, TileCollider},
+	room_renderer::{TILE_SIZE, TileCollider},
 };
 
 pub struct MovementPlugin;
