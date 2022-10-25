@@ -1,9 +1,12 @@
 use bevy::{
-	prelude::*,
+	prelude::*, text::Text2dBounds,
 };
 
 use super::{Enemy, Player};
 use crate::combat::{EnemyType, CombatStats};
+
+#[derive(Component)]
+pub struct PlayerHealthBar;
 
 pub fn spawn_enemy_sprite(
 	commands: &mut Commands,
@@ -76,6 +79,32 @@ pub fn spawn_player_sprite(
 	let player_handle = asset_server.load("Player_Combat.png");
 	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let player_atlas_handle = texture_atlases.add(player_atlas);
+	
+	let health_text = format!("Health: {}/{}", stats.health, stats.max_health);
+    let text_style = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::GREEN,
+    };
+    let box_size = Vec2::new(200.0, 100.0);
+    let box_position = Vec2::new(-425., -250.0);
+
+    let health_bar = commands
+        .spawn_bundle(Text2dBundle {
+            text: Text::from_section(health_text, text_style),
+            text_2d_bounds: Text2dBounds {
+                size: box_size,
+            },
+            transform: Transform::from_xyz(
+                box_position.x - box_size.x / 2.0,
+                box_position.y + box_size.y / 2.0,
+                900.0,
+            ),
+            ..default()
+        })
+		.insert(PlayerHealthBar)
+        .id();
+
 	let _player_sprite = commands
 		.spawn_bundle(SpriteSheetBundle {
 			texture_atlas: player_atlas_handle.clone(),
@@ -92,6 +121,7 @@ pub fn spawn_player_sprite(
 		.insert(Player)
 		.insert(stats)
 		.id();
+	commands.entity(_player_sprite).add_child(health_bar);
 }
 
 pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>){
