@@ -6,6 +6,7 @@ use bevy::{
 use crate::{
 	GameState,
 	tilemap::{TILE_SIZE, TileCollider},
+	//main::Camera,
 };
 
 pub struct MovementPlugin;
@@ -16,6 +17,7 @@ impl Plugin for MovementPlugin{
 			.add_startup_system(setup_player)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
+				.with_system(move_camera)
 			)
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
@@ -86,6 +88,16 @@ fn remove_player(
 	let mut player_vis = player.single_mut();
 	player_vis.is_visible = false;
 
+}
+
+fn move_camera(
+	player: Query<&Transform, With<OverworldPlayer>>,
+	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
+){
+	let player_transform = player.single();
+	let mut cam_transform = camera.single_mut();
+	cam_transform.translation.x = player_transform.translation.x;
+	cam_transform.translation.y = player_transform.translation.y;
 }
 
 
