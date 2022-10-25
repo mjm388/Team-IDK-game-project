@@ -180,8 +180,8 @@ pub fn combat_button_system2(
 			let mut rng = rand::thread_rng();
 			let mut random_num = rng.gen_range(1..9);
 			let mut valid_ai_move = false;
-			if (valid){
-				while(!valid_ai_move){
+			if valid{
+				while !valid_ai_move{
 					match random_num{
 						1 =>{
 							println!("Enemy Attacks");
@@ -266,7 +266,7 @@ pub fn combat_button_system2(
 							panic!("Shouldn't happen");
 						}
 					}
-					if(!valid_ai_move){
+					if !valid_ai_move{
 						random_num = rng.gen_range(1..9);
 					}
 				}	
