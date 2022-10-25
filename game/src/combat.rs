@@ -75,7 +75,6 @@ fn spawn_combat_background(
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,    
 ){
-    println!("We should have drawn the background");
     let background_handle = asset_server.load("Background_Combat.png");
     let background_atlas = TextureAtlas::from_grid(background_handle, Vec2 {x:(1280.), y: (720.)}, 1,1);
     let background_atlas_handle = texture_atlases.add(background_atlas);
