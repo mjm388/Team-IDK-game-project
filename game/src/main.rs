@@ -24,6 +24,7 @@ pub enum GameState{
 	Overworld,
 	Combat,
 	Credits,
+	Map,
 }
 
 
@@ -63,19 +64,30 @@ fn change_state(
 	mut game_state: ResMut<State<GameState>>,
 ){
 	if game_state.current() != &GameState::Credits{
+		//switch to combat
 		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Overworld{
 			input.reset(KeyCode::X);
 			game_state.set(GameState::Combat).unwrap();
 		}
-
+		//switch to overworld
 		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Combat{
 			input.reset(KeyCode::X);
 			game_state.set(GameState::Overworld).unwrap();
 		}
-
-		if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Credits && game_state.current() != &GameState::Combat{
+		//roll credits
+		if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Combat{
 			input.reset(KeyCode::C);
 			game_state.set(GameState::Credits).unwrap();
+		}
+		//display map
+		if input.just_pressed(KeyCode::M) && game_state.current() != &GameState::Map{
+			input.reset(KeyCode::M);
+			game_state.set(GameState::Map).unwrap();
+		}
+		//removed map
+		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map{
+			input.reset(KeyCode::M);
+			game_state.set(GameState::Overworld).unwrap();
 		}
 	}
 
