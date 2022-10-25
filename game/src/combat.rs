@@ -1,20 +1,33 @@
 use bevy::{
 	prelude::*,
 };
-use std::convert::From;
 
 use crate::{
 	GameState,
 };
 
-#[derive(Component)]
-pub struct CombatStats {
-    pub health: isize,
-    pub max_health: isize,
-	pub tp: isize,
-	pub max_tp: isize,
-}
+mod combat_buttons;
+mod combat_sprites;
+mod combat_structs;
 
+use combat_buttons::{
+	spawn_combat_buttons,
+	despawn_button,
+	button_system,
+	combat_button_system2
+};
+
+use combat_sprites::{
+	spawn_enemy_sprite,
+	despawn_enemy,
+	spawn_player_sprite,
+	despawn_player
+};
+
+use combat_structs::{
+	CombatLog,
+	CombatStats,
+};
 
 #[derive(Clone, Copy)]
 pub enum EnemyType{
@@ -49,23 +62,22 @@ impl Plugin for CombatPlugin{
 		.add_system_set(SystemSet::on_exit(GameState::Combat)
 			.with_system(despawn_button)
 			.with_system(despawn_enemy)
+			.with_system(despawn_player)
 		);
     }
 }
 
 
-const BUTTON_NUM: u16 = 8;
-const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 #[derive(Component)]
-struct Enemy;
+pub struct Enemy;
 
 #[derive(Component)]
-struct Background;
+pub struct Background;
 
 
 
@@ -74,22 +86,6 @@ fn set_combat(
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
 ){
-	let player_handle = asset_server.load("Player_Combat.png");
-	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
-	let player_atlas_handle = texture_atlases.add(player_atlas);
-	commands
-		.spawn_bundle(SpriteSheetBundle {
-			texture_atlas: player_atlas_handle.clone(),
-			sprite: TextureAtlasSprite {
-				index: 0,
-				..default()
-			},
-			transform: Transform {
-				translation: Vec3::new(-450., 100., 900.),
-				..default()
-			},
-			..default()
-		});
 	let enemy_translation = Vec3::new(-50., 100., 900.);
 	let enemy = EnemyType::Square;
 	spawn_enemy_sprite(
@@ -99,23 +95,14 @@ fn set_combat(
 		enemy_translation,
 		enemy,
 	);
-	/*let enemy_handle = asset_server.load("Enemy_Combat.png");
-	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 { x: (300.), y: (500.) }, 1, 1);
-	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
-	commands
-		.spawn_bundle(SpriteSheetBundle {
-			texture_atlas: enemy_atlas_handle.clone(),
-			sprite: TextureAtlasSprite {
-				index: 0,
-				..default()
-			},
-			transform: Transform {
-				translation: Vec3::new(-50., 100., 900.),
-				..default()
-			},
-			..default()
-		});*/
-	
+	let player_translation = Vec3::new(-450., 100., 900.);
+	spawn_player_sprite(
+		&mut commands, 
+		&asset_server, 
+		&mut texture_atlases, 
+		player_translation,
+	);
+
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(80.0);
@@ -212,161 +199,4 @@ fn set_combat(
         top,
         combat_opt_txt,
 	);
-}
-
-fn spawn_combat_buttons(
-	commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-   	id: CombatOptions,
-    left_val: Val,
-    top_val: Val,
-    text: &str,
-){
-	let button_entity = 
-	commands
-		.spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(100.0)),
-				position: UiRect { 
-					left: left_val,
-					top: top_val, 
-					..default()
-				},
-				position_type: PositionType::Absolute,
-				justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..default()
-            },
-            color: COMBAT_BUTTON.into(),
-            ..default()
-        })
-		.with_children(|parent| {
-			parent.spawn_bundle(TextBundle::from_section(
-				text,
-				TextStyle {
-					font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-					font_size: 40.0,
-					color: Color::rgb(0.9, 0.9, 0.9),
-				},
-			));
-		})
-		.insert(id)
-		.id();
-}
-
-fn despawn_button(mut commands: Commands, button_query: Query<Entity, With<CombatOptions>>){
-    for button in button_query.iter(){
-        commands.entity(button).despawn_recursive();
-    }
-}
-
-fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut text_query: Query<&mut Text>,
-) {
-    for (interaction, mut color) in &mut interaction_query {
-        match *interaction {
-            Interaction::Clicked => {
-				*color = PRESSED_BUTTON.into();
-            }
-            Interaction::Hovered => {
-				*color = COMBAT_BUTTON.into();
-            }
-            Interaction::None => {
-				*color = COMBAT_BUTTON.into();
-            }
-        }
-    }
-}
-//Can probably put this with the other button system
-//This checks which button was clicked
-fn combat_button_system2(
-    mut commands: Commands,
-    query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,
-	mut enemy_query: Query<&mut CombatStats, With<Enemy>>,
-    //mut state: ResMut<State<GameState>>,
-) {
-    for (interaction, button) in query.iter() {
-        if *interaction == Interaction::Clicked{
-            match button{
-                CombatOptions::Attack => {
-					//Will put into separate functions later
-					println!("Attack");
-					let mut enemy_stats = enemy_query.single_mut();
-					enemy_stats.health -=5 ;
-                }
-                CombatOptions::Charge => {
-					//Will put into separate functions later
-					println!("Charge");
-					let mut enemy_stats = enemy_query.single_mut();
-					enemy_stats.health -=10 ;
-                }
-				CombatOptions::Recover => {
-
-                }
-				CombatOptions::Heal => {
-
-                }
-				CombatOptions::Guard => {
-
-                }
-				CombatOptions::AntiMage => {
-
-                }
-				CombatOptions::Double => {
-
-                }
-				CombatOptions::Block=> {
-
-                }
-            }
-        }
-    }
-}
-
-fn spawn_enemy_sprite(
-	commands: &mut Commands,
-	asset_server: &Res<AssetServer>,
-	texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
-	translation_val: Vec3,
-	enemy_type: EnemyType,
-){
-	let stats = match enemy_type {
-		EnemyType::Square => CombatStats{
-			health: 5,
-			max_health: 5,
-			tp: 10,
-			max_tp: 10,
-		},
-	};
-	let enemy_handle = match enemy_type{
-		EnemyType::Square => asset_server.load("Enemy_Combat.png"),
-	};
-	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
-	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
-	let mut enemy_sprite = commands
-		.spawn_bundle(SpriteSheetBundle {
-			texture_atlas: enemy_atlas_handle.clone(),
-			sprite: TextureAtlasSprite {
-				index: 0,
-				..default()
-			},
-			transform: Transform {
-				translation: translation_val,
-				..default()
-			},
-			..default()
-		})
-		.insert(Enemy)
-		.insert(stats)
-		.id();
-}
-
-fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>){
-    for entity in enemy_query.iter(){
-        commands.entity(entity).despawn_recursive();
-    }
 }

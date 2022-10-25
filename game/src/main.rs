@@ -6,9 +6,16 @@ use bevy::{
 pub const RESOLUTION: f32 = 16.0/9.0;
 
 mod credits;
-use credits::CreditsPlugin;
 mod combat;
+mod tilemap;
+mod movement;
+mod roomGenerator;
+
+use credits::CreditsPlugin;
 use combat::CombatPlugin;
+use tilemap::TileMapPlugin;
+use movement::MovementPlugin;
+use roomGenerator::RoomGenPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -17,11 +24,6 @@ pub enum GameState{
 	Credits,
 }
 
-mod tilemap;
-use tilemap::TileMapPlugin;
-
-mod movement;
-use movement::MovementPlugin;
 
 fn main() {
 	App::new()
@@ -40,6 +42,7 @@ fn main() {
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
 		.add_plugin(CombatPlugin)
+		.add_plugin(RoomGenPlugin)
 		.run();
 
 	}
@@ -53,21 +56,24 @@ fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 }
 
 fn change_state(
-	input: Res<Input<KeyCode>>,
+	mut input: ResMut<Input<KeyCode>>,
 	mut game_state: ResMut<State<GameState>>,
 ){
-	if input.just_pressed(KeyCode::Z) {
-		game_state.set(GameState::Combat).unwrap();
+	if game_state.current() != &GameState::Credits{
+		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Overworld{
+			input.reset(KeyCode::X);
+			game_state.set(GameState::Combat).unwrap();
+		}
+
+		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Combat{
+			input.reset(KeyCode::X);
+			game_state.set(GameState::Overworld).unwrap();
+		}
+
+		if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Credits && game_state.current() != &GameState::Combat{
+			input.reset(KeyCode::C);
+			game_state.set(GameState::Credits).unwrap();
+		}
 	}
-	
-	if input.just_pressed(KeyCode::X) {
-		game_state.set(GameState::Overworld).unwrap();
-	}
-	
-	if input.just_pressed(KeyCode::C) {
-		game_state.set(GameState::Credits).unwrap();
-	}
-	
+
 }
-
-
