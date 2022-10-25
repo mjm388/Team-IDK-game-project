@@ -42,10 +42,10 @@ fn create_random_room(
     let wall_atlas_len = wall_atlas.textures.len();
     let wall_atlas_handle = texture_atlases.add(wall_atlas);
 
-    // let floor_handle = asset_server.load("WoodFloors2.png");
-    // let floor_atlas = TextureAtlas::from_grid(floor_handle, Vec2::splat(TILE_SIZE), 2, 1);
-    // let floor_atlas_len = floor_atlas.textures.len();
-    // let floor_atlas_handle = texture_atlases.add(floor_atlas);
+    let floor_handle = asset_server.load("WoodFloors2.png");
+    let floor_atlas = TextureAtlas::from_grid(floor_handle, Vec2::splat(TILE_SIZE), 2, 1);
+    let floor_atlas_len = floor_atlas.textures.len();
+    let floor_atlas_handle = texture_atlases.add(floor_atlas);
 
     for unzip in rooms.iter().zip(room_tfs.iter()) {
         let (room, room_tf) = unzip;
@@ -169,6 +169,45 @@ fn create_random_room(
             .insert(WallTile)
             .insert(TileCollider);
             y = y - TILE_SIZE;
+            i = i + 1;
+        }
+        x = x + TILE_SIZE;
+        y = y + TILE_SIZE;
+        let x_start = x;
+        i = 0;
+        loop {
+            if i as f32 >= room_size.y - 1. {
+                break;
+            }
+            x = x_start;
+            let mut j = 0;
+            loop {
+                if j as f32 >= room_size.x - 1. {
+                    break;
+                }
+                let t = Vec3::new(
+                    x,
+                    y,
+                    z,
+                );
+                commands
+                    .spawn_bundle(SpriteSheetBundle {
+                        texture_atlas: floor_atlas_handle.clone(),
+                        transform: Transform {
+                            translation: t,
+                            ..default()
+                        },
+                        sprite: TextureAtlasSprite {
+                            index: i % floor_atlas_len,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(FloorTile);
+                x = x + TILE_SIZE;
+                j = j + 1;
+            }
+            y = y + TILE_SIZE;
             i = i + 1;
         }
     }
