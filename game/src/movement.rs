@@ -20,9 +20,11 @@ impl Plugin for MovementPlugin{
 			)
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
+				.with_system(put_back_camera)
 			)
 			.add_system_set(SystemSet::on_exit(GameState::Overworld)
 				.with_system(remove_player)
+				.with_system(adjust_camera)
 			);
     }
 }
@@ -99,6 +101,22 @@ fn move_camera(
 	cam_transform.translation.y = player_transform.translation.y;
 }
 
+fn adjust_camera (	// Stores current position of camera
+	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
+){
+	let mut cam_transform = camera.single_mut();
+	cam_transform.translation = Vec3::new(0., 0., 100.)
+}
+
+fn put_back_camera (	// Resets camera position back to player
+	player: Query<&Transform, With<OverworldPlayer>>,
+	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
+){
+	let player_transform = player.single();
+	let mut cam_transform = camera.single_mut();
+	cam_transform.translation = player_transform.translation;
+}
+
 
 fn move_player(
 	input: Res<Input<KeyCode>>,
@@ -137,8 +155,8 @@ fn move_player(
 	);
 	// needs fix when map is bigger than screen
 	if collision_check(new_pos, &collision_tiles)
-		&& new_pos.x.abs() <= (window.width()/2.- PLAYER_SZ/2.)
-		&& new_pos.y.abs() <= (window.height()/2.- PLAYER_SZ/2.)
+		// && new_pos.x.abs() <= (window.width()/2.- PLAYER_SZ/2.)
+		// && new_pos.y.abs() <= (window.height()/2.- PLAYER_SZ/2.)
 	{
 		player_transform.translation = new_pos;
 	}
