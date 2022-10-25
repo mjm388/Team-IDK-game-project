@@ -1,6 +1,7 @@
 use bevy::{
 	prelude::*,
 };
+use rand::Rng;
 
 use super::{CombatOptions, CombatStats, Enemy, CombatLog};
 
@@ -176,6 +177,99 @@ pub fn combat_button_system2(
             }
 
 			// TODO: Implement Token manipulations
+			let mut rng = rand::thread_rng();
+			let mut random_num = rng.gen_range(1..9);
+			let mut valid_ai_move = false;
+			while(!valid_ai_move){
+				match random_num{
+					1 =>{
+						println!("Enemy Attacks");
+						log.enemy_damage = if enemy_stats.double {10} else {5} ;
+						valid_ai_move = true;
+						player_stats.double = false;
+					}
+					2 =>{
+						if enemy_stats.tp >= 20*enemy_stats.tp_cost_mult {
+							println!("Enemy Charges");
+							enemy_stats.tp -= 20*enemy_stats.tp_cost_mult;
+							log.enemy_damage = if enemy_stats.double {60} else {30};
+							valid_ai_move = true;
+							enemy_stats.double = false;
+						}else{
+							valid_ai_move = false;
+						}
+					}
+					3 =>{
+						println!("Enemy Recovers");
+						enemy_stats.tp = std::cmp::min(enemy_stats.tp+20, enemy_stats.max_tp);
+						valid_ai_move = true;
+						enemy_stats.double = false;
+					}
+					4 =>{
+						if enemy_stats.tp >= 10 {
+							println!("Enemy Heals");
+							enemy_stats.tp -= 10;
+							enemy_stats.health = std::cmp::min(enemy_stats.max_health, enemy_stats.health+20);
+							valid_ai_move = true;
+							enemy_stats.double = false;
+						} else {
+							valid_ai_move = false;
+						}
+					}
+					5 =>{
+						if enemy_stats.tp >= 30 {
+							println!("Enemy Guards");
+							enemy_stats.tp -= 30;
+							enemy_stats.guard = true;
+							valid_ai_move = true;
+							enemy_stats.double = false;
+						} else {
+							valid_ai_move = false;
+						}
+					}
+					6 =>{
+						if enemy_stats.tp >= 5*player_stats.tp_cost_mult {
+							println!("Enemy AntiMage");
+							enemy_stats.tp -= 5*player_stats.tp_cost_mult;
+							player_stats.tp = std::cmp::max(0, enemy_stats.tp-10);
+							log.enemy_damage = if enemy_stats.double {10} else {5};
+							valid_ai_move = true;
+							enemy_stats.double = false;
+						} else {
+							valid_ai_move = false;
+						}
+					}
+					7 =>{
+						if enemy_stats.tp >= 5 {
+							println!("Enemy Double");
+							enemy_stats.tp -= 5;
+							enemy_stats.double = true;
+							enemy_stats.tp_cost_mult = 2;
+							valid_ai_move = true;
+						} else {
+							valid_ai_move = false;
+						}
+					}
+					8 =>{
+						if enemy_stats.tp >= 10 {
+							println!("Enemy Block");
+							enemy_stats.tp -= 10;
+							enemy_stats.block = true;
+							valid_ai_move = true;
+							enemy_stats.double = false;
+						} else {
+							valid_ai_move = false;
+						}
+					}
+					_ =>{
+						panic!("Shouldn't happen");
+					}
+				}
+				if(!valid_ai_move){
+					random_num = rng.gen_range(1..9);
+				}
+			}
+
 			if valid {
 				if log.player_damage > log.enemy_damage {
 					if enemy_stats.block { 
@@ -186,9 +280,9 @@ pub fn combat_button_system2(
 						enemy_stats.health -= log.player_damage - log.enemy_damage;
 					}
 				} else if log.enemy_damage > log.player_damage {
-					if enemy_stats.block { 
+					if player_stats.block { 
 						player_stats.health -= log.enemy_damage/2;
-					} else if enemy_stats.guard {
+					} else if player_stats.guard {
 						enemy_stats.health -= log.enemy_damage*2;
 					} else {
 						player_stats.health -= log.enemy_damage - log.player_damage;
