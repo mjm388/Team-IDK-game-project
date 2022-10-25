@@ -1,11 +1,11 @@
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{
 	GameState,
+    room_generator::Room,
 };
 
-pub const TILE_SIZE: f32 = 25.;
+pub const TILE_SIZE: f32 = 6.;
 
 #[derive(Component)]
 pub struct WallTile;
@@ -27,15 +27,43 @@ impl Plugin for TileMapPlugin {
             .with_system(create_random_room)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
-        
         );
     }
 }
+fn create_random_room(
+    mut commands: Commands, 
+    rooms: Query<&Room>,
+    room_tfs: Query<&Transform, With<Room>>
+) {
+    for unzip in rooms.iter().zip(room_tfs.iter()) {
+        let (room, room_tf) = unzip;
+        let room_size = room.size;
+        let room_coord = room_tf.translation;
 
+        commands
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: Color::YELLOW,
+                custom_size: Some(Vec2::new(room_size.x * TILE_SIZE, room_size.y * TILE_SIZE)),
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::new(room_coord.x * TILE_SIZE, room_coord.y * TILE_SIZE, room_coord.z),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(FloorTile);
+        //.insert(TileCollider); // for testing ???
+    }
+}
+
+/*
 fn create_random_room(
     mut commands: Commands, 
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    room: Query<>
 ) {
     let wall_handle = asset_server.load("BrickWall2.png");
 	let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
@@ -47,17 +75,7 @@ fn create_random_room(
 	let floor_atlas_len = floor_atlas.textures.len();
 	let floor_atlas_handle = texture_atlases.add(floor_atlas);
 
-    let mut rng = rand::thread_rng();
-
-    // Create bounds on where to put in window
-    // let x_bound = WIN_W/4. - TILE_SIZE/2.;  
-	// let y_bound = WIN_H/4.;
-    let x_bound = 10.;  
-	let y_bound = 5.;
-
-    // Create bounds on size of room
-    let size_lower_bound = 6;       
-    let size_upper_bound = 15;     
+    for 
 
     // Randomly generate dimensions of the room
     let x_len = rng.gen_range(size_lower_bound..size_upper_bound);
@@ -167,7 +185,6 @@ fn create_random_room(
     y = y + TILE_SIZE;
     let x_start = x;
     for i in 0..y_len-1 {
-        let mut count = 1;
         x = x_start;
         for i in 0..x_len-1 {
             let t = Vec3::new(
@@ -194,3 +211,4 @@ fn create_random_room(
         y = y + TILE_SIZE;
     }
 }
+*/
