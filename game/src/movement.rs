@@ -30,7 +30,7 @@ impl Plugin for MovementPlugin{
 struct OverworldPlayer;
 
 const PLAYER_SZ: f32 = 32.;
-const PLAYER_SPEED: f32 = 300.;
+const PLAYER_SPEED: f32 = 200.;
 
 fn setup_player(mut commands: Commands) {
 	commands
