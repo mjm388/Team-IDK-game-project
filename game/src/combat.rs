@@ -45,6 +45,7 @@ impl Plugin for CombatPlugin{
 		.add_system_set(SystemSet::on_update(GameState::Combat)
 			.with_system(button_system)
 			.with_system(combat_button_system2)
+			.with_system(update_text)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
