@@ -87,7 +87,7 @@ fn overlap(
         	*room_pos,
         	*room_length,
         	pos_list[i],
-           	Vec2::new(size_list[i].x+5., size_list[i].y+5.),
+           	Vec2::new(size_list[i].x+10., size_list[i].y+10.),
         );
         if overlap.is_some() {
             return true;
