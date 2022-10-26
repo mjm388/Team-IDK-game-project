@@ -1,6 +1,9 @@
 use bevy::{
 	prelude::*,
 	window::PresentMode,
+	render::camera::ScalingMode,
+	//render::camera::OrthographicCameraBundle,
+
 };
 
 pub const RESOLUTION: f32 = 16.0/9.0;
@@ -26,6 +29,9 @@ pub enum GameState{
 	Credits,
 	Map,
 }
+
+#[derive(Component)]
+struct Camera;
 
 
 fn main() {
@@ -53,10 +59,23 @@ fn main() {
 
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
-	let camera = Camera2dBundle{
+	commands.spawn_bundle(Camera2dBundle{
+		transform: Transform {
+			translation: Vec3::new(-360., 0., 100.),
+			..default()
+		},
 		..default()
-	};
-	commands.spawn_bundle(camera);
+	}).insert(Camera);
+	/*let mut camera: OrthographicCameraBundle = OrthographicCameraBundle::new_2d();
+
+	camera.orthographic_projection.top = 1.0;
+	camera.orthographic_projection.bottom = - 1.0;
+	camera.orthographic_projection.right = 1.0 * (16./9.);
+	camera.orthographic_projection.left = - 1.0 * (16./9.);
+
+	camera.orthographic_projection.scaling_mode = ScalingMode::None;
+
+	commands.spawn_bundle(camera).insert(Camera);*/
 }
 
 fn change_state(
