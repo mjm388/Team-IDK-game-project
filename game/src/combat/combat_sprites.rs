@@ -1,5 +1,5 @@
 use bevy::{
-	prelude::*, text::Text2dBounds,
+	prelude::*,
 };
 
 use super::{Enemy, Player};
@@ -45,7 +45,7 @@ pub fn spawn_enemy_sprite(
         color: Color::RED,
     };
 
-    let enemy_health_bar = commands
+    let _enemy_health_bar = commands
 		.spawn_bundle(TextBundle::from_sections([
             	TextSection::new(
                 	enemy_health_text,
@@ -58,6 +58,7 @@ pub fn spawn_enemy_sprite(
 					bottom: Val::Px(200.0),
 					..default()
 				},
+				position_type: PositionType::Absolute,
 				..default()
 			}),
 		)
@@ -82,10 +83,14 @@ pub fn spawn_enemy_sprite(
 		.id();
 }
 
-pub fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>){
+pub fn despawn_enemy(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>, enemy_health: Query<Entity, With<EnemyHealthBar>>){
     for entity in enemy_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
+	for entity in enemy_health.iter(){
+		commands.entity(entity).despawn_recursive();
+	}
+
 }
 
 pub fn spawn_player_sprite(
@@ -119,7 +124,7 @@ pub fn spawn_player_sprite(
     //let box_size = Vec2::new(200.0, 100.0);
     //let box_position = Vec2::new(-425., -250.0);
 
-    let health_bar = commands
+    let _health_bar = commands
 		.spawn_bundle(TextBundle::from_sections([
             	TextSection::new(
                 	health_text,
@@ -128,10 +133,11 @@ pub fn spawn_player_sprite(
         	])
 			.with_style(Style{
 				position: UiRect{
-					left: Val::Px(-500.0),
+					left: Val::Px(100.0),
 					bottom: Val::Px(200.0),
 					..default()
 				},
+				position_type: PositionType::Absolute,
 				..default()
 			}),
 		)
