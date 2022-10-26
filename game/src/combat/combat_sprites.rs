@@ -8,6 +8,9 @@ use crate::combat::{EnemyType, CombatStats};
 #[derive(Component)]
 pub struct PlayerHealthBar;
 
+#[derive(Component)]
+pub struct EnemyHealthBar;
+
 pub fn spawn_enemy_sprite(
 	commands: &mut Commands,
 	asset_server: &Res<AssetServer>,
@@ -34,6 +37,33 @@ pub fn spawn_enemy_sprite(
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
+
+	let enemy_health_text = format!("Health: {}/{}", stats.health, stats.max_health);
+    let text_style = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::RED,
+    };
+
+    let enemy_health_bar = commands
+		.spawn_bundle(TextBundle::from_sections([
+            	TextSection::new(
+                	enemy_health_text,
+                	text_style,
+            	),
+        	])
+			.with_style(Style{
+				position: UiRect{
+					left: Val::Px(500.0),
+					bottom: Val::Px(200.0),
+					..default()
+				},
+				..default()
+			}),
+		)
+		.insert(EnemyHealthBar)
+        .id();
+
 	let _enemy_sprite = commands
 		.spawn_bundle(SpriteSheetBundle {
 			texture_atlas: enemy_atlas_handle.clone(),
@@ -86,8 +116,8 @@ pub fn spawn_player_sprite(
         font_size: 30.0,
         color: Color::GREEN,
     };
-    let box_size = Vec2::new(200.0, 100.0);
-    let box_position = Vec2::new(-425., -250.0);
+    //let box_size = Vec2::new(200.0, 100.0);
+    //let box_position = Vec2::new(-425., -250.0);
 
     let health_bar = commands
 		.spawn_bundle(TextBundle::from_sections([
@@ -98,8 +128,8 @@ pub fn spawn_player_sprite(
         	])
 			.with_style(Style{
 				position: UiRect{
-					left: Val::Px(500.0),
-					bottom: Val::Px(440.0),
+					left: Val::Px(-500.0),
+					bottom: Val::Px(200.0),
 					..default()
 				},
 				..default()
@@ -153,12 +183,21 @@ pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<P
 	}
 }
 
-pub fn update_text(
-	mut text_query: Query<&mut Text, With<PlayerHealthBar>>,
+pub fn update_player_text(
+	mut player_text_query: Query<&mut Text, With<PlayerHealthBar>>,
 	player_query: Query<&CombatStats, With<Player>>,
 ){
 	let player = player_query.single();
-	for mut text in &mut text_query {
+	for mut text in &mut player_text_query {
 		text.sections[0].value = format!("Health: {}/{}", player.health, player.max_health);
+	}
+}
+pub fn update_enemy_text(
+	mut enemy_text_query: Query<&mut Text, With<EnemyHealthBar>>,
+	enemy_query: Query<&CombatStats, With<Enemy>>,
+){
+	let enemy = enemy_query.single();
+	for mut text in &mut enemy_text_query {
+		text.sections[0].value = format!("Health: {}/{}", enemy.health, enemy.max_health);
 	}
 }
