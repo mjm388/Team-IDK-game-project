@@ -27,12 +27,11 @@ impl Plugin for RoomRendPlugin {
             .with_system(create_random_room)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
-			.with_system(derender_all_rooms)
         );
     }
 }
 fn create_random_room(
-    mut commands: Commands,
+    mut commands: Commands, 
     rooms: Query<&Room>,
     room_tfs: Query<&Transform, With<Room>>,
     asset_server: Res<AssetServer>,
@@ -214,24 +213,11 @@ fn create_random_room(
     }
 }
 
-fn derender_all_rooms(
-	mut commands: Commands,
-	mut floors: Query<Entity, With<FloorTile>>,
-	mut walls: Query<Entity, With<WallTile>>,
-){
-	for (mut e) in floors.iter_mut(){
-		commands.entity(e).despawn_recursive();
-	}
-	for (mut e) in walls.iter_mut(){
-		commands.entity(e).despawn_recursive();
-	}
-}
-
 
 
 /*
 fn create_random_room(
-    mut commands: Commands,
+    mut commands: Commands, 
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     room: Query<>
@@ -246,7 +232,7 @@ fn create_random_room(
 	let floor_atlas_len = floor_atlas.textures.len();
 	let floor_atlas_handle = texture_atlases.add(floor_atlas);
 
-    for
+    for 
 
     // Randomly generate dimensions of the room
     let x_len = rng.gen_range(size_lower_bound..size_upper_bound);
