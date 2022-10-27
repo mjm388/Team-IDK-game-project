@@ -50,152 +50,49 @@ fn create_random_room(
 
     for unzip in rooms.iter().zip(room_tfs.iter()) {
         let (room, room_tf) = unzip;
-        let room_size = room.size;
         let room_coord = room_tf.translation;
 
-        let mut x = room_coord.x * TILE_SIZE;
-        let mut y = room_coord.y * TILE_SIZE;
+        let x = (room_coord.x-(room.size.x-1.)/2.) * TILE_SIZE;
+        let y = (room_coord.y-(room.size.y-1.)/2.) * TILE_SIZE;
         let z = room_coord.z * TILE_SIZE;
+        
+        let x_size = room.size.x as usize;
+        let y_size = room.size.y as usize;
 
-        let mut i = 0;
-        loop {
-            if i as f32 >= room_size.x {
-                break;
-            }
-            let t = Vec3::new(
-                x,
-                y,
-                z,
-            );
-            commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: wall_atlas_handle.clone(),
-                transform: Transform {
-                    translation: t,
-                    ..default()
-                },
-                sprite: TextureAtlasSprite {
-                    index: i % wall_atlas_len,
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(WallTile)
-            .insert(TileCollider);
-            x = x + TILE_SIZE;
-            i = i + 1;
-        }
-
-        i = 0;
-        loop {
-            if i as f32 >= room_size.y {
-                break;
-            }
-            let t = Vec3::new(
-                x,
-                y,
-                z,
-            );
-            commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: wall_atlas_handle.clone(),
-                transform: Transform {
-                    translation: t,
-                    ..default()
-                },
-                sprite: TextureAtlasSprite {
-                    index: i % wall_atlas_len,
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(WallTile)
-            .insert(TileCollider);
-            y = y + TILE_SIZE;
-            i = i + 1;
-        }
-
-        i = 0;
-        loop {
-            if i as f32 >= room_size.x {
-                break;
-            }
-            let t = Vec3::new(
-                x,
-                y,
-                z,
-            );
-            commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: wall_atlas_handle.clone(),
-                transform: Transform {
-                    translation: t,
-                    ..default()
-                },
-                sprite: TextureAtlasSprite {
-                    index: i % wall_atlas_len,
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(WallTile)
-            .insert(TileCollider);
-            x = x - TILE_SIZE;
-            i = i + 1;
-        }
-
-        i = 0;
-        loop {
-            if i as f32 >= room_size.y {
-                break;
-            }
-            let t = Vec3::new(
-                x,
-                y,
-                z,
-            );
-            commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: wall_atlas_handle.clone(),
-                transform: Transform {
-                    translation: t,
-                    ..default()
-                },
-                sprite: TextureAtlasSprite {
-                    index: i % wall_atlas_len,
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(WallTile)
-            .insert(TileCollider);
-            y = y - TILE_SIZE;
-            i = i + 1;
-        }
-        x = x + TILE_SIZE;
-        y = y + TILE_SIZE;
-        let x_start = x;
-        i = 0;
-        loop {
-            if i as f32 >= room_size.y - 1. {
-                break;
-            }
-            x = x_start;
-            let mut j = 0;
-            loop {
-                if j as f32 >= room_size.x - 1. {
-                    break;
+        //floor
+        for i in 0..x_size {
+            for j in 0..y_size {
+                if i == 0 || j == 0 || i == x_size-1 || j == y_size-1 {
+                    // doors
+                    if i == x_size/2 || j == y_size/2 {
+                        
+                    }
+                    // walls
+                    else {
+                        commands
+                        .spawn_bundle(SpriteSheetBundle {
+                            texture_atlas: wall_atlas_handle.clone(),
+                            transform: Transform {
+                                translation: Vec3::new(x+i as f32 * TILE_SIZE, y+j as f32 * TILE_SIZE, z),
+                                ..default()
+                            },
+                            sprite: TextureAtlasSprite {
+                                index: i % wall_atlas_len,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(WallTile)
+                        .insert(TileCollider);
+                    }
                 }
-                let t = Vec3::new(
-                    x,
-                    y,
-                    z,
-                );
-                commands
+                // floors
+                else {
+                    commands
                     .spawn_bundle(SpriteSheetBundle {
                         texture_atlas: floor_atlas_handle.clone(),
                         transform: Transform {
-                            translation: t,
+                            translation: Vec3::new(x+i as f32 * TILE_SIZE, y+j as f32 * TILE_SIZE, z),
                             ..default()
                         },
                         sprite: TextureAtlasSprite {
@@ -205,11 +102,9 @@ fn create_random_room(
                         ..default()
                     })
                     .insert(FloorTile);
-                x = x + TILE_SIZE;
-                j = j + 1;
+                }
+                
             }
-            y = y + TILE_SIZE;
-            i = i + 1;
         }
     }
 }
@@ -219,10 +114,10 @@ fn derender_all_rooms(
 	mut floors: Query<Entity, With<FloorTile>>,
 	mut walls: Query<Entity, With<WallTile>>,
 ){
-	for (mut e) in floors.iter_mut(){
+	for e in floors.iter_mut(){
 		commands.entity(e).despawn_recursive();
 	}
-	for (mut e) in walls.iter_mut(){
+	for e in walls.iter_mut(){
 		commands.entity(e).despawn_recursive();
 	}
 }

@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
 	GameState,
-	room_renderer::{TILE_SIZE, TileCollider},
+	room_renderer::{TILE_SIZE, TileCollider}, room_generator::PlayerStartRoom,
 };
 
 pub struct MovementPlugin;
@@ -32,10 +32,17 @@ impl Plugin for MovementPlugin{
 #[derive(Component)]
 struct OverworldPlayer;
 
-const PLAYER_SZ: f32 = 30.;
-const PLAYER_SPEED: f32 = 220.;
+const PLAYER_SZ: f32 = TILE_SIZE/2.;
+const PLAYER_SPEED: f32 = PLAYER_SZ * 10.;
 
-fn setup_player(mut commands: Commands) {
+fn setup_player(
+	mut commands: Commands,
+	start_room_tfs: Query<&Transform, (With<PlayerStartRoom>, Without<OverworldPlayer>)>,
+) {
+	let spawn = match start_room_tfs.iter().next() {
+		Some(x) => x.translation,
+		None => Vec3::new(0., 0., 100.),
+	};
 	commands
 		.spawn_bundle(SpriteBundle {
 			sprite: Sprite {
@@ -45,7 +52,7 @@ fn setup_player(mut commands: Commands) {
 			},
 
 			transform: Transform {
-				translation: Vec3::new(-360., 0., 100.),
+				translation: spawn,
 				..default()
 			},
 			visibility: Visibility {
@@ -122,11 +129,10 @@ fn move_player(
 	input: Res<Input<KeyCode>>,
 	mut player: Query<&mut Transform, With<OverworldPlayer>>,
     time: Res<Time>,
-	//mut game_state: ResMut<State<GameState>>,
-	windows: Res<Windows>,
+	//windows: Res<Windows>,
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>)>,
 ){
-	let window = windows.get_primary().unwrap();
+	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
 
 	let mut x_vel = 0.;
