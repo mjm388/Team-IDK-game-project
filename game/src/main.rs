@@ -1,9 +1,8 @@
 use bevy::{
 	prelude::*,
 	window::PresentMode,
-	render::camera::ScalingMode,
+	//render::camera::ScalingMode,
 	//render::camera::OrthographicCameraBundle,
-
 };
 
 pub const RESOLUTION: f32 = 16.0/9.0;
