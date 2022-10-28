@@ -7,6 +7,12 @@ use crate::{
 	GameState,
 };
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
+pub enum TrainingState{
+	Continue,
+	Pause,
+}
+
 #[derive(Component)]
 pub struct TrainingCombatStats {
     pub health: isize,
@@ -44,11 +50,8 @@ pub struct TrainingPlugin;
 impl Plugin for TrainingPlugin{
     fn build(&self, app: &mut App){
         app
+		.add_state(TrainingState::Pause)
 		.add_system_set(SystemSet::on_update(GameState::Training)
-			.with_system(training_combat_system)
-			.with_system(update_ai1_text)
-			.with_system(update_ai2_text)
-			//.with_system(update_enemy_text)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Training)
 			.with_system(set_training_env)
@@ -56,6 +59,15 @@ impl Plugin for TrainingPlugin{
 		.add_system_set(SystemSet::on_exit(GameState::Training)
 			.with_system(despawn_training_background)
 			.with_system(despawn_ai)
+		)
+		.add_system_set(SystemSet::on_update(TrainingState::Continue)
+			.with_system(change_training_state)
+			.with_system(training_combat_system)
+			.with_system(update_ai1_text)
+			.with_system(update_ai2_text)
+		)
+		.add_system_set(SystemSet::on_update(TrainingState::Pause)
+			.with_system(change_training_state)
 		);
     }
 }
@@ -140,7 +152,7 @@ pub fn spawn_ai1(
         font_size: 30.0,
         color: Color::GREEN,
     };
-    let _enemy_health_bar = commands
+    let _ai1_health_bar = commands
 		.spawn_bundle(TextBundle::from_sections([
             	TextSection::new(
                 	ai1_health_text,
@@ -235,7 +247,7 @@ pub fn training_combat_system(
 	let mut ai2_stats = ai2_query.single_mut();
 
 	// TODO: Implement Token manipulations
-	// TODO: 
+	// TODO: Add reset for when someone dies
 	let mut rng = rand::thread_rng();
 	let mut random_num = rng.gen_range(1..9);
 	let mut valid_ai_move = false;
@@ -331,6 +343,96 @@ pub fn training_combat_system(
 		}
 	}	
 
+	while !valid_ai_move{
+		match random_num{
+			1 =>{
+				println!("Enemy Attacks");
+				log.ai2_damage = if ai2_stats.double {10} else {5} ;
+				valid_ai_move = true;
+				ai2_stats.double = false;
+			}
+			2 =>{
+				if ai2_stats.tp >= 20*ai2_stats.tp_cost_mult {
+					println!("Enemy Charges");
+					ai2_stats.tp -= 20*ai2_stats.tp_cost_mult;
+					log.ai2_damage = if ai2_stats.double {60} else {30};
+					valid_ai_move = true;
+					ai1_stats.double = false;
+				}else{
+					valid_ai_move = false;
+				}
+			}
+			3 =>{
+				println!("Enemy Recovers");
+				ai2_stats.tp = std::cmp::min(ai2_stats.tp+20, ai2_stats.max_tp);
+				valid_ai_move = true;
+				ai2_stats.double = false;
+			}
+			4 =>{
+				if ai2_stats.tp >= 10 {
+					println!("Enemy Heals");
+					ai2_stats.tp -= 10;
+					ai2_stats.health = std::cmp::min(ai2_stats.max_health, ai2_stats.health+20);
+					valid_ai_move = true;
+					ai2_stats.double = false;
+				} else {
+					valid_ai_move = false;
+				}
+			}
+			5 =>{
+				if ai2_stats.tp >= 30 {
+					println!("Enemy Guards");
+					ai2_stats.tp -= 30;
+					ai2_stats.guard = true;
+					valid_ai_move = true;
+					ai2_stats.double = false;
+				} else {
+					valid_ai_move = false;
+				}
+			}
+			6 =>{
+				if ai2_stats.tp >= 5*ai2_stats.tp_cost_mult {
+					println!("Enemy AntiMage");
+					ai2_stats.tp -= 5*ai2_stats.tp_cost_mult;
+					ai1_stats.tp = std::cmp::max(0, ai1_stats.tp-10);
+					log.ai2_damage = if ai2_stats.double {10} else {5};
+					valid_ai_move = true;
+					ai2_stats.double = false;
+				} else {
+					valid_ai_move = false;
+				}
+			}
+			7 =>{
+				if ai2_stats.tp >= 5 {
+					println!("Enemy Double");
+					ai2_stats.tp -= 5;
+					ai2_stats.double = true;
+					ai2_stats.tp_cost_mult = 2;
+					valid_ai_move = true;
+				} else {
+					valid_ai_move = false;
+				}
+			}
+			8 =>{
+				if ai2_stats.tp >= 10 {
+					println!("Enemy Block");
+					ai2_stats.tp -= 10;
+					ai2_stats.block = true;
+					valid_ai_move = true;
+					ai2_stats.double = false;
+				} else {
+					valid_ai_move = false;
+				}
+			}
+			_ =>{
+				panic!("Shouldn't happen");
+			}
+		}
+		if !valid_ai_move{
+			random_num = rng.gen_range(1..9);
+		}
+	}
+	
 	if valid {
 		if log.ai1_damage > log.ai2_damage {
 			if ai2_stats.block { 
@@ -362,6 +464,23 @@ pub fn training_combat_system(
 			println!("ai2 health is {}", ai2_stats.health);
 	}
 }
+
+fn change_training_state(
+	mut input: ResMut<Input<KeyCode>>,
+	mut game_state: ResMut<State<TrainingState>>,
+){
+	if input.just_pressed(KeyCode::P) && game_state.current() == &TrainingState::Continue{
+		input.reset(KeyCode::P);
+		game_state.set(TrainingState::Pause).unwrap();
+	}
+	//switch to overworld
+	if input.just_pressed(KeyCode::P) && game_state.current() == &TrainingState::Pause{
+		input.reset(KeyCode::P);
+		game_state.set(TrainingState::Continue).unwrap();
+	}
+}
+
+
 
 pub fn update_ai1_text(
 	mut ai1_text_query: Query<&mut Text, With<TrainingAI1>>,
