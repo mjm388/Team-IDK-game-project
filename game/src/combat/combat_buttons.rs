@@ -229,10 +229,10 @@ pub fn combat_button_system2(
 							}
 						}
 						6 =>{
-							if enemy_stats.tp >= 5*player_stats.tp_cost_mult {
+							if enemy_stats.tp >= 5*enemy_stats.tp_cost_mult {
 								println!("Enemy AntiMage");
-								enemy_stats.tp -= 5*player_stats.tp_cost_mult;
-								player_stats.tp = std::cmp::max(0, enemy_stats.tp-10);
+								enemy_stats.tp -= 5*enemy_stats.tp_cost_mult;
+								player_stats.tp = std::cmp::max(0, player_stats.tp-10);
 								log.enemy_damage = if enemy_stats.double {10} else {5};
 								valid_ai_move = true;
 								enemy_stats.double = false;

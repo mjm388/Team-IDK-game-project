@@ -13,6 +13,7 @@ mod tilemap;
 mod movement;
 mod room_generator;
 mod room_renderer;
+mod training_env;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
@@ -20,6 +21,7 @@ use tilemap::TileMapPlugin;
 use movement::MovementPlugin;
 use room_generator::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
+use training_env::TrainingPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -27,6 +29,7 @@ pub enum GameState{
 	Combat,
 	Credits,
 	Map,
+	Training,
 }
 
 #[derive(Component)]
@@ -52,6 +55,7 @@ fn main() {
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
 		.add_plugin(CombatPlugin)
+		.add_plugin(TrainingPlugin)
 		.run();
 
 	}
@@ -105,6 +109,14 @@ fn change_state(
 		//removed map
 		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map{
 			input.reset(KeyCode::M);
+			game_state.set(GameState::Overworld).unwrap();
+		}
+		if input.just_pressed(KeyCode::V) && game_state.current() == &GameState::Overworld{
+			input.reset(KeyCode::V);
+			game_state.set(GameState::Training).unwrap();
+		}
+		if input.just_pressed(KeyCode::V) && game_state.current() == &GameState::Training{
+			input.reset(KeyCode::V);
 			game_state.set(GameState::Overworld).unwrap();
 		}
 	}
