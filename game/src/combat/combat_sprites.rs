@@ -155,24 +155,6 @@ pub fn spawn_player_sprite(
 		.insert(PlayerHealthBar)
         .id();
 	
-	
-	/*let health_bar = commands
-        .spawn_bundle(Text2dBundle {
-            text: Text::from_section(health_text, text_style),
-            text_2d_bounds: Text2dBounds {
-                size: box_size,
-            },
-            transform: Transform::from_xyz(
-                box_position.x - box_size.x / 2.0,
-                box_position.y + box_size.y / 2.0,
-                900.0,
-            ),
-			visibility: Visibility { is_visible: (true) },
-            ..default()
-        })
-		.insert(PlayerHealthBar)
-        .id();*/
-
 	let _player_sprite = commands
 		.spawn_bundle(SpriteSheetBundle {
 			texture_atlas: player_atlas_handle.clone(),
