@@ -6,6 +6,7 @@ use bevy::{
 
 use crate::{
 	GameState,
+    //movement::OverworldPlayer,
 };
 
 pub struct RoomGenPlugin;
@@ -34,8 +35,6 @@ impl Room {
 		}
 	}
 }
-#[derive(Component)]
-pub struct PlayerStartRoom;
 
 // Create bounds on where to put in window
 const X_BOUND: f32 = 50.;  
@@ -48,15 +47,15 @@ const SIZE_UPPER_BOUND: f32 = 7.;  //15
 const NUM_OF_ROOMS: i32 = 15;
 const ROOM_BUFFER_SPACE: f32 = 10.;
 
-fn generate_rooms(mut commands: Commands) {
+fn generate_rooms(
+    mut commands: Commands,
+    //mut player: Query<&mut Transform, With<OverworldPlayer>>,
+    //mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
+) {
     let mut rng = rand::thread_rng();
         
     let mut coords = Vec::new();
     let mut sizes = Vec::new();
-
-    // prevent the room from spawning at origin ???
-    coords.push(Vec3::new(0.,0.,1.0));
-    sizes.push(Vec2::splat(1.));
 
     let spawnroom = rng.gen_range(0..NUM_OF_ROOMS);
 
@@ -66,11 +65,18 @@ fn generate_rooms(mut commands: Commands) {
             break;
         }
         // Randomly generate location of the room
-        let coord = Vec3::new(
-            rng.gen_range::<f32,_>(-X_BOUND..X_BOUND).floor(),
-            rng.gen_range::<f32,_>(-Y_BOUND..Y_BOUND).floor(), 
-            1.0,
-        );
+        let coord = match i {
+            0 => Vec3::new(
+                0.,
+                0.,
+                1.,
+            ),
+            _ => Vec3::new(
+                rng.gen_range::<f32,_>(-X_BOUND..X_BOUND).floor(),
+                rng.gen_range::<f32,_>(-Y_BOUND..Y_BOUND).floor(), 
+                1.,
+            ),
+        };
 
         // Randomly generate dimensions of the room
         let size = Vec2::new(
@@ -83,13 +89,9 @@ fn generate_rooms(mut commands: Commands) {
             coords.push(coord.clone());
             sizes.push(size.clone());
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
-            let id = commands.spawn()
+            commands.spawn()
                 .insert(Room::new(size))
-                .insert(Transform::from_translation(coord))
-                .id();
-            if i == spawnroom {
-                commands.entity(id).insert(PlayerStartRoom);
-            }
+                .insert(Transform::from_translation(coord));
             i += 1;
         }
     }

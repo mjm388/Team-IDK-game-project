@@ -5,7 +5,8 @@ use bevy::{
 
 use crate::{
 	GameState,
-	room_renderer::{TILE_SIZE, TileCollider}, room_generator::PlayerStartRoom,
+	room_renderer::{TILE_SIZE, TileCollider}, 
+	minimap::M_TILE_SIZE,
 };
 
 pub struct MovementPlugin;
@@ -25,62 +26,65 @@ impl Plugin for MovementPlugin{
 			.add_system_set(SystemSet::on_exit(GameState::Overworld)
 				.with_system(remove_player)
 				.with_system(adjust_camera)
+			)
+			.add_system_set(SystemSet::on_enter(GameState::Map)
+				.with_system(activate_m_player)
+			)
+			.add_system_set(SystemSet::on_exit(GameState::Map)
+				.with_system(remove_m_player)
 			);
     }
 }
 
 #[derive(Component)]
-struct OverworldPlayer;
+pub struct OverworldPlayer;
 
-const PLAYER_SZ: f32 = TILE_SIZE/2.;
-const PLAYER_SPEED: f32 = PLAYER_SZ * 10.;
+#[derive(Component)]
+pub struct MiniPlayer;
+
+const PLAYER_SZ: f32 = 0.5;
+const PLAYER_SPEED: f32 = 5.;
 
 fn setup_player(
 	mut commands: Commands,
-	start_room_tfs: Query<&Transform, (With<PlayerStartRoom>, Without<OverworldPlayer>)>,
 ) {
-	let spawn = match start_room_tfs.iter().next() {
-		Some(x) => x.translation,
-		None => Vec3::new(0., 0., 100.),
-	};
+	// normal size player
 	commands
 		.spawn_bundle(SpriteBundle {
 			sprite: Sprite {
 				color: Color::CRIMSON,
-				custom_size: Some(Vec2::splat(PLAYER_SZ)),
+				custom_size: Some(Vec2::splat(PLAYER_SZ * TILE_SIZE)),
 				..default()
 			},
-
 			transform: Transform {
-				translation: spawn,
+				translation: Vec3::new(0., 0., 100.),
 				..default()
 			},
 			visibility: Visibility {
 				is_visible: false
-
 			},
 			..default()
 		})
 		.insert(OverworldPlayer);
-}
 
-
-fn collision_check(
-	target_player_pos: Vec3,
-	collision_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>)>,
-) -> bool {
-	for obs_transform in collision_tile.iter() {
-		let collision = collide (
-			target_player_pos,
-			Vec2::splat(PLAYER_SZ*0.9),
-			obs_transform.translation,
-			Vec2::splat(TILE_SIZE),
-		);
-		if collision.is_some() {
-			return false;
-		}
-	}
-	true
+	// mini player
+	commands
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: Color::RED,
+                custom_size: Some(Vec2::new(2. * M_TILE_SIZE, 2. * M_TILE_SIZE)),
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0., 0., 100.),
+                ..default()
+            },
+			visibility: Visibility {
+				is_visible: false
+			},
+            ..default()
+        })
+        .insert(MiniPlayer);
 }
 
 fn activate_player(
@@ -95,7 +99,20 @@ fn remove_player(
 ){
 	let mut player_vis = player.single_mut();
 	player_vis.is_visible = false;
+}
 
+fn activate_m_player(
+	mut player: Query<&mut Visibility, With<MiniPlayer>>,
+){
+	let mut player_vis = player.single_mut();
+	player_vis.is_visible = true;
+}
+
+fn remove_m_player(
+	mut player: Query<&mut Visibility, With<MiniPlayer>>,
+){
+	let mut player_vis = player.single_mut();
+	player_vis.is_visible = false;
 }
 
 fn move_camera(
@@ -124,48 +141,67 @@ fn put_back_camera (	// Resets camera position back to player
 	cam_transform.translation = player_transform.translation;
 }
 
-
 fn move_player(
 	input: Res<Input<KeyCode>>,
-	mut player: Query<&mut Transform, With<OverworldPlayer>>,
+	mut player: Query<&mut Transform, (With<OverworldPlayer>, Without<MiniPlayer>, Without<TileCollider>)>,
+	mut m_player: Query<&mut Transform, (With<MiniPlayer>, Without<OverworldPlayer>, Without<TileCollider>)>,
     time: Res<Time>,
 	//windows: Res<Windows>,
-	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>)>,
+	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
+	let mut m_player_transform = m_player.single_mut();
 
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
 
 	if input.pressed(KeyCode::A) {
-		x_vel -= PLAYER_SPEED;
+		x_vel -= PLAYER_SPEED * time.delta_seconds();
 	}
 
 	if input.pressed(KeyCode::D) {
-		x_vel += PLAYER_SPEED;
+		x_vel += PLAYER_SPEED * time.delta_seconds();
 	}
 
 	if input.pressed(KeyCode::W) {
-		y_vel += PLAYER_SPEED;
+		y_vel += PLAYER_SPEED * time.delta_seconds();
 	}
 
 	if input.pressed(KeyCode::S) {
-		y_vel -= PLAYER_SPEED;
+		y_vel -= PLAYER_SPEED * time.delta_seconds();
 	}
 
 	let new_pos = Vec3::new (
-		player_transform.translation.x + x_vel * time.delta_seconds(),
-		player_transform.translation.y + y_vel * time.delta_seconds(),
+		player_transform.translation.x + x_vel * TILE_SIZE,
+		player_transform.translation.y + y_vel * TILE_SIZE,
 		player_transform.translation.z,
 	);
-	// needs fix when map is bigger than screen
 	if collision_check(new_pos, &collision_tiles)
-		// && new_pos.x.abs() <= (window.width()/2.- PLAYER_SZ/2.)
-		// && new_pos.y.abs() <= (window.height()/2.- PLAYER_SZ/2.)
 	{
 		player_transform.translation = new_pos;
+		m_player_transform.translation = Vec3::new(
+			m_player_transform.translation.x + x_vel * M_TILE_SIZE, 
+			m_player_transform.translation.y + y_vel * M_TILE_SIZE, 
+			m_player_transform.translation.z,
+		)
 	}
+}
 
-
+fn collision_check(
+	target_player_pos: Vec3,
+	collision_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+) -> bool {
+	for obs_transform in collision_tile.iter() {
+		let collision = collide (
+			target_player_pos,
+			Vec2::splat(PLAYER_SZ*0.9),
+			obs_transform.translation,
+			Vec2::splat(TILE_SIZE),
+		);
+		if collision.is_some() {
+			return false;
+		}
+	}
+	true
 }
