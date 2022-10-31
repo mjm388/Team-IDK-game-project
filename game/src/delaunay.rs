@@ -51,8 +51,31 @@ fn triangulate(
 }
 
 // Will check if given point is inside of given triangle's circumcirle
-fn check_circles(
+fn check_circle(
+    vertex: &Vec2,
+    triangle: &Vec<Vec2>,
+) -> bool {
+    // find distances of edges
+    let ab_len = sqrt((triangle.a[0] - triangle.b[0])^2 + (triangle.a[1] - triangle.b[1])^2);
+    let bc_len = sqrt((triangle.b[0] - triangle.c[0])^2 + (triangle.b[1] - triangle.c[1])^2);
+    let ac_len = sqrt((triangle.a[0] - triangle.c[0])^2 + (triangle.a[1] - triangle.c[1])^2);
 
-) {
+    let ab_midpoint = Vec::new((triangle.a[0] + triangle.b[0]) / 2, (triangle.a[1] + triangle.b[1]) / 2);
+    let bc_midpoint = Vec::new((triangle.b[0] + triangle.c[0]) / 2, (triangle.b[1] + triangle.c[1]) / 2);
+    let ac_midpoint = Vec::new((triangle.a[0] + triangle.c[0]) / 2, (triangle.a[1] + triangle.c[1]) / 2);
 
+    // find radius of circle
+    let s = (ab_len + bc_len + ac_len) / 2;
+    let area = sqrt(s * (s - ab_len) * (s - bc_len) * (s - ac_len));
+    let r = (ab_len * bc_len * ac_len) / (4 * area);
+
+    // find origin of circle
+    let origin = Vec::new(());
+
+    // check if point is inside of the circumcirle
+    let diff = sqrt((vertex[0] - origin[0])^2 + (vertex[1] - origin[1])^2);
+    if (diff <= radius) {
+        return true;
+    }
+    false
 }
