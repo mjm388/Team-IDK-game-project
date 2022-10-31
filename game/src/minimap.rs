@@ -3,9 +3,10 @@ use bevy::prelude::*;
 use crate::{
 	GameState,
     room_generator::Room,
+    movement::OverworldPlayer,
 };
 
-pub const TILE_SIZE: f32 = 6.;
+pub const M_TILE_SIZE: f32 = 6.;
 
 #[derive(Component)]
 pub struct WallTile;
@@ -19,9 +20,9 @@ struct FloorTile;
 #[derive(Component)]
 struct MiniRoom;
 
-pub struct TileMapPlugin;
+pub struct MiniMapPlugin;
 
-impl Plugin for TileMapPlugin {
+impl Plugin for MiniMapPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_system_set(SystemSet::on_update(GameState::Map)
@@ -37,7 +38,8 @@ impl Plugin for TileMapPlugin {
 fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
-    room_tfs: Query<&Transform, With<Room>>
+    room_tfs: Query<&Transform, With<Room>>,
+    player: Query<&Transform, With<OverworldPlayer>>,
 ) {
     for unzip in rooms.iter().zip(room_tfs.iter()) {
         let (room, room_tf) = unzip;
@@ -48,11 +50,11 @@ fn create_random_room(
         .spawn_bundle(SpriteBundle {
             sprite: Sprite {
                 color: Color::YELLOW,
-                custom_size: Some(Vec2::new(room_size.x as f32 * TILE_SIZE, room_size.y as f32 * TILE_SIZE)),
+                custom_size: Some(Vec2::new(room_size.x as f32 * M_TILE_SIZE, room_size.y as f32 * M_TILE_SIZE)),
                 ..default()
             },
             transform: Transform {
-                translation: Vec3::new(room_coord.x * TILE_SIZE, room_coord.y * TILE_SIZE, room_coord.z),
+                translation: Vec3::new(room_coord.x * M_TILE_SIZE, room_coord.y * M_TILE_SIZE, room_coord.z),
                 ..default()
             },
             ..default()
@@ -64,7 +66,8 @@ fn create_random_room(
 
 fn despawn_map(
 	mut commands: Commands,
-	mut rooms: Query<Entity, With<MiniRoom>>
+	mut rooms: Query<Entity, With<MiniRoom>>,
+    mut player: Query<Entity, With<MiniRoom>>,
 ){
 	for e in rooms.iter_mut(){
 		commands.entity(e).despawn_recursive();
