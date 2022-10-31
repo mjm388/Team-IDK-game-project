@@ -37,6 +37,7 @@ fn triangulate(
     big_triangle: Query<&BigTriangle>,
     triangles: Query<&Triangle>,
 ) {
+    let mut bad_triangles = Vec::new();
     // Inserts big triangle
     commands
         .spawn()
@@ -45,7 +46,12 @@ fn triangulate(
 
     for vertex in vertices.iter() {
         for triangle in triangles.iter() {  // For each triangle, check if point is inside of its circumcircle
-
+            if check_circle(&vertex, &triangle) {
+                bad_triangles.push(triangle);
+            }
+        }
+        for triangle in bad_triangles.iter() {
+            
         }
     }
 }
@@ -69,14 +75,6 @@ fn check_circle(
     let area = sqrt(s * (s - ab_len) * (s - bc_len) * (s - ac_len));
     let r = (ab_len * bc_len * ac_len) / (4 * area);
 
-
-
-    let Ax = 4.;
-    let Ay = 4.;
-    let Bx = 5.;
-    let By = 2.;
-    let Cx = 6.;
-    let Cy = 8.;
     //find midpoint and slope for first line
     let midABx = ab_midpoint.x;
     let midABy = ab_midpoint.y;
@@ -92,8 +90,6 @@ fn check_circle(
 
     // find origin of circle
     let origin = Vec::new(circumX,circumY);
-
-
 
     // check if point is inside of the circumcirle
     let diff = sqrt((vertex[0] - origin[0])^2 + (vertex[1] - origin[1])^2);
