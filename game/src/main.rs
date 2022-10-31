@@ -9,7 +9,7 @@ pub const RESOLUTION: f32 = 16.0/9.0;
 
 mod credits;
 mod combat;
-mod tilemap;
+mod minimap;
 mod movement;
 mod room_generator;
 mod room_renderer;
@@ -17,7 +17,7 @@ mod training_env;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
-use tilemap::TileMapPlugin;
+use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use room_generator::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
@@ -51,9 +51,9 @@ fn main() {
 		.add_system(change_state)
 		.add_plugin(RoomGenPlugin)
 		.add_plugin(RoomRendPlugin)
-		.add_plugin(TileMapPlugin)
 		.add_plugin(CreditsPlugin)
 		.add_plugin(MovementPlugin)
+		.add_plugin(MiniMapPlugin)
 		.add_plugin(CombatPlugin)
 		.add_plugin(TrainingPlugin)
 		.run();
