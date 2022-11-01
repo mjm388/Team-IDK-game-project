@@ -26,15 +26,22 @@ impl Plugin for RoomGenPlugin {
 
 fn setup(
     mut commands: Commands,
+    rooms: Query<&Room>,
+    room_tfs: Query<&Transform, With<Room>>,
 )
 {
-    generate_rooms();
-    let mut vertices: Vec<Vec2> = Vec::new();
+    generate_rooms(commands);
     // Add every coordinate from each of the rooms to vertices
+    let mut vertices = add_vertices(rooms, room_tfs);
+    info!("Vertices: {} \n ", vertices.len());
 
-    let final_polygon = triangulate(&vertices);
+    let final_polygon = triangulate(&vertices);     // DELAUNAY
+    // let final_polygon = prims(final_polygon)     // PRIMS
+
     for edge in final_polygon.iter() {
-        bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
+        //bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
+        // call a* to generate hallways             // A*
+        info!("We have an edge");
     }
 }
 
@@ -219,7 +226,7 @@ fn triangulate(vertices: &Vec<Vec2>) -> Vec<Edge> {
                         }
                     }
                     if !duplicate {
-                        // info!("edge {}.{} pushed: {} {}", i, ti, &edge.0, &edge.1);
+                         info!("edge {}.{} pushed: {} {}", i, ti, &edge.0, &edge.1);
                         polygon.push(edge);
                     }
                 }
@@ -370,10 +377,24 @@ fn same_e (e1: &Edge, e2: &Edge) -> bool {
     false
 }
 
+fn add_vertices (
+    rooms: Query<&Room>,
+    room_tfs: Query<&Transform, With<Room>>,
+) -> Vec<Vec2> {
+    let mut vertices: Vec<Vec2> = Vec::new();
+    for unzip in rooms.iter().zip(room_tfs.iter()) {
+        let (room, room_tf) = unzip;
+        let room_size = room.size;
+        let room_coord = room_tf.translation;
+        vertices.push(Vec2::new(room_coord.x, room_coord.y))  // push center of room
+    }
+    vertices
+}
+
 fn bresenhams (
+    mut commands: Commands,
     p1: Vec2,
     p2: Vec2,
-    mut commands: Commands,
 ) {
 
 }
