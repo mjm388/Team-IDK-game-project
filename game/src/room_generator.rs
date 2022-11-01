@@ -27,24 +27,26 @@ impl Plugin for RoomGenPlugin {
 #[derive(Component)]
 pub struct Room {
     pub size: Vec2,
+	pub id: i32,
 }
 impl Room {
-	fn new(size: Vec2) -> Room {
+	fn new(size: Vec2, id: i32) -> Room {
 		Room {
 			size,
+			id,
 		}
 	}
 }
 
 // Create bounds on where to put in window
-const X_BOUND: f32 = 50.;  
+const X_BOUND: f32 = 50.;
 const Y_BOUND: f32 = 50.;
 
 // Create bounds on size of room
 const SIZE_LOWER_BOUND: f32 = 3.; //7
 const SIZE_UPPER_BOUND: f32 = 7.;  //15
 
-const NUM_OF_ROOMS: i32 = 15;
+pub const NUM_OF_ROOMS: i32 = 15;
 const ROOM_BUFFER_SPACE: f32 = 10.;
 
 fn generate_rooms(
@@ -53,7 +55,7 @@ fn generate_rooms(
     //mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
 ) {
     let mut rng = rand::thread_rng();
-        
+
     let mut coords = Vec::new();
     let mut sizes = Vec::new();
 
@@ -73,14 +75,14 @@ fn generate_rooms(
             ),
             _ => Vec3::new(
                 rng.gen_range::<f32,_>(-X_BOUND..X_BOUND).floor(),
-                rng.gen_range::<f32,_>(-Y_BOUND..Y_BOUND).floor(), 
+                rng.gen_range::<f32,_>(-Y_BOUND..Y_BOUND).floor(),
                 1.,
             ),
         };
 
         // Randomly generate dimensions of the room
         let size = Vec2::new(
-            rng.gen_range::<f32,_>(SIZE_LOWER_BOUND..SIZE_UPPER_BOUND).floor()*2.+1., 
+            rng.gen_range::<f32,_>(SIZE_LOWER_BOUND..SIZE_UPPER_BOUND).floor()*2.+1.,
             rng.gen_range::<f32,_>(SIZE_LOWER_BOUND..SIZE_UPPER_BOUND).floor()*2.+1.,
         );
 
@@ -91,7 +93,7 @@ fn generate_rooms(
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
             println!("store_rooms2({:?})", &coord);
             commands.spawn()
-                .insert(Room::new(size))
+                .insert(Room::new(size,i))
                 .insert(Transform::from_translation(coord));
             i += 1;
         }
@@ -110,7 +112,7 @@ fn overlap(
         	*room_length,
         	pos_list[i],
            	Vec2::new(
-                size_list[i].x+ROOM_BUFFER_SPACE, 
+                size_list[i].x+ROOM_BUFFER_SPACE,
                 size_list[i].y+ROOM_BUFFER_SPACE,
             ),
         );
@@ -120,4 +122,3 @@ fn overlap(
     }
     false
 }
-    

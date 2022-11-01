@@ -64,8 +64,18 @@ fn store_rooms(
 fn triangulate(
 
 ) {
+<<<<<<< HEAD
     
     triangulation.push(Vec::new())
+=======
+
+    let mut bad_triangles = Vec::new();
+    // Inserts big triangle
+    commands
+        .spawn()
+        .insert(Triangle::new(Vec2::new(-50., -50.), Vec2::new(-50., 150.), Vec2::new(150., -50.)))
+        .insert(BigTriangle);
+>>>>>>> 95b84b52334c35f69920ba90b748d2d203542f71
 
     for vertex in vertices.iter() {
 
@@ -74,12 +84,14 @@ fn triangulate(
         for triangle in triangulation.iter() {  // For each triangle, check if point is inside of its circumcircle
             if check_circle(&vertex, &triangle) {
                 bad_triangles.push(triangle);
+                graph.add_edge();
             }
         }
 
         let mut polygon = Vec::new();
 
         for triangle in bad_triangles.iter() {
+<<<<<<< HEAD
             for i in 1..3 {
                 let edge = 
                 if i == 1 {
@@ -129,6 +141,9 @@ fn triangulate(
         for edge in polygon.iter() {
             let newTriangle = Triangle::new(edge[0], edge[1], vertex);
             triangulation.add(newTriangle);
+=======
+
+>>>>>>> 95b84b52334c35f69920ba90b748d2d203542f71
         }
     }
 
