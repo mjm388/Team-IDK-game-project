@@ -37,6 +37,7 @@ fn triangulate(
     big_triangle: Query<&BigTriangle>,
     triangles: Query<&Triangle>,
 ) {
+
     let mut bad_triangles = Vec::new();
     // Inserts big triangle
     commands
@@ -48,10 +49,11 @@ fn triangulate(
         for triangle in triangles.iter() {  // For each triangle, check if point is inside of its circumcircle
             if check_circle(&vertex, &triangle) {
                 bad_triangles.push(triangle);
+                graph.add_edge();
             }
         }
         for triangle in bad_triangles.iter() {
-            
+
         }
     }
 }
