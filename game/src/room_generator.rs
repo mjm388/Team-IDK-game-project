@@ -32,8 +32,8 @@ fn setup(
 {
     generate_rooms(commands);
     // Add every coordinate from each of the rooms to vertices
-    let mut vertices = add_vertices(rooms, room_tfs);
-    info!("Vertices: {} \n ", vertices.len());
+    let mut vertices = add_vertices(rooms);         // NOT WORKING
+    info!("Vertices: {} \n ", vertices.len());   
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
     // let final_polygon = prims(final_polygon)     // PRIMS
@@ -49,12 +49,14 @@ fn setup(
 pub struct Room {
     pub size: Vec2,
 	pub id: i32,
+    pub center: Vec3,
 }
 impl Room {
-	fn new(size: Vec2, id: i32) -> Room {
+	fn new(size: Vec2, id: i32, center: Vec3) -> Room {
 		Room {
 			size,
 			id,
+            center,
 		}
 	}
 }
@@ -114,7 +116,7 @@ fn generate_rooms(
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
             println!("store_rooms2({:?})", &coord);
             commands.spawn()
-                .insert(Room::new(size,i))
+                .insert(Room::new(size,i, coord))
                 .insert(Transform::from_translation(coord));
             i += 1;
         }
@@ -379,15 +381,18 @@ fn same_e (e1: &Edge, e2: &Edge) -> bool {
 
 fn add_vertices (
     rooms: Query<&Room>,
-    room_tfs: Query<&Transform, With<Room>>,
 ) -> Vec<Vec2> {
     let mut vertices: Vec<Vec2> = Vec::new();
-    for unzip in rooms.iter().zip(room_tfs.iter()) {
-        let (room, room_tf) = unzip;
-        let room_size = room.size;
-        let room_coord = room_tf.translation;
-        vertices.push(Vec2::new(room_coord.x, room_coord.y))  // push center of room
+    for room in rooms.iter() {
+        let room_coord = room.center;
+        vertices.push(Vec2::new(room_coord.x, room_coord.y));
     }
+    // for unzip in rooms.iter().zip(room_tfs.iter()) {
+    //     let (room, room_tf) = unzip;
+    //     let room_size = room.size;
+    //     let room_coord = room_tf.translation;
+    //     vertices.push(Vec2::new(room_coord.x, room_coord.y))  // push center of room
+    // }
     vertices
 }
 
