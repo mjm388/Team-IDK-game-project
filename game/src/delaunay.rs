@@ -1,11 +1,33 @@
 
+use bevy::{
+	prelude::*,
+};
 
+use crate::{
+	GameState,
+};
+
+// pub struct DelaunayPlugin;
+
+// impl Plugin for DelaunayPlugin {
+//     fn build(&self, app: &mut App) {
+//         app
+//         .add_startup_system(delaunay_test.after(generate_rooms))
+//         .add_system_set(SystemSet::on_update(GameState::Overworld)
+// 		)
+// 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
+// 		)
+// 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
+//         );
+//     }
+// }
+
+let mut triangulation = Vec::new();
 let mut vertices = Vec::new();
+let const bta = Vec2::new(-50., -50.);
+let const btb = Vec2::new(-50., 150.);
+let const btc = Vec2::new(150., -50.);
 
-#[derive(Component)]
-pub struct BigTriangle;
-
-#[derive(Component)]
 pub struct Triangle {
     pub a: Vec2,
     pub b: Vec2,
@@ -21,6 +43,13 @@ impl Triangle {
 	}
 }
 
+fn check_generation() {
+    if generated {
+        store_rooms();
+        triangulate();
+    }
+}
+
 fn store_rooms(
     rooms: Query<&Room>,
     room_tfs: Query<&Transform, With<Room>>,
@@ -33,27 +62,88 @@ fn store_rooms(
 }
 
 fn triangulate(
-    mut commands: Commands,
-    big_triangle: Query<&BigTriangle>,
-    triangles: Query<&Triangle>,
+
 ) {
-    let mut bad_triangles = Vec::new();
-    // Inserts big triangle
-    commands
-        .spawn()
-        .insert(Triangle::new(Vec2::new(-50., -50.), Vec2::new(-50., 150.), Vec2::new(150., -50.)))
-        .insert(BigTriangle);
+    
+    triangulation.push(Vec::new())
 
     for vertex in vertices.iter() {
-        for triangle in triangles.iter() {  // For each triangle, check if point is inside of its circumcircle
+
+        let mut bad_triangles = Vec::new(bta, btb, btc);
+
+        for triangle in triangulation.iter() {  // For each triangle, check if point is inside of its circumcircle
             if check_circle(&vertex, &triangle) {
                 bad_triangles.push(triangle);
             }
         }
+
+        let mut polygon = Vec::new();
+
         for triangle in bad_triangles.iter() {
-            
+            for i in 1..3 {
+                let edge = 
+                if i == 1 {
+                    Vec::new(triangle.a, triangle.b);
+                } 
+                else if i == 2 {
+                    Vec::new(triangle.b, triangle.c);
+                }
+                else if i == 3 {
+                    Vec::new(traingle.a, triangle.c);
+                }
+                let mut duplicate = false;
+                for triangle2 in bad_triangles.iter() {
+                    if (triangle2 == triangle) { continue; }
+                    for j in 1..3 {
+                        let edge2 = 
+                        if i == 1 {
+                            Vec::new(triangle.a, triangle.b);
+                        } 
+                        else if i == 2 {
+                            Vec::new(triangle.b, triangle.c);
+                        }
+                        else if i == 3 {
+                            Vec::new(traingle.a, triangle.c);
+                        };
+                        if (edge == edge2) {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+                    if duplicate == true { break; }
+                }
+                if duplicate == false {
+                    polygon.push(edge);
+                }
+            }
+        }
+
+        for triangle in bad_triangles.iter() {
+            for triangle2 in triangulation.iter() {
+                if triangle.a == triangle2.a && triangle.b == triangle2.b && triangle.c == triangle2.c {
+                    triangulation.remove(triangle2);
+                }
+            }
+        }
+
+        for edge in polygon.iter() {
+            let newTriangle = Triangle::new(edge[0], edge[1], vertex);
+            triangulation.add(newTriangle);
         }
     }
+
+    for triangle in triangulation.iter() {
+        if triangle.a == bta || triangle.a == btb || triangle.a == btc {
+            triangulation.remove(triangle);
+        }
+        else if triangle.b == bta || triangle.b == btb || triangle.b == btc {
+            triangulation.remove(triangle);
+        }
+        else if triangle.c == bta || triangle.c == btb || triangle.c == btc {
+            triangulation.remove(triangle);
+        }
+    }
+
 }
 
 // Will check if given point is inside of given triangle's circumcirle

@@ -89,6 +89,7 @@ fn generate_rooms(
             coords.push(coord.clone());
             sizes.push(size.clone());
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
+            println!("store_rooms2({:?})", &coord);
             commands.spawn()
                 .insert(Room::new(size))
                 .insert(Transform::from_translation(coord));
