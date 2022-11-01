@@ -14,7 +14,8 @@ pub struct RoomGenPlugin;
 impl Plugin for RoomGenPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_startup_system(setup)
+        .add_startup_system(generate_rooms)
+        .add_startup_system(add_vertices.after(generate_rooms))
         .add_system_set(SystemSet::on_update(GameState::Overworld)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
@@ -24,26 +25,6 @@ impl Plugin for RoomGenPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    rooms: Query<&Room>,
-    room_tfs: Query<&Transform, With<Room>>,
-)
-{
-    generate_rooms(commands);
-    // Add every coordinate from each of the rooms to vertices
-    let mut vertices = add_vertices(rooms);         // NOT WORKING
-    info!("Vertices: {} \n ", vertices.len());   
-
-    let final_polygon = triangulate(&vertices);     // DELAUNAY
-    // let final_polygon = prims(final_polygon)     // PRIMS
-
-    for edge in final_polygon.iter() {
-        //bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
-        // call a* to generate hallways             // A*
-        info!("We have an edge");
-    }
-}
 
 #[derive(Component)]
 pub struct Room {
@@ -381,19 +362,30 @@ fn same_e (e1: &Edge, e2: &Edge) -> bool {
 
 fn add_vertices (
     rooms: Query<&Room>,
-) -> Vec<Vec2> {
+    room_tfs: Query<&Transform, With<Room>>,
+) {
     let mut vertices: Vec<Vec2> = Vec::new();
-    for room in rooms.iter() {
-        let room_coord = room.center;
-        vertices.push(Vec2::new(room_coord.x, room_coord.y));
-    }
-    // for unzip in rooms.iter().zip(room_tfs.iter()) {
-    //     let (room, room_tf) = unzip;
-    //     let room_size = room.size;
-    //     let room_coord = room_tf.translation;
-    //     vertices.push(Vec2::new(room_coord.x, room_coord.y))  // push center of room
+    // for room in rooms.iter() {
+    //     let room_coord = room.center;
+    //     vertices.push(Vec2::new(room_coord.x, room_coord.y));
     // }
-    vertices
+    for unzip in rooms.iter().zip(room_tfs.iter()) {
+        let (room, room_tf) = unzip;
+        let room_size = room.size;
+        let room_coord = room_tf.translation;
+        vertices.push(Vec2::new(room_coord.x, room_coord.y))  // push center of room
+    }
+    let vertices = vertices;
+    info!("Vertices: {} \n ", vertices.len());   
+
+    let final_polygon = triangulate(&vertices);     // DELAUNAY
+    // let final_polygon = prims(final_polygon)     // PRIMS
+
+    for edge in final_polygon.iter() {
+        //bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
+        // call a* to generate hallways             // A*
+        info!("We have an edge");
+    }
 }
 
 fn bresenhams (
