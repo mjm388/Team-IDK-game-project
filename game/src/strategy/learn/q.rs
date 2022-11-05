@@ -19,10 +19,10 @@ impl QLearning {
     }
 }
 
-impl<State> LearningStrategy<State> for QLearning {
+impl<S: State> LearningStrategy<S> for QLearning {
     fn value(
         &self,
-        new_action_values: &Option<&HashMap<State::Act, f64>>,
+        new_action_values: &Option<&HashMap<S::Act, f64>>,
         current_value: &Option<&f64>,
         reward: f64,
     ) -> f64 {

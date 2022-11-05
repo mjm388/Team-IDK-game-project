@@ -35,6 +35,7 @@ pub enum CombatOptions{
 	AntiMage,
 	Double,
 	Block,
+	Unleash,
 }
 
 pub struct CombatPlugin;
