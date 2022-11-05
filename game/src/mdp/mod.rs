@@ -8,10 +8,10 @@ pub trait State: Eq + Hash + Clone {
     // available actions to reach another state from here
     fn action_set(&self) -> Vec<Self::Act>;
     // select random action
-    fn random_action(&self) -> Self::Action {
+    fn random_action(&self) -> Self::Act {
         let actions = self.action_set();
-        let action = rand::random::<usize>() % action_set.len();
-        action_set[action].clone()
+        let action = rand::random::<usize>() % actions.len();
+        actions[action].clone()
     }
 }
 
