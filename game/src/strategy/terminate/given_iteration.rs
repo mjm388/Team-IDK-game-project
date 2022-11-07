@@ -1,7 +1,7 @@
 use crate::mdp::State;
 use crate::strategy::terminate::TerminationStrategy;
 
-pub struct FixedIterations {
+pub struct GivenIteration {
     i: u32,
     iteration: u32,
 }
@@ -12,8 +12,8 @@ impl GivenIteration {
     }
 }
 
-impl<State> TerminationStrategy<State> for GivenIteration {
-    fn should_stop(&mut self, _: &State) -> bool {
+impl<S: State> TerminationStrategy<S> for GivenIteration {
+    fn should_stop(&mut self, _: &S) -> bool {
         self.i += 1;
         self.i > self.iteration
     }

@@ -174,6 +174,62 @@ pub fn combat_button_system2(
 						println!("TP Low!")
 					}
                 }
+                CombatOptions::Unleash => {
+					print!("Unleash");
+					match player_stats.token{
+						1 => {
+							if player_stats.tp <= player_stats.max_tp-10 {
+								player_stats.tp += 10;
+							} else {
+								player_stats.tp = player_stats.max_tp;
+							}
+							log.player_damage += 10;
+							player_stats.double = false;
+						}
+
+						2 => {
+							if player_stats.tp <= player_stats.max_tp-20 {
+								player_stats.tp += 20;
+							} else {
+								player_stats.tp = player_stats.max_tp;
+							}
+							if player_stats.health <= player_stats.max_health-20 {
+								player_stats.health += 20;
+							} else {
+								player_stats.health = player_stats.max_health;
+							}
+							player_stats.double = false;
+						}
+
+						3 => {
+							log.player_damage += 30;
+							player_stats.double = false;
+						}
+
+						4 => {
+							if player_stats.tp <= player_stats.max_tp-40 {
+								player_stats.tp += 30;
+							} else {
+								player_stats.tp = player_stats.max_tp;
+							}
+							if player_stats.health <= player_stats.max_health-40 {
+								player_stats.health += 40;
+							} else {
+								player_stats.health = player_stats.max_health;
+							}
+							player_stats.double = false;
+						}
+
+						5 => {
+							player_stats.health = player_stats.max_health;
+							log.player_damage += 50;
+							player_stats.double = false;
+						}
+
+						// this line is to avoid compile error
+						_ => todo!()
+					}
+				},
             }
 
 			// TODO: Implement Token manipulations
@@ -278,16 +334,28 @@ pub fn combat_button_system2(
 						enemy_stats.health -= log.player_damage/2;
 					} else if enemy_stats.guard {
 						player_stats.health -= log.player_damage*2;
+						if enemy_stats.token < enemy_stats.max_token {
+							enemy_stats.token += 1;
+						}
 					} else {
 						enemy_stats.health -= log.player_damage - log.enemy_damage;
+						if player_stats.token < player_stats.max_token {
+							player_stats.token += 1;
+						}
 					}
 				} else if log.enemy_damage > log.player_damage {
 					if player_stats.block { 
 						player_stats.health -= log.enemy_damage/2;
 					} else if player_stats.guard {
 						enemy_stats.health -= log.enemy_damage*2;
+						if player_stats.token < player_stats.max_token {
+							player_stats.token += 1;
+						}
 					} else {
 						player_stats.health -= log.enemy_damage - log.player_damage;
+						if enemy_stats.token < enemy_stats.max_token {
+							enemy_stats.token += 1;
+						}
 					}
 				}
 				if player_stats.health <= 0 {
