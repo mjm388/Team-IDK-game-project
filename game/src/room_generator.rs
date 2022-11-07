@@ -24,14 +24,16 @@ impl Plugin for RoomGenPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 pub struct Room {
+	pub coord: Vec3,
     pub size: Vec2,
-	pub id: i32,
+	pub id: usize,
 }
 impl Room {
-	fn new(size: Vec2, id: i32) -> Room {
+	fn new(coord:Vec3, size: Vec2, id: usize) -> Room {
 		Room {
+			coord,
 			size,
 			id,
 		}
@@ -92,7 +94,7 @@ fn generate_rooms(
             sizes.push(size.clone());
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
             commands.spawn()
-                .insert(Room::new(size,i))
+                .insert(Room::new(coord,size,i as usize))
                 .insert(Transform::from_translation(coord));
             i += 1;
         }
