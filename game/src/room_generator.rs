@@ -42,54 +42,81 @@ impl Room {
 	}
 }
 
+#[derive(Component)]
+pub struct Line {
+    pub p1: Vec2,
+    pub p2: Vec2,
+}
+impl Line {
+    fn new(p1: Vec2, p2: Vec2) -> Line {
+        Line {
+            p1,
+            p2,
+        }
+    }
+}
+
 pub struct Graph{
-	//vert: HashMap<roomID, Room>,
-	edges: HashMap<Vec2, Vec<(Vec2, WeightedEdge)>>,
+	edges: HashMap<Key,Vec<Vec2>>,
 }
 
-pub struct WeightedEdge{
-    length: f32,
-}
+impl Graph{
+	fn new(edges: Vec<Edge>) -> Graph{
+		let mut map = HashMap::<Key,Vec<Vec2>>::new();
+		for e in edges.into_iter(){
+			let k = Key::new(e.0);
+			if map.contains_key(&k){
+				let mut v: &mut Vec<Vec2> = map.entry(k).or_default();
+				v.push(e.1)
+			}
+			else{
+				let mut v: Vec<Vec2> = Vec::from([e.1]);
+				map.insert(k,v);
+			}
+			let k2 = Key::new(e.1);
+			if map.contains_key(&k2){
+				let mut v: &mut Vec<Vec2> = map.entry(k2).or_default();
+				v.push(e.0)
+			}
+			else{
+				let mut v: Vec<Vec2> = Vec::from([e.0]);
+				map.insert(k2,v);
+			}
+		}
 
-
-impl<Vec2, WeightedEdge> Graph<Vec2, WeightedEdge> where
-Vec2: Eq + Hash,
-{
-	fn init() -> Graph<Vec2, WeightedEdge>{
 		Graph{
-			//vert: HashMap::new(),
-			edges: HashMap::new(),
+			edges: map,
 		}
 	}
 
-	//fn add_vert(&mut self, rID: roomID, &room: Room){
-	//	self.vert.insert(rID,room);
-	//}
-
-	fn add_edge(&mut self, origin: Vec2, destination: Vec2, weight: WeightedEdge){
-		self.edges.entry(origin).or_default().push((destination,weight));
-	}
-
-	fn add_all(
-		&mut self,
-		poly: Vec<Edge>,
-	){
-		//for id in 0..NUM_OF_ROOMS{
-		//	self.add_vert(id,);
-		//}
-		for e in poly.iter(){
-			self.add_edge(e.0,e.1,WeightedEdge{
-				length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-			});
-			self.add_edge(e.1,e.0, WeightedEdge{
-				length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-			});
+	fn pretty_print(&self){
+		for (key, value) in self.edges.iter(){
+			println!("Vert ({},{}) connects to:",key.x,key.y);
+			for v in value.iter(){
+				println!("	({},{})",v.x,v.y);
+			}
 		}
 	}
+
 }
 
 
 
+#[derive(PartialEq, Eq, Hash)]
+pub struct Key{
+	x: String,
+	y: String,
+}
+
+impl Key{
+
+	fn new(v: Vec2) -> Key {
+		Key{
+			x: v.x.to_string(),
+			y: v.y.to_string(),
+		}
+	}
+}
 
 // Create bounds on where to put in window
 const X_BOUND: f32 = 50.;
@@ -158,12 +185,18 @@ fn generate_rooms(
     info!("Vertices: {} \n ", vertices.len());
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
+	let mut graph = Graph::new(final_polygon.clone());
+	graph.pretty_print();
     // let final_polygon = prims(final_polygon)     // PRIMS
 
     for edge in final_polygon.iter() {
+        let p1 = Vec2::new(edge.0.x, edge.0.y);
+        let p2 = Vec2::new(edge.1.x, edge.1.y);
+        commands.spawn()
+            .insert(Line::new(p1, p2));
         //bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
         // call a* to generate hallways             // A*
-        info!("We have an edge");
+        //info!("We have an edge");
     }
 }
 
@@ -198,6 +231,7 @@ const BTA: Vec2 = Vec2::new(-50., -50.);
 const BTB: Vec2 = Vec2::new(-50., 150.);
 const BTC: Vec2 = Vec2::new(150., -50.);
 
+#[derive(Clone)]
 pub struct Edge (Vec2, Vec2);
 
 pub struct Triangle {
@@ -421,12 +455,4 @@ fn same_e (e1: &Edge, e2: &Edge) -> bool {
         }
     }
     false
-}
-
-fn bresenhams (
-    mut commands: Commands,
-    p1: Vec2,
-    p2: Vec2,
-) {
-
 }

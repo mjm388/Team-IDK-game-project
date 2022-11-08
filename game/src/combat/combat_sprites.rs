@@ -30,6 +30,7 @@ pub fn spawn_enemy_sprite(
 			block: false,
 			double: false,
 			tp_cost_mult: 1,
+			use_token: false,
 		},
 	};
 	let enemy_handle = match enemy_type{
@@ -110,6 +111,7 @@ pub fn spawn_player_sprite(
 			double: false,
 			block: false,
 			tp_cost_mult: 1,
+			use_token: false,
 	};
 	let player_handle = asset_server.load("Player_Combat.png");
 	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 {x:(300.), y: (500.)}, 1,1);

@@ -16,12 +16,13 @@ pub fn spawn_combat_buttons(
     left_val: Val,
     top_val: Val,
     text: &str,
+	button_size: Size<Val>,
 ){
 	let _button_entity = 
 	commands
 		.spawn_bundle(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(100.0)),
+                size: button_size,
 				position: UiRect { 
 					left: left_val,
 					top: top_val, 
@@ -185,6 +186,9 @@ pub fn combat_button_system2(
 							}
 							log.player_damage += 10;
 							player_stats.double = false;
+							player_stats.token = 0;
+							player_stats.use_token = true;
+							valid = true;
 						}
 
 						2 => {
@@ -199,11 +203,17 @@ pub fn combat_button_system2(
 								player_stats.health = player_stats.max_health;
 							}
 							player_stats.double = false;
+							player_stats.token = 0;
+							player_stats.use_token = true;
+							valid = true;
 						}
 
 						3 => {
 							log.player_damage += 30;
 							player_stats.double = false;
+							player_stats.token = 0;
+							player_stats.use_token = true;
+							valid = true;
 						}
 
 						4 => {
@@ -218,16 +228,22 @@ pub fn combat_button_system2(
 								player_stats.health = player_stats.max_health;
 							}
 							player_stats.double = false;
+							player_stats.token = 0;
+							player_stats.use_token = true;
+							valid = true;
 						}
 
 						5 => {
 							player_stats.health = player_stats.max_health;
 							log.player_damage += 50;
 							player_stats.double = false;
+							player_stats.token = 0;
+							player_stats.use_token = true;
+							valid = true;
 						}
 
 						// this line is to avoid compile error
-						_ => todo!()
+						_ => println!("No Token!")
 					}
 				},
             }
@@ -334,13 +350,17 @@ pub fn combat_button_system2(
 						enemy_stats.health -= log.player_damage/2;
 					} else if enemy_stats.guard {
 						player_stats.health -= log.player_damage*2;
-						if enemy_stats.token < enemy_stats.max_token {
-							enemy_stats.token += 1;
+						if !enemy_stats.use_token {
+							if enemy_stats.token < enemy_stats.max_token {
+								enemy_stats.token += 1;
+							}
 						}
 					} else {
 						enemy_stats.health -= log.player_damage - log.enemy_damage;
-						if player_stats.token < player_stats.max_token {
-							player_stats.token += 1;
+						if !player_stats.use_token {
+							if player_stats.token < player_stats.max_token {
+								player_stats.token += 1;
+							}
 						}
 					}
 				} else if log.enemy_damage > log.player_damage {
@@ -348,13 +368,17 @@ pub fn combat_button_system2(
 						player_stats.health -= log.enemy_damage/2;
 					} else if player_stats.guard {
 						enemy_stats.health -= log.enemy_damage*2;
-						if player_stats.token < player_stats.max_token {
-							player_stats.token += 1;
+						if !player_stats.use_token {
+							if player_stats.token < player_stats.max_token {
+								player_stats.token += 1;
+							}
 						}
 					} else {
 						player_stats.health -= log.enemy_damage - log.player_damage;
-						if enemy_stats.token < enemy_stats.max_token {
-							enemy_stats.token += 1;
+						if !enemy_stats.use_token {
+							if enemy_stats.token < enemy_stats.max_token {
+								enemy_stats.token += 1;
+							}
 						}
 					}
 				}
@@ -367,6 +391,8 @@ pub fn combat_button_system2(
 				player_stats.guard = false;
 				enemy_stats.block = false;
 				enemy_stats.guard = false;
+				player_stats.use_token = false;
+				enemy_stats.use_token = false;
 				println!("Your health is {}", player_stats.health);
 				println!("Enemy health is {}", enemy_stats.health);
 			}
