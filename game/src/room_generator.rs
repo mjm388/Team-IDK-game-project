@@ -39,6 +39,20 @@ impl Room {
 	}
 }
 
+#[derive(Component)]
+pub struct Line {
+    pub p1: Vec2,
+    pub p2: Vec2,
+}
+impl Line {
+    fn new(p1: Vec2, p2: Vec2) -> Line {
+        Line {
+            p1,
+            p2,
+        }
+    }
+}
+
 // Create bounds on where to put in window
 const X_BOUND: f32 = 50.;
 const Y_BOUND: f32 = 50.;
@@ -109,9 +123,13 @@ fn generate_rooms(
     // let final_polygon = prims(final_polygon)     // PRIMS
 
     for edge in final_polygon.iter() {
+        let p1 = Vec2::new(edge.0.x, edge.0.y);
+        let p2 = Vec2::new(edge.1.x, edge.1.y);
+        commands.spawn()
+            .insert(Line::new(p1, p2));
         //bresenhams((edge.0.x as i32, edge.0.y as i32), (edge.1.x as i32, edge.1.y as i32));
         // call a* to generate hallways             // A*
-        info!("We have an edge");
+        //info!("We have an edge");
     }
 }
 
@@ -369,12 +387,4 @@ fn same_e (e1: &Edge, e2: &Edge) -> bool {
         }
     }
     false
-}
-
-fn bresenhams (
-    mut commands: Commands,
-    p1: Vec2,
-    p2: Vec2,
-) {
-
 }
