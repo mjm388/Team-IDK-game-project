@@ -16,12 +16,13 @@ pub fn spawn_combat_buttons(
     left_val: Val,
     top_val: Val,
     text: &str,
+	button_size: Size<Val>,
 ){
 	let _button_entity = 
 	commands
 		.spawn_bundle(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(100.0)),
+                size: button_size,
 				position: UiRect { 
 					left: left_val,
 					top: top_val, 
