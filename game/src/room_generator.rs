@@ -1,4 +1,6 @@
 use rand::Rng;
+use std::collections::HashMap;
+use std::hash::Hash;
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
@@ -25,21 +27,69 @@ impl Plugin for RoomGenPlugin {
 
 #[derive(Component)]
 pub struct Room {
-	pub coord: Vec3,
     pub size: Vec2,
 	pub id: i32,
     pub center: Vec3,
 }
+
 impl Room {
 	fn new(size: Vec2, id: i32, center: Vec3) -> Room {
 		Room {
-			coord,
 			size,
 			id,
             center,
 		}
 	}
 }
+
+pub struct Graph{
+	//vert: HashMap<roomID, Room>,
+	edges: HashMap<Vec2, Vec<(Vec2, WeightedEdge)>>,
+}
+
+pub struct WeightedEdge{
+    length: f32,
+}
+
+
+impl<Vec2, WeightedEdge> Graph<Vec2, WeightedEdge> where
+Vec2: Eq + Hash,
+{
+	fn init() -> Graph<Vec2, WeightedEdge>{
+		Graph{
+			//vert: HashMap::new(),
+			edges: HashMap::new(),
+		}
+	}
+
+	//fn add_vert(&mut self, rID: roomID, &room: Room){
+	//	self.vert.insert(rID,room);
+	//}
+
+	fn add_edge(&mut self, origin: Vec2, destination: Vec2, weight: WeightedEdge){
+		self.edges.entry(origin).or_default().push((destination,weight));
+	}
+
+	fn add_all(
+		&mut self,
+		poly: Vec<Edge>,
+	){
+		//for id in 0..NUM_OF_ROOMS{
+		//	self.add_vert(id,);
+		//}
+		for e in poly.iter(){
+			self.add_edge(e.0,e.1,WeightedEdge{
+				length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
+			});
+			self.add_edge(e.1,e.0, WeightedEdge{
+				length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
+			});
+		}
+	}
+}
+
+
+
 
 // Create bounds on where to put in window
 const X_BOUND: f32 = 50.;
