@@ -1,5 +1,5 @@
 use crate::mdp::{Agent, State};
-use crate::strategy::explore::ExploreStrategy;
+use crate::strategy::explore::ExplorationStrategy;
 
 pub struct RandomExplore;
 
@@ -15,8 +15,8 @@ impl Default for RandomExplore {
     }
 }
 
-impl<State> ExploreStrategy<State> for RandomExplore {
-    fn act(&self, agent: &mut dyn Agent<State>) -> State::Act {
-        agent.random_action()
+impl<S: State> ExplorationStrategy<S> for RandomExplore {
+    fn act(&self, agent: &mut dyn Agent<S>) -> S::Act {
+        agent.random_act()
     }
 }
