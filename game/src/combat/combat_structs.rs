@@ -14,6 +14,7 @@ pub struct CombatStats {
 	pub double: bool,
 	pub block: bool,
 	pub tp_cost_mult: isize,
+	pub use_token: bool,
 }
 
 #[derive(Component)]
