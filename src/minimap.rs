@@ -2,9 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
 	GameState,
-    room_generator::Room,
-    room_generator::Line,
-    movement::OverworldPlayer,
+    map_generator::Room,
+    map_generator::Line,
 };
 
 pub const M_TILE_SIZE: f32 = 6.;
@@ -41,7 +40,6 @@ fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
     room_tfs: Query<&Transform, With<Room>>,
-    player: Query<&Transform, With<OverworldPlayer>>,
 ) {
     for unzip in rooms.iter().zip(room_tfs.iter()) {
         let (room, room_tf) = unzip;
@@ -69,7 +67,6 @@ fn create_random_room(
 fn despawn_map(
 	mut commands: Commands,
 	mut rooms: Query<Entity, With<MiniRoom>>,
-    mut player: Query<Entity, With<MiniRoom>>,
 ){
 	for e in rooms.iter_mut(){
 		commands.entity(e).despawn_recursive();
@@ -100,9 +97,9 @@ fn bresenhams(
         let mut error = dx + dy;
 
         let mut x0 = p1.x;
-        let mut x1 = p2.x;
         let mut y0 = p1.y;
-        let mut y1 = p2.y;
+        let x1 = p2.x;
+        let y1 = p2.y;
 
         loop {
             commands

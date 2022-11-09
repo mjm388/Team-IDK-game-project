@@ -1,6 +1,8 @@
 use rand::Rng;
+/*
 use std::collections::HashMap;
 use std::hash::Hash;
+*/
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
@@ -55,7 +57,7 @@ impl Line {
         }
     }
 }
-
+/*
 pub struct Graph{
 	edges: HashMap<Key,Vec<GraphEdge>>,
 }
@@ -136,13 +138,10 @@ impl Graph{
 		//	break;
 		//}
 
-
 		while done == false{
 
 		}
-
 	}
-
 }
 
 pub struct PQ{
@@ -161,8 +160,6 @@ impl PQ{
 	fn is_empty(&self) -> bool {
 		self.heap.len() == 0
 	}
-
-
 
 	pub fn add(&mut self, e: GraphEdge){
 		self.heap.push(e);
@@ -212,11 +209,8 @@ impl PQ{
 				self.sink(left);
 			}
 		}
-
 	}
 }
-
-
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct Key{
@@ -233,7 +227,7 @@ impl Key{
 		}
 	}
 }
-
+*/
 // Create bounds on where to put in window
 const X_BOUND: f32 = 50.;
 const Y_BOUND: f32 = 50.;
@@ -254,8 +248,6 @@ fn generate_rooms(
 
     let mut coords = Vec::new();
     let mut sizes = Vec::new();
-
-    let spawnroom = rng.gen_range(0..NUM_OF_ROOMS);
 
     let mut vertices: Vec<Vec2> = Vec::new();
 
@@ -289,7 +281,6 @@ fn generate_rooms(
             coords.push(coord.clone());
             sizes.push(size.clone());
             //println!("Room {}: coord: {:?}  size:{}", i, &coord, &size);
-            println!("store_rooms2({:?})", &coord);
             commands.spawn()
                 .insert(Room::new(size,i, coord))
                 .insert(Transform::from_translation(coord));
@@ -298,11 +289,10 @@ fn generate_rooms(
         }
     }
     let vertices = vertices;
-    info!("Vertices: {} \n ", vertices.len());
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
-	let mut graph = Graph::new(final_polygon.clone());
-	graph.pretty_print();
+	// let mut graph = Graph::new(final_polygon.clone());
+	// graph.pretty_print(); ???
     // let final_polygon = prims(final_polygon)     // PRIMS
 
     for edge in final_polygon.iter() {
@@ -422,7 +412,7 @@ fn triangulate(vertices: &Vec<Vec2>) -> Vec<Edge> {
                         }
                     }
                     if !duplicate {
-                         info!("edge {}.{} pushed: {} {}", i, ti, &edge.0, &edge.1);
+                        //info!("edge {}.{} pushed: {} {}", i, ti, &edge.0, &edge.1);
                         polygon.push(edge);
                     }
                 }

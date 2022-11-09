@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
 	GameState,
-    room_generator::Room,
+    map_generator::Room,
 };
 
 pub const TILE_SIZE: f32 = 40.;
