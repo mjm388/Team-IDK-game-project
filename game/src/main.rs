@@ -11,7 +11,6 @@ mod minimap;
 mod movement;
 mod room_generator;
 mod room_renderer;
-mod graph;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
@@ -19,7 +18,6 @@ use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use room_generator::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
-use graph::GraphPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -52,7 +50,6 @@ fn main() {
 		.add_plugin(MovementPlugin)
 		.add_plugin(MiniMapPlugin)
 		.add_plugin(CombatPlugin)
-		.add_plugin(GraphPlugin)
 		.run();
 
 	}

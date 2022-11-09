@@ -1,4 +1,6 @@
 use rand::Rng;
+use std::collections::HashMap;
+use std::hash::Hash;
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
@@ -29,6 +31,7 @@ pub struct Room {
 	pub id: i32,
     pub center: Vec3,
 }
+
 impl Room {
 	fn new(size: Vec2, id: i32, center: Vec3) -> Room {
 		Room {
@@ -51,6 +54,68 @@ impl Line {
             p2,
         }
     }
+}
+
+pub struct Graph{
+	edges: HashMap<Key,Vec<Vec2>>,
+}
+
+impl Graph{
+	fn new(edges: Vec<Edge>) -> Graph{
+		let mut map = HashMap::<Key,Vec<Vec2>>::new();
+		for e in edges.into_iter(){
+			let k = Key::new(e.0);
+			if map.contains_key(&k){
+				let mut v: &mut Vec<Vec2> = map.entry(k).or_default();
+				v.push(e.1)
+			}
+			else{
+				let mut v: Vec<Vec2> = Vec::from([e.1]);
+				map.insert(k,v);
+			}
+			let k2 = Key::new(e.1);
+			if map.contains_key(&k2){
+				let mut v: &mut Vec<Vec2> = map.entry(k2).or_default();
+				v.push(e.0)
+			}
+			else{
+				let mut v: Vec<Vec2> = Vec::from([e.0]);
+				map.insert(k2,v);
+			}
+		}
+
+		Graph{
+			edges: map,
+		}
+	}
+
+	fn pretty_print(&self){
+		for (key, value) in self.edges.iter(){
+			println!("Vert ({},{}) connects to:",key.x,key.y);
+			for v in value.iter(){
+				println!("	({},{})",v.x,v.y);
+			}
+		}
+	}
+
+}
+
+
+
+#[derive(PartialEq, Eq, Hash)]
+pub struct Key{
+	x: String,
+	y: String,
+}
+
+impl Key{
+
+	fn new(v: Vec2) -> Key {
+		Key{
+			x: v.x.to_string(),
+			y: v.y.to_string(),
+		}
+	}
 }
 
 // Create bounds on where to put in window
@@ -117,9 +182,11 @@ fn generate_rooms(
         }
     }
     let vertices = vertices;
-    info!("Vertices: {} \n ", vertices.len());   
+    info!("Vertices: {} \n ", vertices.len());
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
+	let mut graph = Graph::new(final_polygon.clone());
+	graph.pretty_print();
     // let final_polygon = prims(final_polygon)     // PRIMS
 
     for edge in final_polygon.iter() {
@@ -157,13 +224,14 @@ fn overlap(
 }
 
 
-// DELAUNAY TRIANGULATION CODE 
+// DELAUNAY TRIANGULATION CODE
 
 
 const BTA: Vec2 = Vec2::new(-50., -50.);
 const BTB: Vec2 = Vec2::new(-50., 150.);
 const BTC: Vec2 = Vec2::new(150., -50.);
 
+#[derive(Clone)]
 pub struct Edge (Vec2, Vec2);
 
 pub struct Triangle {
@@ -191,12 +259,12 @@ fn triangulate(vertices: &Vec<Vec2>) -> Vec<Edge> {
     for vertex in vertices.iter() {
         // For each triangle, check if point is inside of its circumcircle
         // if not, it does not stay in the next iteration
-        for triangle in triangles.iter_mut() {  
+        for triangle in triangles.iter_mut() {
             if check_circle(&vertex, &triangle) {
                 triangle.stay = false;
             }
         }
-        
+
         let mut polygon: Vec<Edge> = Vec::new();
         let bad_tri: Vec<_> = triangles.iter().filter(|t| !t.stay).collect();
         // info!("bad {}", bad_tri.len());
@@ -211,7 +279,7 @@ fn triangulate(vertices: &Vec<Vec2>) -> Vec<Edge> {
             polygon.push(Edge(bad_tri[0].b, bad_tri[0].c));
             polygon.push(Edge(bad_tri[0].a, bad_tri[0].c));
         }
-        else {// bad_tri.len() >= 2 
+        else {// bad_tri.len() >= 2
             for i in 0..bad_tri.len() {
                 for ti in 1..=3 {
                     let edge = match ti {
@@ -246,7 +314,7 @@ fn triangulate(vertices: &Vec<Vec2>) -> Vec<Edge> {
         }
         // remove bad triangles
         triangles.retain(|t| t.stay);
-        
+
         // insert new triangles
         for edge in polygon.iter() {
             let new_triangle = Triangle::new(edge.0, edge.1, *vertex);
@@ -272,7 +340,7 @@ fn poly(
 
     for t in ts.iter() {
         if polygon.len() == 0 {
-            polygon.push(Edge(t.a, t.b)); 
+            polygon.push(Edge(t.a, t.b));
             polygon.push(Edge(t.b, t.c));
             polygon.push(Edge(t.a, t.c));
         }
@@ -317,7 +385,7 @@ fn check_circle(
     let s = (ab_len + bc_len + ac_len) / 2.;
     let area = (s * (s - ab_len) * (s - bc_len) * (s - ac_len)).sqrt();
     let r = (ab_len * bc_len * ac_len) / (4. * area);
-    
+
     //find slope tangent line of edges
     let ab_tan_s = -(triangle.a.x-triangle.b.x)/(triangle.a.y-triangle.b.y);
     let bc_tan_s = -(triangle.b.x-triangle.c.x)/(triangle.b.y-triangle.c.y);
@@ -340,15 +408,15 @@ fn line_intersection (
     b1: Vec2,
     bm: f32,
 ) -> Vec2 {
-    let a2 = 
+    let a2 =
     if am.abs() ==  f32::INFINITY {
         Vec2::new(a1.x, a1.y + 1.)
     }
     else {
         Vec2::new(a1.x + 1.,a1.y + am)
     };
-        
-    let b2 = 
+
+    let b2 =
     if bm.abs() ==  f32::INFINITY {
         Vec2::new(b1.x, b1.y + 1.)
     }
@@ -362,7 +430,7 @@ fn line_intersection (
     let b_y_diff = b1.y - b2.y;
 
     let determinant = a_x_diff * b_y_diff - a_y_diff * b_x_diff;
-    
+
     if determinant != 0. {
         let c_a = a1.x * a2.y - a1.y * a2.x;
         let c_b = b1.x * b2.y - b1.y * b2.x;
