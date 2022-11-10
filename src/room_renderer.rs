@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
 	GameState,
-    room_generator::Room,
+    map_gen::Room,
 };
 
 pub const TILE_SIZE: f32 = 40.;
@@ -34,7 +34,6 @@ impl Plugin for RoomRendPlugin {
 fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
-    room_tfs: Query<&Transform, With<Room>>,
     asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -47,14 +46,11 @@ fn create_random_room(
     let floor_atlas = TextureAtlas::from_grid(floor_handle, Vec2::splat(TILE_SIZE), 2, 1);
     let floor_atlas_len = floor_atlas.textures.len();
     let floor_atlas_handle = texture_atlases.add(floor_atlas);
-
-    for unzip in rooms.iter().zip(room_tfs.iter()) {
-        let (room, room_tf) = unzip;
-        let room_coord = room_tf.translation;
-
-        let x = (room_coord.x-(room.size.x-1.)/2.) * TILE_SIZE;
-        let y = (room_coord.y-(room.size.y-1.)/2.) * TILE_SIZE;
-        let z = room_coord.z * TILE_SIZE;
+    
+    for room in rooms.iter() {
+        let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
+        let y = (room.center.y-(room.size.y-1.)/2.) * TILE_SIZE;
+        let z = room.center.z * TILE_SIZE;
         
         let x_size = room.size.x as usize;
         let y_size = room.size.y as usize;
