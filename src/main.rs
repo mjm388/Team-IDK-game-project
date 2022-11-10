@@ -9,14 +9,14 @@ mod credits;
 mod combat;
 mod minimap;
 mod movement;
-mod map_generator;
+mod map_gen;
 mod room_renderer;
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
 use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
-use map_generator::RoomGenPlugin;
+use map_gen::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
