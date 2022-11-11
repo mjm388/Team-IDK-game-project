@@ -195,7 +195,7 @@ fn collision_check(
 	for obs_transform in collision_tile.iter() {
 		let collision = collide (
 			target_player_pos,
-			Vec2::splat(PLAYER_SZ*0.9),
+			Vec2::splat(PLAYER_SZ*1.0),
 			obs_transform.translation,
 			Vec2::splat(TILE_SIZE),
 		);
