@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
 	GameState,
-    room_generator::Room,
+    map_gen::Room,
 };
 
 pub const TILE_SIZE: f32 = 40.;
@@ -15,6 +15,12 @@ pub struct TileCollider;
 
 #[derive(Component)]
 struct FloorTile;
+
+#[derive(Component)]
+pub struct KeyObject;
+
+#[derive(Component)]
+struct DoorTile;
 
 pub struct RoomRendPlugin;
 
@@ -34,7 +40,6 @@ impl Plugin for RoomRendPlugin {
 fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
-    room_tfs: Query<&Transform, With<Room>>,
     asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -48,13 +53,20 @@ fn create_random_room(
     let floor_atlas_len = floor_atlas.textures.len();
     let floor_atlas_handle = texture_atlases.add(floor_atlas);
 
-    for unzip in rooms.iter().zip(room_tfs.iter()) {
-        let (room, room_tf) = unzip;
-        let room_coord = room_tf.translation;
+    let door_handle = asset_server.load("Door.png");
+    let door_atlas = TextureAtlas::from_grid(door_handle, Vec2::splat(TILE_SIZE * 2.), 1, 1);
+    let door_atlas_len = door_atlas.textures.len();
+    let door_atlas_handle = texture_atlases.add(door_atlas);
 
-        let x = (room_coord.x-(room.size.x-1.)/2.) * TILE_SIZE;
-        let y = (room_coord.y-(room.size.y-1.)/2.) * TILE_SIZE;
-        let z = room_coord.z * TILE_SIZE;
+    let key_handle = asset_server.load("Key.png");
+    let key_atlas = TextureAtlas::from_grid(key_handle, Vec2::splat(TILE_SIZE), 1, 1);
+    let key_atlas_len = key_atlas.textures.len();
+    let key_atlas_handle = texture_atlases.add(key_atlas);
+    
+    for room in rooms.iter() {
+        let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
+        let y = (room.center.y-(room.size.y-1.)/2.) * TILE_SIZE;
+        let z = 0.;
         
         let x_size = room.size.x as usize;
         let y_size = room.size.y as usize;
@@ -105,6 +117,39 @@ fn create_random_room(
                 }
                 
             }
+        }
+        if room.id == 13 {
+            commands.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: door_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new(x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2., y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2., z + 1.),
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(DoorTile)
+            .insert(TileCollider);
+            info!("Door added: {},{}", x, y);
+        }
+        if room.id == 14 {
+            commands.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: key_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new(x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2., y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2., z + 1.),
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(KeyObject);
+            info!("Key added: {},{}", x, y);
         }
     }
 }

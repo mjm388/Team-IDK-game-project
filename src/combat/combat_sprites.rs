@@ -30,6 +30,7 @@ pub fn spawn_enemy_sprite(
 			block: false,
 			double: false,
 			tp_cost_mult: 1,
+			use_token: false,
 		},
 	};
 	let enemy_handle = match enemy_type{
@@ -110,6 +111,7 @@ pub fn spawn_player_sprite(
 			double: false,
 			block: false,
 			tp_cost_mult: 1,
+			use_token: false,
 	};
 	let player_handle = asset_server.load("Player_Combat.png");
 	let player_atlas = TextureAtlas::from_grid(player_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
@@ -117,6 +119,7 @@ pub fn spawn_player_sprite(
 	
 	let health_text = format!("Health: {}/{}", stats.health, stats.max_health);
 	let tp_text = format!("\nTP: {}/{}", stats.tp, stats.max_tp);
+	let token_text = format!("\nToken: {}/{}", stats.token, stats.max_token);
     let text_style = TextStyle {
         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 30.0,
@@ -126,6 +129,12 @@ pub fn spawn_player_sprite(
         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 30.0,
         color: Color::BLUE,
+    };
+
+	let token_text_style = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::YELLOW,
     };
     //let box_size = Vec2::new(200.0, 100.0);
     //let box_position = Vec2::new(-425., -250.0);
@@ -140,6 +149,10 @@ pub fn spawn_player_sprite(
                 	tp_text,
                 	tp_text_style,
             	),
+				TextSection::new(
+					token_text, 
+					token_text_style,
+				),
         	])
 			.with_text_alignment(TextAlignment::TOP_CENTER)
 			.with_style(Style{
@@ -190,6 +203,7 @@ pub fn update_player_text(
 	for mut text in &mut player_text_query {
 		text.sections[0].value = format!("Health: {}/{}", player.health, player.max_health);
 		text.sections[1].value = format!("\nTP: {}/{}", player.tp, player.max_tp);
+		text.sections[2].value = format!("\nToken: {}/{}", player.token, player.max_token);
 	}
 }
 pub fn update_enemy_text(

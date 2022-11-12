@@ -35,6 +35,7 @@ pub enum CombatOptions{
 	AntiMage,
 	Double,
 	Block,
+	Unleash,
 }
 
 pub struct CombatPlugin;
@@ -120,8 +121,9 @@ fn set_combat(
 	);
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
-	let mut top = Val::Px(80.0);
+	let mut top = Val::Px(40.0);
 	let mut combat_opt_txt = "Attack";
+	let mut button_size = Size::new(Val::Px(150.0), Val::Px(100.0));
 	spawn_combat_buttons(
 		&mut commands,
         &asset_server,
@@ -129,10 +131,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(1050.0);
-	top = Val::Px(80.0);
+	top = Val::Px(40.0);
 	combat_opt_txt = "Charge";
 	spawn_combat_buttons(
 		&mut commands,
@@ -141,10 +144,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(850.0);
-	top = Val::Px(200.0);
+	top = Val::Px(160.0);
 	combat_opt_txt = "Recover";
 	spawn_combat_buttons(
 		&mut commands,
@@ -153,10 +157,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(1050.0);
-	top = Val::Px(200.0);
+	top = Val::Px(160.0);
 	combat_opt_txt = "Heal";
 	spawn_combat_buttons(
 		&mut commands,
@@ -165,10 +170,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(850.0);
-	top = Val::Px(320.0);
+	top = Val::Px(280.0);
 	combat_opt_txt = "Guard";
 	spawn_combat_buttons(
 	&mut commands,
@@ -177,10 +183,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(1050.0);
-	top = Val::Px(320.0);
+	top = Val::Px(280.0);
 	combat_opt_txt = "Anti-Mage";
 	spawn_combat_buttons(
 		&mut commands,
@@ -189,10 +196,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(850.0);
-	top = Val::Px(440.0);
+	top = Val::Px(400.0);
 	combat_opt_txt = "Double";
 	spawn_combat_buttons(
 		&mut commands,
@@ -201,10 +209,11 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
 	);
 
 	left = Val::Px(1050.0);
-	top = Val::Px(440.0);
+	top = Val::Px(400.0);
 	combat_opt_txt = "Block";
 	spawn_combat_buttons(
 		&mut commands,
@@ -213,6 +222,21 @@ fn set_combat(
         left,
         top,
         combat_opt_txt,
+		button_size,
+	);
+
+	left = Val::Px(850.0);
+	top = Val::Px(520.0);
+	combat_opt_txt = "Unleash";
+	button_size = Size::new(Val::Px(350.0), Val::Px(100.0));
+	spawn_combat_buttons(
+		&mut commands,
+        &asset_server,
+        CombatOptions::Unleash,
+        left,
+        top,
+        combat_opt_txt,
+		button_size,
 	);
 }
 

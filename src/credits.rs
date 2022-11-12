@@ -141,7 +141,6 @@ fn show_popup(
 	for (mut v, mut timer, s) in on_screen.iter_mut(){
 		timer.tick(time.delta());
 		if timer.just_finished(){
-			print!("go away");
 			v.is_visible = false;
 			commands.entity(s).remove::<OnScreen>().remove::<CreditsTimer>().remove::<NotDone>();
 			continue;
@@ -150,7 +149,6 @@ fn show_popup(
 	for (mut v, mut timer, e) in creditlist.iter_mut(){
 		timer.tick(time.delta());
 		if timer.just_finished(){
-			print!("display");
 			commands.entity(e).insert(OnScreen);
 			commands.entity(e).insert(CreditsTimer {
 				timer: Timer::new(Duration::from_secs(3),false)});
