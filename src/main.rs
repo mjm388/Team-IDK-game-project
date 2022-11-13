@@ -25,7 +25,6 @@ pub enum GameState{
 	Combat,
 	Credits,
 	Map,
-	Training,
 }
 
 #[derive(Component)]
