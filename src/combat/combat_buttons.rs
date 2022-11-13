@@ -95,14 +95,12 @@ pub fn combat_button_system2(
 			let mut valid = false;
             match button{
                 CombatOptions::Attack => {
-					//Will put into separate functions later
 					println!("Attack");
 					log.player_damage = if player_stats.double {10} else {5} ;
 					valid = true;
 					player_stats.double = false;
                 }
                 CombatOptions::Charge => {
-					//Will put into separate functions later
 					println!("Charge");
 					if player_stats.tp >= 20*player_stats.tp_cost_mult {
 						player_stats.tp -= 20*player_stats.tp_cost_mult;
