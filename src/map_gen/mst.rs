@@ -12,48 +12,51 @@ pub struct Graph{
 	edges: HashMap<Key,Vec<GraphEdge>>,
 }
 
+#[derive(Clone)]
 pub struct GraphEdge{
 	origin: Vec2,
 	destination: Vec2,
 	length: f32,
 }
 
+impl GraphEdge{
+	pub fn new(o: Vec2, d: Vec2) -> GraphEdge{
+		GraphEdge{
+			origin: o,
+			destination: d,
+			length: ((o.x - d.x).powf(2.) + (o.y - d.y).powf(2.)).sqrt(),
+		}
+	}
+
+	pub fn getOrigin(&self) -> Vec2{
+		self.origin
+	}
+
+	pub fn getDestination(&self) -> Vec2{
+		self.destination
+	}
+}
+
 impl Graph{
-	fn new(edges: &Vec<Edge>) -> Graph{
+	pub fn new(edges: Vec<Edge>) -> Graph{
 		let mut map = HashMap::<Key,Vec<GraphEdge>>::new();
 		for e in edges.into_iter(){
 			let k = Key::new(e.0);
 			if map.contains_key(&k){
 				let mut v: &mut Vec<GraphEdge> = map.entry(k).or_default();
-				v.push(GraphEdge{
-					origin: e.0,
-					destination: e.1,
-					length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-				});
+				v.push(GraphEdge::new(e.0,e.1));
 			}
 			else{
-				let mut v: Vec<GraphEdge> = Vec::from([GraphEdge{
-					origin: e.0,
-					destination: e.1,
-					length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-				}]);
+				let mut v: Vec<GraphEdge> = Vec::from([GraphEdge::new(e.0,e.1)]);
 				map.insert(k,v);
 			}
 			let k2 = Key::new(e.1);
 			if map.contains_key(&k2){
 				let mut v: &mut Vec<GraphEdge> = map.entry(k2).or_default();
-				v.push(GraphEdge{
-					origin: e.1,
-					destination: e.0,
-					length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-				})
+				v.push(GraphEdge::new(e.1,e.0));
 			}
 			else{
-				let mut v: Vec<GraphEdge> = Vec::from([GraphEdge{
-					origin: e.1,
-					destination: e.0,
-					length: ((e.0.x - e.1.x).powf(2.) + (e.0.y - e.1.y).powf(2.)).sqrt(),
-				}]);
+				let mut v: Vec<GraphEdge> = Vec::from([GraphEdge::new(e.1,e.0)]);
 				map.insert(k2,v);
 			}
 		}
@@ -63,7 +66,7 @@ impl Graph{
 		}
 	}
 
-	fn pretty_print(&self){
+	pub fn pretty_print(&self){
 		for (key, value) in self.edges.iter(){
 			println!("Vert ({},{}) connects to:",key.x,key.y);
 			for w in value.iter(){
@@ -73,24 +76,6 @@ impl Graph{
 		}
 	}
 
-	// fn prims(&self) /*-> Vec<GraphEdge>*/{
-	// 	let mut visited: Vec<Vec2> = Vec::new();
-
-	// 	let mut waiting_to_visit: PQ = PQ::new();
-
-	// 	let mut done = false;
-
-	// 	//for (k,vvec) in self.edges.iter(){
-	// 	//	let curx: f32 = visited.get(0).unwrap().x.parse::<f32>().unwrap();
-	// 	//	let cury: f32 = visited.get(0).unwrap().y.parse::<f32>().unwrap();
-	// 	//	let cur = Vec2::new(curx,cury);
-	// 	//	visited.push(cur);
-	// 	//	break;
-	// 	//}
-
-	// 	while done == false{
-	// 	}
-	// }
 
 }
 
@@ -128,29 +113,30 @@ impl PQ{
 		}
 	}
 
-	pub fn remove(&mut self) -> bool {
+	pub fn remove(&mut self) -> Option<GraphEdge> {
 		if self.is_empty() {
-			false
+			None
 		}
 		else{
 			let last = self.len() - 1;
 			self.heap.swap(0,last);
+			let e = self.heap.remove(last);
 			self.sink(0);
-			true
+			Some(e)
 		}
 	}
 
 	pub fn sink(&mut self, index: usize) {
-		let heap_length = self.len() - 1;
+		let heap_length = self.len();
 		let left = (index*2) + 1;
 		let right = (index*2) + 2;
 
 		if (left < heap_length) && (right < heap_length){
-			if self.heap[left].length < self.heap[index].length{
+			if self.heap[left].length < self.heap[index].length && self.heap[left].length < self.heap[right].length{
 				self.heap.swap(left,index);
 				self.sink(left);
 			}
-			else if self.heap[right].length < self.heap[index].length{
+			else if self.heap[right].length < self.heap[index].length && self.heap[right].length < self.heap[left].length{
 				self.heap.swap(right,index);
 				self.sink(right);
 			}
@@ -163,9 +149,18 @@ impl PQ{
 		}
 
 	}
+
+
+	fn printVec(&self) {
+		for e in self.heap.iter(){
+			println!("{}",e.length);
+		}
+	}
 }
 
-#[derive(PartialEq, Eq, Hash)]
+
+
+#[derive(PartialEq, Eq, Hash,Clone)]
 pub struct Key{
 	x: String,
 	y: String,
@@ -181,8 +176,63 @@ impl Key{
 	}
 }
 
-pub fn prims(edges: &Vec<Edge>) -> &Vec<Edge> {
-    let mut graph = Graph::new(edges);
-	graph.pretty_print();
-    return edges;
+pub fn prims(graph: &Graph) -> Vec<GraphEdge> {
+
+	let mut waiting_to_visit: PQ = PQ::new();
+
+	let mut visited: Vec<Key> = Vec::new();
+
+	let mut minSpanTree: Vec<GraphEdge> = Vec::new();
+
+
+	for (k,evec) in graph.edges.iter(){
+		visited.push(k.clone());
+		break;
+	}
+
+	let mut visiting: Key = visited[0].clone();
+
+	while visited.len() < graph.edges.len(){
+		for e in graph.edges.get_key_value(&visiting).unwrap().1 { // gets each edge in vec
+			if not_visited(&visited,&e){
+				println!("add");
+				waiting_to_visit.add(e.clone());
+			}
+		}
+
+		println!("{}",visited.len());
+
+
+		let shortest = loop{
+			let s = waiting_to_visit.remove().unwrap();
+			if !visited.contains(&Key::new(s.destination)){
+				break s;
+			}
+		};
+
+		visiting = Key::new(shortest.destination);
+
+		visited.push(visiting.clone());
+
+		minSpanTree.push(shortest);
+
+	}
+
+	for e in minSpanTree.iter(){
+		println!("Origin: {}, Destination: {}, Length:{}",e.origin,e.destination,e.length);
+	}
+
+
+	return  minSpanTree;
+}
+
+fn not_visited(visited: &Vec<Key>, edge: &&GraphEdge)-> bool{
+	for visit in visited.iter(){
+		println!("({},{})",visit.x,visit.y);
+		println!("({},{})",edge.destination.x.to_string(),edge.destination.y.to_string());
+		if visit.x == edge.destination.x.to_string() && visit.y == edge.destination.y.to_string(){
+			return false;
+		}
+	}
+	true
 }
