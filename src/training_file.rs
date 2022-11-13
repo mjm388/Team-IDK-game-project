@@ -4,6 +4,7 @@
     Harry put.
     TODO: Update the Combat State and account for player turns
 */
+//IMPORTANT: "Test2" Should be replaced with whatever folder you put this file in
 use std::collections::HashMap;
 use Test2::mdp::{Agent,State};
 use Test2::strategy::explore::RandomExplore;
