@@ -222,7 +222,7 @@ pub fn prims(poly: &Vec<Edge>) -> Vec<Edge> {
 	}
 
 	let mut count = 0;
-	while count < 3 {
+	while count < 4 {
 		match waiting_to_visit.remove(){
 			Some(e) => {
 				min_span_tree.push(e);
