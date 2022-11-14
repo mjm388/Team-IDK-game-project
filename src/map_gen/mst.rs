@@ -218,9 +218,20 @@ pub fn prims(graph: &Graph) -> Vec<GraphEdge> {
 
 	}
 
-	for e in minSpanTree.iter(){
-		println!("Origin: {}, Destination: {}, Length:{}",e.origin,e.destination,e.length);
+	let mut count = 0;
+	while count < 3 {
+		match waiting_to_visit.remove(){
+			Some(e) => {
+				minSpanTree.push(e);
+				count += 1;
+			},
+			None => break,
+		}
 	}
+
+	//for e in minSpanTree.iter(){
+	//	println!("Origin: {}, Destination: {}, Length:{}",e.origin,e.destination,e.length);
+	//}
 
 
 	return  minSpanTree;
