@@ -43,7 +43,7 @@ pub struct OverworldPlayer;
 pub struct MiniPlayer;
 
 const PLAYER_SZ: f32 = 0.5;
-const PLAYER_SPEED: f32 = 5.;
+const PLAYER_SPEED: f32 = 6.;
 
 fn setup_player(
 	mut commands: Commands,
@@ -156,20 +156,27 @@ fn move_player(
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
 
+	let player_move = PLAYER_SPEED * time.delta_seconds();
+
 	if input.pressed(KeyCode::A) {
-		x_vel -= PLAYER_SPEED * time.delta_seconds();
+		x_vel -= player_move;
 	}
 
 	if input.pressed(KeyCode::D) {
-		x_vel += PLAYER_SPEED * time.delta_seconds();
+		x_vel += player_move;
 	}
 
 	if input.pressed(KeyCode::W) {
-		y_vel += PLAYER_SPEED * time.delta_seconds();
+		y_vel += player_move;
 	}
 
 	if input.pressed(KeyCode::S) {
-		y_vel -= PLAYER_SPEED * time.delta_seconds();
+		y_vel -= player_move;
+	}
+
+	if (x_vel.abs() + y_vel.abs()) > player_move {
+		x_vel *= 0.70710678118;
+		y_vel *= 0.70710678118;
 	}
 
 	let new_pos = Vec3::new (
@@ -195,7 +202,7 @@ fn collision_check(
 	for obs_transform in collision_tile.iter() {
 		let collision = collide (
 			target_player_pos,
-			Vec2::splat(PLAYER_SZ*1.0),
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
 			obs_transform.translation,
 			Vec2::splat(TILE_SIZE),
 		);
