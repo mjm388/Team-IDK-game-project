@@ -133,7 +133,7 @@ fn create_random_room(
             })
             .insert(DoorTile)
             .insert(TileCollider);
-            // info!("Door added: {},{}", x, y);
+            info!("Door added: {},{}", x, y);
         }
         if room.id == 14 {
             commands.spawn_bundle(SpriteSheetBundle {
@@ -149,7 +149,7 @@ fn create_random_room(
                 ..default()
             })
             .insert(KeyObject);
-            // info!("Key added: {},{}", x, y);
+            info!("Key added: {},{}", x, y);
         }
     }
 }
