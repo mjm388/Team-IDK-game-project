@@ -13,8 +13,6 @@ use pathfinding::astar;
 
 use crate::{
 	GameState,
-	map_gen::mst::Graph,
-	//map_gen::mst::GraphEdge,
 };
 
 pub struct RoomGenPlugin;
@@ -57,18 +55,17 @@ fn map_generator(
     let vertices = room_generator(&mut commands);
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
+	
+    let final_polygon = prims(&final_polygon);
 
-	let g = Graph::new(final_polygon);
-    let final_polygon = prims(&g);
+	// for edge in final_polygon.iter() {
+	// 	commands.spawn()
+	// 		.insert(Edge(edge.get_origin(), edge.get_destination()));
+	// }
 
-	for edge in final_polygon.iter() {
-		commands.spawn()
-			.insert(Edge(edge.getOrigin(), edge.getDestination()));
-	}
-
-    //for edge in final_polygon.iter() {
-    //    commands.spawn()
-    //        .insert(Edge(edge.0, edge.1));
-    //}
-	//astar(&vertices, &final_polygon);
+    for edge in final_polygon.iter() {
+       commands.spawn()
+           .insert(Edge(edge.0, edge.1));
+    }
+	astar(&vertices, &final_polygon);
 }
