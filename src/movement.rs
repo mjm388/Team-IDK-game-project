@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
 	GameState,
-	room_renderer::{TILE_SIZE, TileCollider, KeyObject}, 
+	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile}, 
 	minimap::M_TILE_SIZE,
 };
 
@@ -152,6 +152,7 @@ fn move_player(
 	//windows: Res<Windows>,
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
 	key_objects: Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -196,6 +197,11 @@ fn move_player(
 				info!("Key is picked up");
 			}
 		}
+		if door_collide(new_pos, &door_objects) {
+			for _door in door_objects.iter() {
+				info!("Collided with the door");
+			}
+		}
 		player_transform.translation = new_pos;
 		m_player_transform.translation = Vec3::new(
 			m_player_transform.translation.x + x_vel * M_TILE_SIZE, 
@@ -233,6 +239,24 @@ fn key_pickup(
 			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
 			key.translation,
 			Vec2::splat(TILE_SIZE / 1.5),
+		);
+		if collision.is_some() {
+			return true;
+		}
+	}
+	false
+}
+
+fn door_collide(
+	player: Vec3,
+	doors: &Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+) -> bool {
+	for door in doors.iter() {
+		let collision = collide (
+			player,
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
+			door.translation,
+			Vec2::splat(TILE_SIZE * 1.5),
 		);
 		if collision.is_some() {
 			return true;
