@@ -1,8 +1,5 @@
 /*
-    This is meant to be used outside of Bevy, unless someone knows how to implement it.
-    This is a separate file that should be run on its own, with the mdp, strategy, and lib.rs files that
-    Harry put.
-    TODO: Update the Combat State and account for player turns
+    TODO: Use Serde to store AI
 */
 use std::collections::HashMap;
 use game::mdp::{Agent,State};
@@ -97,6 +94,22 @@ impl Agent<CombatState>for AIAgent{
     }
 
     fn act(&mut self, action: &CombatOptions){
+        let _initial_state = CombatState {
+            player_health: 20,
+            player_max_health: 20,
+            player_tp: 10,
+            player_max_tp: 10,
+            player_token: 0,
+            player_max_token: 3,
+            player_double: false,
+            enemy_health: 20,
+            enemy_max_health: 20,
+            enemy_tp: 10,
+            enemy_max_tp: 10,
+            enemy_token: 0,
+            enemy_max_token: 3,
+            enemy_double: false,
+        };
         let mut log = CombatLog{
             player_damage: 0,
             player_block: false,
@@ -409,6 +422,9 @@ impl Agent<CombatState>for AIAgent{
                     ..self.state.clone()
                 };
             }
+        }
+        if self.state.player_health <= 0 || self.state.enemy_health <= 0 {
+            self.state = _initial_state;
         }
     }
 
