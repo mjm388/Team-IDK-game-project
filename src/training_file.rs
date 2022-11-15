@@ -2,6 +2,7 @@
     TODO: Use Serde to store AI
 */
 
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 
 use game::mdp::{Agent,State};
@@ -448,7 +449,7 @@ impl Agent<CombatState>for AIAgent{
 
 
 
-fn main() {
+fn main() -> Result<(), Result<(), serde_json::Error>>{
     let initial_state = CombatState {
         player_health: 20,
         player_max_health: 20,
@@ -477,6 +478,25 @@ fn main() {
     );
 
     let writer = File::create("agent.json").unwrap();
-    serde_json::to_writer(writer, &trainer.q);
+    
+    if let _ww = serde_json::to_writer(writer, &trainer) {
+        return Err(_ww)
+    } else {
+        return Ok(())
+    }
 }
 
+impl Display for CombatState {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "player_health: {}, player_max_health: {}, player_tp: {}, player_max_tp: {}, player_token: {}, player_max_token: {}, player_double: {}, 
+        enemy_health: {}, enemy_max_health: {}, enemy_tp: {}, enemy_max_tp: {}, enemy_token: {}, enemy_max_token: {}, enemy_double: {}", 
+        self.player_health, self.player_max_health, self.player_tp, self.player_max_tp, self.player_token, self.player_max_token, self.player_double,
+        self.enemy_health, self.enemy_max_health, self.enemy_tp, self.enemy_max_tp, self.enemy_token, self.enemy_max_token, self.enemy_double)
+    }
+}
+
+impl Display for CombatOptions {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_owned())
+    }
+}

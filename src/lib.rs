@@ -1,29 +1,25 @@
 pub mod mdp;
 pub mod strategy;
 
-use std::fmt::{Display, Formatter};
-use std::{collections::HashMap, fs::File};
+use std::fmt::{Display};
+use std::{collections::HashMap};
 use mdp::{Agent, State};
-use serde::ser::{SerializeStruct, SerializeMap};
-use serde::{Serialize, Serializer, Deserialize};
+use serde::ser::{SerializeMap};
+use serde::{Serialize, Serializer};
 use strategy::explore::ExplorationStrategy;
 use strategy::learn::LearningStrategy;
 use strategy::terminate::TerminationStrategy;
-use serde_with::serde_as;
 
-#[serde_as]
-#[derive(Serialize)]
 pub struct AgentTrainer<S>
 where
-    S: State + Serialize,
+    S: State + Serialize + Display,
 {
-    #[serde_as(as = "Vec<(_, Vec<(_, _)>)>")]
     pub q: HashMap<S, HashMap<S::Act, f64>>,
 }
 
 impl<S> AgentTrainer<S>
 where
-    S: State + Serialize,
+    S: State + Serialize + Display,
 {
     pub fn new() -> AgentTrainer<S> {
         AgentTrainer { q: HashMap::new() }
@@ -84,22 +80,22 @@ where
 
 }
 
-impl<S: State + Serialize> Default for AgentTrainer<S> {
+impl<S: State + Serialize + Display> Default for AgentTrainer<S> {
     fn default() -> Self {
         Self::new()
     }
 }
 
 
-// impl <S: State> Serialize for AgentTrainer<S> {
-//     fn serialize<S1>(&self, serializer: S1) -> Result<S1::Ok, S1::Error>
-//     where
-//         S1: Serializer,
-//     {
-//         let mut map = serializer.serialize_map(Some(self.q.len()))?;
-//         for (k, v) in &self.q {
-//             map.serialize_entry(&k.to_string(), &v)?;
-//         }
-//         map.end()
-//     }
-// }
+impl<S: State + Serialize + Display> Serialize for AgentTrainer<S> {
+    fn serialize<S1>(&self, serializer: S1) -> Result<S1::Ok, S1::Error>
+    where
+        S1: Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.q.len()))?;
+        for (k, v) in &self.q {
+            map.serialize_entry(&k.to_string(), &v)?;
+        }
+        map.end()
+    }
+}
