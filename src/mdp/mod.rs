@@ -1,8 +1,10 @@
-use std::hash::Hash;
+use std::{hash::Hash, fmt::Display};
 
-pub trait State: Eq + Hash + Clone {
+use serde::Serialize;
+
+pub trait State: Eq + Hash + Clone + Serialize + Display{
     // Action type
-    type Act: Eq + Hash + Clone;
+    type Act: Eq + Hash + Clone + Serialize + Display;
     // The reward when agent reaches this state
     fn reward(&self) -> f64;
     // available actions to reach another state from here

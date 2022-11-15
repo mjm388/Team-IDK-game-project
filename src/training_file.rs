@@ -1,15 +1,21 @@
 /*
     TODO: Use Serde to store AI
 */
-use std::collections::HashMap;
+
+use std::fmt::{Display, Formatter};
+use std::fs::File;
+
 use game::mdp::{Agent,State};
 use game::strategy::explore::RandomExplore;
 use game::strategy::learn::QLearning;
 use game::strategy::terminate::GivenIteration;
 use game::AgentTrainer;
 use rand::Rng;
+use serde::{Serialize, Deserialize};
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+
+
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 struct CombatState{
     player_health: i32,
     player_max_health: i32,
@@ -27,7 +33,7 @@ struct CombatState{
 	enemy_double: bool,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 enum CombatOptions{
     Attack,
 	Charge,
@@ -82,6 +88,12 @@ impl State for CombatState{
         CombatOptions::Unleash,
     ]
    }
+
+fn random_action(&self) -> Self::Act {
+        let actions = self.action_set();
+        let action = rand::random::<usize>() % actions.len();
+        actions[action].clone()
+    }
 }
 
 struct AIAgent{
@@ -437,7 +449,7 @@ impl Agent<CombatState>for AIAgent{
 
 
 
-fn main() {
+fn main() -> Result<(), Result<(), serde_json::Error>>{
     let initial_state = CombatState {
         player_health: 20,
         player_max_health: 20,
@@ -461,8 +473,30 @@ fn main() {
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01, 2.),
-        &mut GivenIteration::new(100000000),
+        &mut GivenIteration::new(1000),
         &RandomExplore::new(),
     );
-    println!("ss");
+
+    let writer = File::create("agent.json").unwrap();
+    
+    if let _ww = serde_json::to_writer(writer, &trainer) {
+        return Err(_ww)
+    } else {
+        return Ok(())
+    }
+}
+
+impl Display for CombatState {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "player_health: {}, player_max_health: {}, player_tp: {}, player_max_tp: {}, player_token: {}, player_max_token: {}, player_double: {}, 
+        enemy_health: {}, enemy_max_health: {}, enemy_tp: {}, enemy_max_tp: {}, enemy_token: {}, enemy_max_token: {}, enemy_double: {}", 
+        self.player_health, self.player_max_health, self.player_tp, self.player_max_tp, self.player_token, self.player_max_token, self.player_double,
+        self.enemy_health, self.enemy_max_health, self.enemy_tp, self.enemy_max_tp, self.enemy_token, self.enemy_max_token, self.enemy_double)
+    }
+}
+
+impl Display for CombatOptions {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_owned())
+    }
 }
