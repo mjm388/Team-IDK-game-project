@@ -1,15 +1,20 @@
 /*
     TODO: Use Serde to store AI
 */
-use std::collections::HashMap;
+
+use std::fs::File;
+
 use game::mdp::{Agent,State};
 use game::strategy::explore::RandomExplore;
 use game::strategy::learn::QLearning;
 use game::strategy::terminate::GivenIteration;
 use game::AgentTrainer;
 use rand::Rng;
+use serde::{Serialize, Deserialize};
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+
+
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 struct CombatState{
     player_health: i32,
     player_max_health: i32,
@@ -27,7 +32,7 @@ struct CombatState{
 	enemy_double: bool,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 enum CombatOptions{
     Attack,
 	Charge,
@@ -82,6 +87,12 @@ impl State for CombatState{
         CombatOptions::Unleash,
     ]
    }
+
+fn random_action(&self) -> Self::Act {
+        let actions = self.action_set();
+        let action = rand::random::<usize>() % actions.len();
+        actions[action].clone()
+    }
 }
 
 struct AIAgent{
@@ -461,8 +472,11 @@ fn main() {
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01, 2.),
-        &mut GivenIteration::new(100000000),
+        &mut GivenIteration::new(1000),
         &RandomExplore::new(),
     );
-    println!("ss");
+
+    let writer = File::create("agent.json").unwrap();
+    serde_json::to_writer(writer, &trainer.q);
 }
+
