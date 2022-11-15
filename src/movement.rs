@@ -2,6 +2,7 @@ use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
 };
+use rand::Rng;
 
 use crate::{
 	GameState,
@@ -15,6 +16,7 @@ impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
 			.add_startup_system(setup_player)
+			.add_system(random_encounter)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
 				.with_system(move_camera)
@@ -116,6 +118,20 @@ fn remove_m_player(
 ){
 	let mut player_vis = player.single_mut();
 	player_vis.is_visible = false;
+}
+
+fn random_encounter(
+	mut game_state: ResMut<State<GameState>>,
+) {
+	if game_state.current() == &GameState::Overworld{
+		let chance = 500;
+		let mut rng = rand::thread_rng();
+		let attack = rng.gen_range::<i32,_>(1..chance);
+
+		if attack == 1 {
+			game_state.set(GameState::Combat).unwrap();
+		}
+	}
 }
 
 fn move_camera(
