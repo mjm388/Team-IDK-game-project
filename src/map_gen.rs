@@ -55,12 +55,17 @@ fn map_generator(
     let vertices = room_generator(&mut commands);
 
     let final_polygon = triangulate(&vertices);     // DELAUNAY
-
+	
     let final_polygon = prims(&final_polygon);
 
+	// for edge in final_polygon.iter() {
+	// 	commands.spawn()
+	// 		.insert(Edge(edge.get_origin(), edge.get_destination()));
+	// }
+
     for edge in final_polygon.iter() {
-        commands.spawn()
-            .insert(Edge(edge.0, edge.1));
+       commands.spawn()
+           .insert(Edge(edge.0, edge.1));
     }
 	astar(&vertices, &final_polygon);
 }

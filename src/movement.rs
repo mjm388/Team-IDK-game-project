@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
 	GameState,
-	room_renderer::{TILE_SIZE, TileCollider}, 
+	room_renderer::{TILE_SIZE, TileCollider, KeyObject}, 
 	minimap::M_TILE_SIZE,
 };
 
@@ -42,8 +42,11 @@ pub struct OverworldPlayer;
 #[derive(Component)]
 pub struct MiniPlayer;
 
+#[derive(Component)]
+pub struct HoldingKey;
+
 const PLAYER_SZ: f32 = 0.5;
-const PLAYER_SPEED: f32 = 5.;
+const PLAYER_SPEED: f32 = 6.;
 
 fn setup_player(
 	mut commands: Commands,
@@ -148,6 +151,7 @@ fn move_player(
     time: Res<Time>,
 	//windows: Res<Windows>,
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
+	key_objects: Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -156,20 +160,27 @@ fn move_player(
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
 
+	let player_move = PLAYER_SPEED * time.delta_seconds();
+
 	if input.pressed(KeyCode::A) {
-		x_vel -= PLAYER_SPEED * time.delta_seconds();
+		x_vel -= player_move;
 	}
 
 	if input.pressed(KeyCode::D) {
-		x_vel += PLAYER_SPEED * time.delta_seconds();
+		x_vel += player_move;
 	}
 
 	if input.pressed(KeyCode::W) {
-		y_vel += PLAYER_SPEED * time.delta_seconds();
+		y_vel += player_move;
 	}
 
 	if input.pressed(KeyCode::S) {
-		y_vel -= PLAYER_SPEED * time.delta_seconds();
+		y_vel -= player_move;
+	}
+
+	if (x_vel.abs() + y_vel.abs()) > player_move {
+		x_vel *= 0.70710678118;
+		y_vel *= 0.70710678118;
 	}
 
 	let new_pos = Vec3::new (
@@ -179,6 +190,12 @@ fn move_player(
 	);
 	if collision_check(new_pos, &collision_tiles)
 	{
+		if key_pickup(new_pos, &key_objects) {
+			for _key in key_objects.iter() {
+				//key.translation = new_pos;
+				info!("Key is picked up");
+			}
+		}
 		player_transform.translation = new_pos;
 		m_player_transform.translation = Vec3::new(
 			m_player_transform.translation.x + x_vel * M_TILE_SIZE, 
@@ -195,7 +212,7 @@ fn collision_check(
 	for obs_transform in collision_tile.iter() {
 		let collision = collide (
 			target_player_pos,
-			Vec2::splat(PLAYER_SZ*1.0),
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
 			obs_transform.translation,
 			Vec2::splat(TILE_SIZE),
 		);
@@ -204,4 +221,22 @@ fn collision_check(
 		}
 	}
 	true
+}
+
+fn key_pickup(
+	player: Vec3,
+	keys: &Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+) -> bool {
+	for key in keys.iter() {
+		let collision = collide (
+			player,
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
+			key.translation,
+			Vec2::splat(TILE_SIZE / 1.5),
+		);
+		if collision.is_some() {
+			return true;
+		}
+	}
+	false
 }
