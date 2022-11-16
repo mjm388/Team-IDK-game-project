@@ -17,8 +17,9 @@ impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
 			.add_startup_system(setup_player)
+			.add_startup_system(initialize_key)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
-				.with_run_criteria(FixedTimestep::step(0.5 as f64))
+				.with_run_criteria(FixedTimestep::step(2.0 as f64))
 				.with_system(random_encounter)
 			)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
@@ -49,10 +50,26 @@ pub struct OverworldPlayer;
 pub struct MiniPlayer;
 
 #[derive(Component)]
-pub struct HoldingKey;
+pub struct HoldingKey {
+    pub held: bool,
+}
+
+impl HoldingKey {
+	fn new(held: bool) -> HoldingKey {
+		HoldingKey {
+			held,
+		}
+	}
+}
 
 const PLAYER_SZ: f32 = 0.5;
 const PLAYER_SPEED: f32 = 6.;
+
+fn initialize_key(
+	mut commands: Commands,
+) {
+	commands.spawn().insert(HoldingKey::new(false));
+}
 
 fn setup_player(
 	mut commands: Commands,
@@ -128,7 +145,7 @@ fn random_encounter(
 	mut game_state: ResMut<State<GameState>>,
 ) {
 	if game_state.current() == &GameState::Overworld{
-		let chance = 60;	// Expected to get random encounter every (chance / 2) seconds (on average).
+		let chance = 20;	// Expected to get random encounter every (chance * 2) seconds (on average).
 		let mut rng = rand::thread_rng();
 		let attack = rng.gen_range::<i32,_>(1..chance);
 
@@ -173,6 +190,7 @@ fn move_player(
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
 	key_objects: Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	holding: Query<&HoldingKey>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -211,10 +229,17 @@ fn move_player(
 	);
 	if collision_check(new_pos, &collision_tiles)
 	{
-		if key_pickup(new_pos, &key_objects) {
-			for _key in key_objects.iter() {
-				//key.translation = new_pos;
-				info!("Key is picked up");
+		for _item in holding.iter() {
+			if _item.held == false {
+				if key_pickup(new_pos, &key_objects) {
+					info!("Key is picked up");
+					//_item.held = true;
+				}
+			}
+			if _item.held == true {
+				for _key in key_objects.iter() {
+					//_key.translation = new_pos;
+				}
 			}
 		}
 		if door_collide(new_pos, &door_objects) {
