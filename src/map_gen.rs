@@ -9,7 +9,7 @@ pub(crate) mod pathfinding;
 use room_gen::room_generator;
 use delaunay::triangulate;
 use mst::prims;
-use pathfinding::astar;
+use pathfinding::hallway;
 
 use crate::{
 	GameState,
@@ -52,9 +52,9 @@ pub struct Edge (pub Vec2, pub Vec2);
 fn map_generator(
     mut commands: Commands,
 ) {
-    let vertices = room_generator(&mut commands);
+    let (centers, sizes) = room_generator(&mut commands);
 
-    let final_polygon = triangulate(&vertices);     // DELAUNAY
+    let final_polygon = triangulate(&centers);     // DELAUNAY
 	
     let final_polygon = prims(&final_polygon);
 
@@ -67,5 +67,6 @@ fn map_generator(
        commands.spawn()
            .insert(Edge(edge.0, edge.1));
     }
-	astar(&vertices, &final_polygon);
+
+	hallway(&centers, &sizes, &final_polygon);
 }
