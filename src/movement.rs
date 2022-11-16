@@ -1,6 +1,7 @@
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
+	time::FixedTimestep,
 };
 use rand::Rng;
 
@@ -16,7 +17,10 @@ impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
 			.add_startup_system(setup_player)
-			.add_system(random_encounter)
+			.add_system_set(SystemSet::on_update(GameState::Overworld)
+				.with_run_criteria(FixedTimestep::step(0.16 as f64))
+				.with_system(random_encounter)
+			)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
 				.with_system(move_camera)
@@ -124,7 +128,7 @@ fn random_encounter(
 	mut game_state: ResMut<State<GameState>>,
 ) {
 	if game_state.current() == &GameState::Overworld{
-		let chance = 500;
+		let chance = 300;
 		let mut rng = rand::thread_rng();
 		let attack = rng.gen_range::<i32,_>(1..chance);
 
