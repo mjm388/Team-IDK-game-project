@@ -38,7 +38,7 @@ pub fn hallway (centers: &Vec<Vec2>, sizes: &Vec<Vec2>, edges: &Vec<Edge>) {
 
 	astar(&mut graph, &door_pairs);
 
-	print_graph(&graph);
+	//print_graph(&graph);
 }
 
 fn astar(graph: &mut Vec<Vec<i32>>, door_pairs: &Vec<(Ind, Ind)>) {
@@ -146,7 +146,7 @@ fn coord_to_ind(coord: Vec2) -> Ind {
 	return Ind(x,y)
 }
 
-fn print_graph (graph: &Vec<Vec<i32>>) {
+fn _print_graph (graph: &Vec<Vec<i32>>) {
 	for y in 0..graph.len(){
 		for x in 0..graph[0].len() {
 			print!("{}", graph[x][graph.len()-y-1]);
