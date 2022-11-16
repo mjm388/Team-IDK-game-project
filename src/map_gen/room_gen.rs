@@ -7,17 +7,17 @@ use bevy::{
 use super::Room;
 
 // Create bounds on where to put in window
-const X_BOUND: f32 = 50.;
-const Y_BOUND: f32 = 50.;
+pub const X_BOUND: f32 = 50.;
+pub const Y_BOUND: f32 = 50.;
 
 // Create bounds on size of room
 const SIZE_LOWER_BOUND: f32 = 3.;  //7
-const SIZE_UPPER_BOUND: f32 = 7.;  //15
+pub const SIZE_UPPER_BOUND: f32 = 7.;  //15
 
 pub const NUM_OF_ROOMS: i32 = 15;
 const ROOM_BUFFER_SPACE: f32 = 10.;
 
-pub fn room_generator(commands: &mut Commands) -> Vec<Vec2> {
+pub fn room_generator(commands: &mut Commands) -> (Vec<Vec2>, Vec<Vec2>) {
     let mut rng = rand::thread_rng();
 
     let mut centers = Vec::new();
@@ -60,7 +60,7 @@ pub fn room_generator(commands: &mut Commands) -> Vec<Vec2> {
         }
     }
     // to Vec2 for delauay and bresenhams
-    return centers.iter().map(|c| Vec2::new(c.x, c.y)).collect(); 
+    return (centers.iter().map(|c| Vec2::new(c.x, c.y)).collect(), sizes); 
 }
 
 pub fn overlap(
