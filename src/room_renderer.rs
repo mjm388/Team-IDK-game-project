@@ -158,6 +158,8 @@ fn derender_all_rooms(
 	mut commands: Commands,
 	mut floors: Query<Entity, With<FloorTile>>,
 	mut walls: Query<Entity, With<WallTile>>,
+    mut doors: Query<Entity, With<DoorTile>>,
+    mut keys: Query<Entity, With<KeyObject>>,
 ){
 	for e in floors.iter_mut(){
 		commands.entity(e).despawn_recursive();
@@ -165,4 +167,10 @@ fn derender_all_rooms(
 	for e in walls.iter_mut(){
 		commands.entity(e).despawn_recursive();
 	}
+    for e in doors.iter_mut(){
+        commands.entity(e).despawn_recursive();
+    }
+    for e in keys.iter_mut(){
+        commands.entity(e).despawn_recursive();
+    }
 }
