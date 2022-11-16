@@ -71,7 +71,15 @@ impl State for CombatState{
 
     fn reward(&self) -> f64{
         //TODO: Put correct reward
-        let d = (self.player_max_health-self.player_health)*15-(self.enemy_max_health-self.enemy_health)*5+(self.enemy_token-self.player_token)-(self.enemy_max_tp-self.enemy_tp);
+        let mut p_health = self.player_health;
+        let mut e_health = self.enemy_health;
+        if self.player_health <= 0{
+            p_health = 0;
+        }
+        if self.enemy_health <= 0{
+            e_health = 0;
+        }
+        let d = (self.player_max_health-p_health)*15-(self.enemy_max_health-e_health)*5+(self.enemy_token-self.player_token)-(self.enemy_max_tp-self.enemy_tp);
         d.into()
     }
 
