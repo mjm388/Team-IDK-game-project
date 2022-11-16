@@ -11,6 +11,8 @@ mod minimap;
 mod movement;
 mod map_gen;
 mod room_renderer;
+mod start_menu;
+
 
 use credits::CreditsPlugin;
 use combat::CombatPlugin;
@@ -18,6 +20,8 @@ use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
+use start_menu::MainMenuPlugin;
+
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
@@ -25,7 +29,9 @@ pub enum GameState{
 	Combat,
 	Credits,
 	Map,
+	StartMenu,
 }
+
 
 #[derive(Component)]
 struct Camera;
@@ -40,10 +46,12 @@ fn main() {
 			present_mode: PresentMode::Fifo,
 			..default()
 		})
-		.add_state(GameState::Overworld)
+		.add_state(GameState::StartMenu)//change the state from overworld to startstate to test the start menu
+		//.add_state(GameState::Overworld)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
 		.add_system(change_state)
+		.add_plugin(MainMenuPlugin)
 		.add_plugin(RoomGenPlugin)
 		.add_plugin(RoomRendPlugin)
 		.add_plugin(CreditsPlugin)
@@ -54,8 +62,11 @@ fn main() {
 
 	}
 
+	
+
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
+	
 	commands.spawn_bundle(Camera2dBundle{
 		transform: Transform {
 			translation: Vec3::new(-360., 0., 100.),
@@ -95,6 +106,14 @@ fn change_state(
 			input.reset(KeyCode::M);
 			game_state.set(GameState::Overworld).unwrap();
 		}
+		/*if input.just_pressed(KeyCode::G) && game_state.current() != &GameState::StartMenu{
+			input.reset(KeyCode::G);
+			game_state.set(GameState::StartMenu).unwrap();
+		}*/
+		if input.just_pressed(KeyCode::G) && game_state.current() == &GameState::StartMenu{
+			input.reset(KeyCode::G);
+			game_state.set(GameState::Overworld).unwrap();
+		} 
 	}
 
 }
