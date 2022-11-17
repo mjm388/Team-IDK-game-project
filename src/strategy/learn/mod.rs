@@ -10,5 +10,6 @@ pub trait LearningStrategy<S: State> {
         current_value: &Option<&f64>,
         reward: f64,
         init_reward: f64,
+        reset: bool,
     ) -> f64;
 }
