@@ -71,7 +71,15 @@ impl State for CombatState{
 
     fn reward(&self) -> f64{
         //TODO: Put correct reward
-        let d = (self.player_max_health-self.player_health)*15-(self.enemy_max_health-self.enemy_health)*5+(self.enemy_token-self.player_token)-(self.enemy_max_tp-self.enemy_tp);
+        let d = (self.enemy_token-self.player_token)-(self.enemy_max_tp-self.enemy_tp) +
+        if self.player_health<0 
+        {self.player_max_health*15 -
+            if self.enemy_health<0 {self.enemy_max_health*5} 
+            else {(self.enemy_max_health-self.enemy_health)*5}} 
+        else {(self.player_max_health-self.player_health)*15 - 
+            if self.enemy_health<0 {self.enemy_max_health*5} 
+            else {(self.enemy_max_health-self.enemy_health)*5}
+        }; 
         d.into()
     }
 
@@ -105,7 +113,7 @@ impl Agent<CombatState>for AIAgent{
         &self.state
     }
 
-    fn act(&mut self, action: &CombatOptions){
+    fn act(&mut self, action: &CombatOptions) -> f64{
         let _initial_state = CombatState {
             player_health: 20,
             player_max_health: 20,
@@ -435,9 +443,11 @@ impl Agent<CombatState>for AIAgent{
                 };
             }
         }
+        let reward = self.state.reward();
         if self.state.player_health <= 0 || self.state.enemy_health <= 0 {
             self.state = _initial_state;
         }
+        reward
     }
 
     fn random_act(&mut self) -> <CombatState as State>::Act {
@@ -475,12 +485,13 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         &QLearning::new(0.2, 0.01, 2.),
         &mut GivenIteration::new(1000),
         &RandomExplore::new(),
+        &initial_state,
     );
 
     let writer = File::create("agent.json").unwrap();
     
     if let _ww = serde_json::to_writer(writer, &trainer) {
-        return Err(_ww)
+        return Ok(())
     } else {
         return Ok(())
     }

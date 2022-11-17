@@ -52,18 +52,20 @@ where
         learning_strategy: &dyn LearningStrategy<S>,
         termination_strategy: &mut dyn TerminationStrategy<S>,
         exploration_strategy: &dyn ExplorationStrategy<S>,
+        init_state: &S,
     ) {
         loop {
             let s_t = agent.current_state().clone();
+            let r_t = agent.current_state().reward();
             let action = exploration_strategy.act(agent);
-
+            agent.act(&action);
             // current action value
             let s_t_next = agent.current_state();
             let r_t_next = s_t_next.reward();
 
             let v = {
                 let old_value = self.q.get(&s_t).and_then(|m| m.get(&action));
-                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next)
+                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next, r_t)
             };
 
             self.q
@@ -74,6 +76,7 @@ where
             if termination_strategy.should_stop(s_t_next) {
                 break;
             }
+
         }
     }
 
