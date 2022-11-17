@@ -525,7 +525,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01),
-        &mut GivenIteration::new(1000),
+        &mut GivenIteration::new(100000000),
         &RandomExplore::new(),
         &initial_state,
     );
@@ -538,10 +538,9 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
 
 impl Display for CombatState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "player_health: {}, player_max_health: {}, player_tp: {}, player_max_tp: {}, player_token: {}, player_max_token: {}, player_double: {}, 
-        enemy_health: {}, enemy_max_health: {}, enemy_tp: {}, enemy_max_tp: {}, enemy_token: {}, enemy_max_token: {}, enemy_double: {}", 
-        self.player_health, self.player_max_health, self.player_tp, self.player_max_tp, self.player_token, self.player_max_token, self.player_double,
-        self.enemy_health, self.enemy_max_health, self.enemy_tp, self.enemy_max_tp, self.enemy_token, self.enemy_max_token, self.enemy_double)
+        write!(f, "player_health: {}, player_tp: {},  player_token: {},  player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
+        self.player_health, self.player_tp, self.player_token, self.player_double,
+        self.enemy_health, self.enemy_tp, self.enemy_token, self.enemy_double)
     }
 }
 
