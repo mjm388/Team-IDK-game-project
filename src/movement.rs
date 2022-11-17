@@ -188,13 +188,15 @@ fn move_player(
     time: Res<Time>,
 	//windows: Res<Windows>,
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
-	key_objects: Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
-	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
-	holding: Query<&HoldingKey>,
+	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
+	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
+	mut holding: Query<&mut HoldingKey>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
 	let mut m_player_transform = m_player.single_mut();
+	let mut key_transform = key_objects.single_mut();
+	let mut holding_transform = holding.single_mut();
 
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
@@ -229,18 +231,20 @@ fn move_player(
 	);
 	if collision_check(new_pos, &collision_tiles)
 	{
-		for _item in holding.iter() {
-			if _item.held == false {
-				if key_pickup(new_pos, &key_objects) {
-					info!("Key is picked up");
-					//_item.held = true;
-				}
+		if holding_transform.held == false {
+			let collision = collide (
+				new_pos,
+				Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
+				key_transform.translation,
+				Vec2::splat(TILE_SIZE),
+			);
+			if collision.is_some() {
+				info!("Key is picked up");
+				holding_transform.held = true;
 			}
-			if _item.held == true {
-				for _key in key_objects.iter() {
-					//_key.translation = new_pos;
-				}
-			}
+		}
+		if holding_transform.held == true {
+			key_transform.translation = new_pos;
 		}
 		if door_collide(new_pos, &door_objects) {
 			for _door in door_objects.iter() {
@@ -274,27 +278,10 @@ fn collision_check(
 	true
 }
 
-fn key_pickup(
-	player: Vec3,
-	keys: &Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
-) -> bool {
-	for key in keys.iter() {
-		let collision = collide (
-			player,
-			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
-			key.translation,
-			Vec2::splat(TILE_SIZE / 1.5),
-		);
-		if collision.is_some() {
-			return true;
-		}
-	}
-	false
-}
 
 fn door_collide(
 	player: Vec3,
-	doors: &Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	doors: &Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 ) -> bool {
 	for door in doors.iter() {
 		let collision = collide (
