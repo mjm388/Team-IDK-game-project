@@ -1,7 +1,9 @@
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
+	time::FixedTimestep,
 };
+use rand::Rng;
 
 use crate::{
 	GameState,
@@ -15,6 +17,11 @@ impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
 			.add_startup_system(setup_player)
+			.add_startup_system(initialize_key)
+			.add_system_set(SystemSet::on_update(GameState::Overworld)
+				.with_run_criteria(FixedTimestep::step(2.0 as f64))
+				.with_system(random_encounter)
+			)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
 				.with_system(move_camera)
@@ -43,10 +50,26 @@ pub struct OverworldPlayer;
 pub struct MiniPlayer;
 
 #[derive(Component)]
-pub struct HoldingKey;
+pub struct HoldingKey {
+    pub held: bool,
+}
+
+impl HoldingKey {
+	fn new(held: bool) -> HoldingKey {
+		HoldingKey {
+			held,
+		}
+	}
+}
 
 const PLAYER_SZ: f32 = 0.5;
 const PLAYER_SPEED: f32 = 6.;
+
+fn initialize_key(
+	mut commands: Commands,
+) {
+	commands.spawn().insert(HoldingKey::new(false));
+}
 
 fn setup_player(
 	mut commands: Commands,
@@ -118,6 +141,20 @@ fn remove_m_player(
 	player_vis.is_visible = false;
 }
 
+fn random_encounter(
+	mut game_state: ResMut<State<GameState>>,
+) {
+	if game_state.current() == &GameState::Overworld{
+		let chance = 20;	// Expected to get random encounter every (chance * 2) seconds (on average).
+		let mut rng = rand::thread_rng();
+		let attack = rng.gen_range::<i32,_>(1..chance);
+
+		if attack == 1 {
+			game_state.set(GameState::Combat).unwrap();
+		}
+	}
+}
+
 fn move_camera(
 	player: Query<&Transform, With<OverworldPlayer>>,
 	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
@@ -151,12 +188,15 @@ fn move_player(
     time: Res<Time>,
 	//windows: Res<Windows>,
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
-	key_objects: Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
-	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
+	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
+	mut holding: Query<&mut HoldingKey>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
 	let mut m_player_transform = m_player.single_mut();
+	let mut key_transform = key_objects.single_mut();
+	let mut holding_transform = holding.single_mut();
 
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
@@ -191,15 +231,24 @@ fn move_player(
 	);
 	if collision_check(new_pos, &collision_tiles)
 	{
-		if key_pickup(new_pos, &key_objects) {
-			for _key in key_objects.iter() {
-				//key.translation = new_pos;
+		if holding_transform.held == false {
+			let collision = collide (
+				new_pos,
+				Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
+				key_transform.translation,
+				Vec2::splat(TILE_SIZE),
+			);
+			if collision.is_some() {
 				info!("Key is picked up");
+				holding_transform.held = true;
 			}
 		}
-		if door_collide(new_pos, &door_objects) {
-			for _door in door_objects.iter() {
-				info!("Collided with the door");
+		if holding_transform.held == true {
+			key_transform.translation = new_pos;
+			if door_collide(new_pos, &door_objects) {
+				for _door in door_objects.iter() {
+					info!("Collided with the door while holding key");
+				}
 			}
 		}
 		player_transform.translation = new_pos;
@@ -229,27 +278,10 @@ fn collision_check(
 	true
 }
 
-fn key_pickup(
-	player: Vec3,
-	keys: &Query<&Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
-) -> bool {
-	for key in keys.iter() {
-		let collision = collide (
-			player,
-			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
-			key.translation,
-			Vec2::splat(TILE_SIZE / 1.5),
-		);
-		if collision.is_some() {
-			return true;
-		}
-	}
-	false
-}
 
 fn door_collide(
 	player: Vec3,
-	doors: &Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	doors: &Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 ) -> bool {
 	for door in doors.iter() {
 		let collision = collide (
