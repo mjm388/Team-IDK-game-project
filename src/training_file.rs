@@ -362,7 +362,6 @@ impl Agent<CombatState>for AIAgent{
                 }
             },
         }
-
         // apply state changes
         if log.valid {
             if log.enemy_damage < log.player_damage {
@@ -451,9 +450,52 @@ impl Agent<CombatState>for AIAgent{
     }
 
     fn random_act(&mut self) -> <CombatState as State>::Act {
+        let mut valid = false;
         let action = self.current_state().random_action();
-        self.act(&action);
-        action
+        match action {
+            CombatOptions::Attack =>{
+                valid = true;
+            },
+            CombatOptions::Charge =>{
+                if self.state.enemy_tp >= if self.state.enemy_double {8} else {4}{
+                    valid = true;
+                }
+            },
+            CombatOptions::Recover =>{
+                valid = true;
+            },
+            CombatOptions::Heal =>{
+                if self.state.enemy_tp >= if self.state.enemy_double {4} else {2} {
+                    valid = true;
+                }
+            },
+            CombatOptions::Guard =>{
+                if self.state.enemy_tp >= 6{
+                    valid = true;
+                }
+            },
+            CombatOptions::AntiMage =>{
+                if self.state.enemy_tp >= if self.state.enemy_double {2} else {1} {
+                    valid = true;
+                }
+            },
+            CombatOptions::Double =>{
+                if self.state.enemy_tp >= 1 {
+                    valid = true;
+                }
+            },
+            CombatOptions::Block =>{
+                if self.state.enemy_tp >= 2 {
+                    valid = true;
+                }
+            },
+            CombatOptions::Unleash =>{
+                if self.state.enemy_token != 0 {
+                    valid = true;
+                }
+            },
+        }
+        if valid {action} else {self.random_act()}
     }
 }
 
@@ -482,7 +524,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     };
     trainer.train(
         &mut agent,
-        &QLearning::new(0.2, 0.01, 2.),
+        &QLearning::new(0.2, 0.01),
         &mut GivenIteration::new(1000),
         &RandomExplore::new(),
         &initial_state,
@@ -490,11 +532,8 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
 
     let writer = File::create("agent.json").unwrap();
     
-    if let _ww = serde_json::to_writer(writer, &trainer) {
-        return Ok(())
-    } else {
-        return Ok(())
-    }
+    let _ww = serde_json::to_writer(writer, &trainer); 
+    return Ok(())
 }
 
 impl Display for CombatState {
