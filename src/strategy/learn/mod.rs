@@ -9,5 +9,7 @@ pub trait LearningStrategy<S: State> {
         new_action_values: &Option<&HashMap<S::Act, f64>>,
         current_value: &Option<&f64>,
         reward: f64,
+        init_reward: f64,
+        reset: bool,
     ) -> f64;
 }

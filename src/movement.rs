@@ -245,10 +245,10 @@ fn move_player(
 		}
 		if holding_transform.held == true {
 			key_transform.translation = new_pos;
-		}
-		if door_collide(new_pos, &door_objects) {
-			for _door in door_objects.iter() {
-				info!("Collided with the door");
+			if door_collide(new_pos, &door_objects) {
+				for _door in door_objects.iter() {
+					info!("Collided with the door while holding key");
+				}
 			}
 		}
 		player_transform.translation = new_pos;

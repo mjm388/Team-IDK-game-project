@@ -131,8 +131,7 @@ fn create_random_room(
                 },
                 ..default()
             })
-            .insert(DoorTile)
-            .insert(TileCollider);
+            .insert(DoorTile);
             info!("Door added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
         if room.id == 14 {

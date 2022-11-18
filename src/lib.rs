@@ -52,28 +52,31 @@ where
         learning_strategy: &dyn LearningStrategy<S>,
         termination_strategy: &mut dyn TerminationStrategy<S>,
         exploration_strategy: &dyn ExplorationStrategy<S>,
+        init_state: &S,
     ) {
         loop {
             let s_t = agent.current_state().clone();
+            let r_t = agent.current_state().reward();
             let action = exploration_strategy.act(agent);
-
+            let r_t_next = agent.act(&action);
             // current action value
             let s_t_next = agent.current_state();
-            let r_t_next = s_t_next.reward();
+
+            let reset = s_t_next == init_state;
 
             let v = {
                 let old_value = self.q.get(&s_t).and_then(|m| m.get(&action));
-                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next)
+                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next, r_t, reset)
             };
-
             self.q
                 .entry(s_t)
                 .or_insert_with(HashMap::new)
                 .insert(action, v);
-
+            
             if termination_strategy.should_stop(s_t_next) {
                 break;
             }
+
         }
     }
 
