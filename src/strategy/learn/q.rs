@@ -29,7 +29,7 @@ impl<S: State> LearningStrategy<S> for QLearning {
         // estimation of max future value
         // the init_reward is used when the state is reset or does not have an existing reward for the next state
         let max_next = 
-            if reset {&reward} 
+            if reset {0} 
             else { 
                 new_action_values
                 .and_then(|m| m.values().max_by(|a, b| a.partial_cmp(b).unwrap()))
