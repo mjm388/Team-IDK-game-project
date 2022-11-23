@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use bevy::{
 	prelude::*,
 };
@@ -11,7 +9,7 @@ use crate::{
 pub(crate) mod combat_buttons;
 pub(crate) mod combat_sprites;
 pub(crate) mod combat_structs;
-pub(crate) mod combat_ai;
+
 
 use combat_buttons::*;
 
@@ -75,11 +73,6 @@ pub struct Enemy;
 #[derive(Component)]
 pub struct Background;
 
-#[derive(Component)]
-pub struct CombatAgent{
-	pub(crate) q: HashMap<String, HashMap<String, f64>>
-}
-
 fn spawn_combat_background(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -108,7 +101,7 @@ fn set_combat(
 	mut commands: Commands,
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
-){	
+){
 	spawn_combat_background(&mut commands, &asset_server, &mut texture_atlases);
 	let enemy_translation = Vec3::new(-50., 100., 900.);
 	let enemy = EnemyType::Square;

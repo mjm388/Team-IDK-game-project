@@ -21,8 +21,4 @@ pub struct CombatStats {
 pub struct CombatLog {
 	pub player_damage: isize,
 	pub enemy_damage: isize,
-	pub player_tp_change: isize,
-	pub player_health_change: isize,
-	pub enemy_tp_change: isize,
-	pub enemy_health_change: isize,
 }

@@ -1,7 +1,7 @@
 pub mod mdp;
 pub mod strategy;
 
-use std::fmt::Display;
+use std::fmt::{Display};
 use std::{collections::HashMap};
 use mdp::{Agent, State};
 use serde::ser::{SerializeMap};
@@ -56,6 +56,7 @@ where
     ) {
         loop {
             let s_t = agent.current_state().clone();
+            let r_t = agent.current_state().reward();
             let action = exploration_strategy.act(agent);
             let r_t_next = agent.act(&action);
             // current action value
@@ -65,7 +66,7 @@ where
 
             let v = {
                 let old_value = self.q.get(&s_t).and_then(|m| m.get(&action));
-                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next, reset)
+                learning_strategy.value(&self.q.get(s_t_next), &old_value, r_t_next, r_t, reset)
             };
             self.q
                 .entry(s_t)
@@ -101,48 +102,3 @@ impl<S: State + Serialize + Display> Serialize for AgentTrainer<S> {
         map.end()
     }
 }
-
-// impl<'de, S: State + Serialize + Display> Deserialize<'de> for AgentTrainer<S> {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de>, 
-//     {
-//         struct ConnectorTopicsVisitor;
-
-//         impl<'de> Visitor<'de> for ConnectorTopicsVisitor {
-//             type Value = AgentTrainer<State + Serialize + Display>;
-
-//             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-//                 formatter.write_str("ConnectorTopics")
-//             }
-
-//             fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
-//             where
-//                 V: MapAccess<'de>,
-//             {
-//                 if let Some(key) = map.next_key()? {
-//                     let value: Inner = map.next_value()?;
-//                     if let Some(_) = map.next_key::<&str>()? {
-//                         Err(Error::duplicate_field("name"))
-//                     } else {
-//                         Ok(Self::Value {
-//                             name: key,
-//                             topics: value.topics,
-//                         })
-//                     }
-//                 } else {
-//                     Err(Error::missing_field("name"))
-//                 }
-//             }
-//         }
-
-//         deserializer.deserialize_map(ConnectorTopicsVisitor {})
-//     }
-// }
-
-// #[derive(Debug, Deserialize)]
-// struct Inner<S>
-// where
-//     S: State + Serialize + Display, {
-//     q_values: HashMap<S::Act, f64>,
-// }
