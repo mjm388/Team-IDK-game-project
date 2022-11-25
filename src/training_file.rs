@@ -254,7 +254,7 @@ impl Agent<CombatState>for AIAgent{
 
                             3 => {
                                 log.player_damage = 10;
-                                log.player_hp_change = 50;
+                                log.player_hp_change = 20;
                                 log.player_use_token = true;
                                 log.player_move = 11;
                                 valid_move = true;
@@ -538,7 +538,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
 
 impl Display for CombatState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "player_health: {}, player_tp: {},  player_token: {},  player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
+        write!(f, "player_health: {}, player_tp: {}, player_token: {}, player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
         self.player_health, self.player_tp, self.player_token, self.player_double,
         self.enemy_health, self.enemy_tp, self.enemy_token, self.enemy_double)
     }
