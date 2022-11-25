@@ -6,10 +6,12 @@ pub(crate) mod room_gen;
 pub(crate) mod delaunay;
 pub(crate) mod mst;
 pub(crate) mod pathfinding;
+pub(crate) mod random_objs;
 use room_gen::room_generator;
 use delaunay::triangulate;
 use mst::prims;
 use pathfinding::hallway;
+use random_objs::place_objects;
 
 use crate::{
 	GameState,
@@ -69,4 +71,6 @@ fn map_generator(
     }
 
 	hallway(&centers, &sizes, &final_polygon);
+
+	place_objects(&centers,&sizes,&mut commands);
 }

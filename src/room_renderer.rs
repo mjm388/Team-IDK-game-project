@@ -3,6 +3,8 @@ use bevy::prelude::*;
 use crate::{
 	GameState,
     map_gen::Room,
+    map_gen::random_objs::Decor,
+    map_gen::random_objs::DecorType,
 };
 
 pub const TILE_SIZE: f32 = 40.;
@@ -22,6 +24,9 @@ pub struct KeyObject;
 #[derive(Component)]
 pub struct DoorTile;
 
+#[derive(Component)]
+pub struct DecorTile;
+
 pub struct RoomRendPlugin;
 
 impl Plugin for RoomRendPlugin {
@@ -31,6 +36,7 @@ impl Plugin for RoomRendPlugin {
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
             .with_system(create_random_room)
+            .with_system(render_objects)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
 			.with_system(derender_all_rooms)
@@ -67,6 +73,7 @@ fn create_random_room(
         let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
         let y = (room.center.y-(room.size.y-1.)/2.) * TILE_SIZE;
         let z = 0.;
+        println!("Room {},{}", x, y);
         
         let x_size = room.size.x as usize;
         let y_size = room.size.y as usize;
@@ -153,12 +160,145 @@ fn create_random_room(
     }
 }
 
+fn render_objects(
+    mut commands: Commands,
+    mut decor: Query<&Decor, With<Decor>>,
+){
+    for d in decor.iter_mut(){
+        //render decor based on type
+        match d.decor_type{
+            //statue
+            DecorType::Statue => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::GRAY,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+            //plant
+	        DecorType::Plant => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::DARK_GREEN,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 100.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+                println!("{},{}",d.location.x,d.location.y);
+            },
+            //sofa
+	        DecorType::Sofa => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::PURPLE,
+				        custom_size: Some(Vec2::new(TILE_SIZE*2.0, TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+            //chair
+	        DecorType::Chair => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::TEAL,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+            //lamp
+	        DecorType::Lamp => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::GOLD,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+            //lamp
+	        DecorType::Pillar => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::BLACK,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+        }
+    }
+}
+
 fn derender_all_rooms(
 	mut commands: Commands,
 	mut floors: Query<Entity, With<FloorTile>>,
 	mut walls: Query<Entity, With<WallTile>>,
     mut doors: Query<Entity, With<DoorTile>>,
     mut keys: Query<Entity, With<KeyObject>>,
+    mut decor: Query<Entity, With<DecorTile>>,
 ){
 	for e in floors.iter_mut(){
 		commands.entity(e).despawn_recursive();
@@ -171,5 +311,8 @@ fn derender_all_rooms(
     }
     for e in keys.iter_mut(){
         commands.entity(e).despawn_recursive();
+    }
+    for d in decor.iter_mut(){
+        commands.entity(d).despawn_recursive();
     }
 }
