@@ -15,7 +15,7 @@ mod start_menu;
 
 
 use credits::CreditsPlugin;
-use combat::CombatPlugin;
+use combat::{CombatPlugin, CombatAgent, combat_ai::read_in};
 use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
@@ -74,6 +74,9 @@ fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 		},
 		..default()
 	}).insert(Camera);
+	let qtable = CombatAgent{q: read_in().expect("not correct")};	
+	commands.spawn()
+	.insert(qtable);
 }
 
 fn change_state(
