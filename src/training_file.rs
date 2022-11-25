@@ -1,6 +1,7 @@
 /*
-    Note: Was accidently deleted my mjm388, pasted back
+    TODO: Use Serde to store AI
 */
+
 use std::fmt::{Display, Formatter};
 use std::fs::File;
 
@@ -147,7 +148,7 @@ impl Agent<CombatState>for AIAgent{
             enemy_hp_change: 0,
             valid: false,
         };
-
+        
         // randomly assumes the player's move
         let mut rng = rand::thread_rng();
         let mut player_move = rng.gen_range(1..9);
@@ -161,7 +162,7 @@ impl Agent<CombatState>for AIAgent{
                     log.player_move = 1;
                     valid_move = true;
                 }
-
+                
                 // charge
                 2 => {
                     if self.state.player_tp >= if self.state.player_double {8} else {4} {
@@ -530,7 +531,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     );
 
     let writer = File::create("agent.json").unwrap();
-
+    
     let _ww = serde_json::to_writer(writer, &trainer); 
     return Ok(())
 }
