@@ -76,7 +76,7 @@ pub fn button_system(
 						}
 						CombatOptions::Charge => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 3 dmg,\nbut costs 4 TP".to_string();
+							text.sections[0].value = "Does 6 dmg,\nbut costs 4 TP".to_string();
 						}
 						CombatOptions::Recover => {
 							text.sections[0].style.font_size = 20.0;
@@ -88,7 +88,7 @@ pub fn button_system(
 						}
 						CombatOptions::Guard => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Invincible, reflect\n 2x dmg back,\ncosts 6 TP".to_string();
+							text.sections[0].value = "Invincible, deal\n2x damage taken,\ncosts 6 TP".to_string();
 						}
 						CombatOptions::AntiMage => {
 							text.sections[0].style.font_size = 20.0;
@@ -96,7 +96,7 @@ pub fn button_system(
 						}
 						CombatOptions::Double => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Double dmg on\nnext turn and 2x\n increase TP cost,\ncosts 1 TP".to_string();
+							text.sections[0].value = "Double dmg on\nnext turn and 1.5x\n increase TP cost,\ncosts 1 TP".to_string();
 						}
 						CombatOptions::Block => {
 							text.sections[0].style.font_size = 20.0;
