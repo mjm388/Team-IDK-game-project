@@ -1,13 +1,11 @@
 use bevy::{
 	prelude::*,
 };
-use rand::Rng;
 
-use super::{CombatOptions, CombatStats, Enemy, CombatLog};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent};
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
 
 pub fn spawn_combat_buttons(
 	commands: &mut Commands,
@@ -57,10 +55,10 @@ pub fn despawn_button(mut commands: Commands, button_query: Query<Entity, With<C
 }
 
 pub fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
+    mut interaction_query: Query<(&Interaction, &mut UiColor),(Changed<Interaction>, With<Button>)>,
+	button_query: Query<(&Interaction, &CombatOptions, &Children), (Changed<Interaction>, With<Button>)>,
+	mut text_query: Query<&mut Text>,
+	player_query: Query<&CombatStats, With<Player>>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
@@ -69,9 +67,108 @@ pub fn button_system(
             }
             Interaction::Hovered => {
 				*color = COMBAT_BUTTON.into();
+				for (_interaction, button, children) in button_query.iter(){
+					let mut text = text_query.get_mut(children[0]).unwrap();
+					match button{
+						CombatOptions::Attack => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 1 dmg".to_string();
+						}
+						CombatOptions::Charge => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 3 dmg,\nbut costs 4 TP".to_string();
+						}
+						CombatOptions::Recover => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Recover 4 TP".to_string();
+						}
+						CombatOptions::Heal => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Heal 4HP,\nbut costs 2 TP".to_string();
+						}
+						CombatOptions::Guard => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Invincible, reflect\n 2x dmg back,\ncosts 6 TP".to_string();
+						}
+						CombatOptions::AntiMage => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 1 dmg and\nsubtracts\n2TP from enemy,\ncosts 1 TP".to_string();
+						}
+						CombatOptions::Double => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Double dmg on\nnext turn and 2x\n increase TP cost,\ncosts 1 TP".to_string();
+						}
+						CombatOptions::Block => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "0.5x dmg taken\nprevent token\ngeneration,\ncosts 2TP".to_string();
+						}
+						CombatOptions::Unleash => {
+							let player_stats = player_query.single();
+							match player_stats.token{
+								1 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 2 dmg,\nreceive 1 TP".to_string();
+								}
+								2 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 6 dmg,\ntake 1 TP\nfrom enemy".to_string();
+								}
+								3 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 10 dmg,\nrecover full TP".to_string();
+								}
+								_ => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "No tokens!".to_string();
+								}
+							}
+						}
+					}
+				}
             }
             Interaction::None => {
 				*color = COMBAT_BUTTON.into();
+				for (_interaction, button, children) in button_query.iter(){
+					let mut text = text_query.get_mut(children[0]).unwrap();
+					match button{
+						CombatOptions::Attack => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Attack".to_string();
+						}
+						CombatOptions::Charge => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Charge".to_string();
+						}
+						CombatOptions::Recover => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Recover".to_string();
+						}
+						CombatOptions::Heal => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Heal".to_string();
+						}
+						CombatOptions::Guard => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Guard".to_string();
+						}
+						CombatOptions::AntiMage => {
+							text.sections[0].style.font_size = 29.0;
+							text.sections[0].value = "AntiMage".to_string();
+						}
+						CombatOptions::Double => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Double".to_string();
+						}
+						CombatOptions::Block => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Block".to_string();
+						}
+						CombatOptions::Unleash => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Unleash".to_string();
+						}
+					}
+				}
             }
         }
     }
@@ -82,6 +179,7 @@ pub fn combat_button_system2(
     query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,
 	mut enemy_query: Query<&mut CombatStats, With<Enemy>>,
 	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
+	mut qtable: Query<&mut CombatAgent>
     //mut state: ResMut<State<GameState>>,
 ) {
     for (interaction, button) in query.iter() {
@@ -89,22 +187,45 @@ pub fn combat_button_system2(
 			let mut log = CombatLog{
 				player_damage:0,
 				enemy_damage:0,
+				player_tp_change: 0,
+				player_health_change:0,
+				enemy_tp_change: 0,
+				enemy_health_change: 0,
 			};
 			let mut player_stats = player_query.single_mut();
 			let mut enemy_stats = enemy_query.single_mut();
 			let mut valid = false;
+
+			let table = qtable.single_mut();
+			let q = &table.q;
+			let first_key = format!("player_health: {}, player_tp: {}, player_token: {}, player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
+				player_stats.health, player_stats.tp, player_stats.token, player_stats.double, enemy_stats.health, enemy_stats.tp, enemy_stats.token, enemy_stats.double);
+
+			let inner_table = q.get(&first_key).unwrap();
+			let max_value = 
+				inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000.);
+			let mut max_move = String::new();
+			if max_value.eq(&-100000.) {
+				max_move = "Attack".to_string();
+			} else {
+				for key in inner_table.keys() {
+					if inner_table.get(key).unwrap() == max_value {
+						max_move = key.to_string();
+						break;
+					}
+				};
+			}
+			
             match button{
                 CombatOptions::Attack => {
-					println!("Attack");
-					log.player_damage = if player_stats.double {10} else {5} ;
+					log.player_damage = if player_stats.double {2} else {1} ;
 					valid = true;
 					player_stats.double = false;
                 }
                 CombatOptions::Charge => {
-					println!("Charge");
-					if player_stats.tp >= 20*player_stats.tp_cost_mult {
-						player_stats.tp -= 20*player_stats.tp_cost_mult;
-						log.player_damage = if player_stats.double {60} else {30} ;
+					if player_stats.tp >= if player_stats.double {8} else {4} {
+						log.player_tp_change -= if player_stats.double {8} else {4};
+						log.player_damage = if player_stats.double {6} else {3} ;
 						valid = true;
 						player_stats.double = false;
 					} else {
@@ -112,16 +233,14 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Recover => {
-					println!("Recover");
-					player_stats.tp = std::cmp::min(player_stats.tp+20, player_stats.max_tp);
+					log.player_tp_change += 4;
 					valid = true;
 					player_stats.double = false;
                 }
 				CombatOptions::Heal => {
-					println!("Heal");
-					if player_stats.tp >= 10 {
-						player_stats.tp -= 10;
-						player_stats.health = std::cmp::min(player_stats.max_health, player_stats.health+20);
+					if player_stats.tp >= 2 {
+						log.player_tp_change -= 2;
+						log.player_health_change += 4;
 						valid = true;
 						player_stats.double = false;
 					} else {
@@ -129,9 +248,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Guard => {
-					println!("Guard");
-					if player_stats.tp >= 30 {
-						player_stats.tp -= 30;
+					if player_stats.tp >= 6 {
+						log.player_tp_change -= 6;
 						player_stats.guard = true;
 						valid = true;
 						player_stats.double = false;
@@ -140,11 +258,10 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::AntiMage => {
-					println!("AntiMage");
-					if player_stats.tp >= 5*player_stats.tp_cost_mult {
-						player_stats.tp -= 5*player_stats.tp_cost_mult;
-						enemy_stats.tp = std::cmp::max(0, enemy_stats.tp-10);
-						log.player_damage = if player_stats.double {10} else {5};
+					if player_stats.tp >= if player_stats.double {2} else {1} {
+						log.player_tp_change -= if player_stats.double {2} else {1};
+						log.enemy_tp_change -= 2;
+						log.player_damage = if player_stats.double {2} else {1};
 						valid = true;
 						player_stats.double = false;
 					} else {
@@ -152,9 +269,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Double => {
-					println!("Double");
-					if player_stats.tp >= 5 {
-						player_stats.tp -= 5;
+					if player_stats.tp >= 1 {
+						log.player_tp_change -= 1;
 						player_stats.double = true;
 						player_stats.tp_cost_mult = 2;
 						valid = true;
@@ -163,9 +279,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Block=> {
-					println!("Block");
-					if player_stats.tp >= 10 {
-						player_stats.tp -= 10;
+					if player_stats.tp >= 2 {
+						log.player_tp_change -= 2;
 						player_stats.block = true;
 						valid = true;
 						player_stats.double = false;
@@ -174,68 +289,25 @@ pub fn combat_button_system2(
 					}
                 }
                 CombatOptions::Unleash => {
-					print!("Unleash");
 					match player_stats.token{
 						1 => {
-							if player_stats.tp <= player_stats.max_tp-10 {
-								player_stats.tp += 10;
-							} else {
-								player_stats.tp = player_stats.max_tp;
-							}
-							log.player_damage += 10;
-							player_stats.double = false;
-							player_stats.token = 0;
+							log.player_damage = 2;
+							log.player_tp_change += 1;
 							player_stats.use_token = true;
 							valid = true;
 						}
 
 						2 => {
-							if player_stats.tp <= player_stats.max_tp-20 {
-								player_stats.tp += 20;
-							} else {
-								player_stats.tp = player_stats.max_tp;
-							}
-							if player_stats.health <= player_stats.max_health-20 {
-								player_stats.health += 20;
-							} else {
-								player_stats.health = player_stats.max_health;
-							}
-							player_stats.double = false;
-							player_stats.token = 0;
+							log.player_damage = 6;
+							log.player_tp_change += 1;
+							log.enemy_tp_change -= 1;
 							player_stats.use_token = true;
 							valid = true;
 						}
 
 						3 => {
-							log.player_damage += 30;
-							player_stats.double = false;
-							player_stats.token = 0;
-							player_stats.use_token = true;
-							valid = true;
-						}
-
-						4 => {
-							if player_stats.tp <= player_stats.max_tp-40 {
-								player_stats.tp += 30;
-							} else {
-								player_stats.tp = player_stats.max_tp;
-							}
-							if player_stats.health <= player_stats.max_health-40 {
-								player_stats.health += 40;
-							} else {
-								player_stats.health = player_stats.max_health;
-							}
-							player_stats.double = false;
-							player_stats.token = 0;
-							player_stats.use_token = true;
-							valid = true;
-						}
-
-						5 => {
-							player_stats.health = player_stats.max_health;
-							log.player_damage += 50;
-							player_stats.double = false;
-							player_stats.token = 0;
+							log.player_damage = 10;
+							log.player_health_change += 20;
 							player_stats.use_token = true;
 							valid = true;
 						}
@@ -246,112 +318,96 @@ pub fn combat_button_system2(
 				},
             }
 
-			// TODO: Implement Token manipulations
-			let mut rng = rand::thread_rng();
-			let mut random_num = rng.gen_range(1..9);
-			let mut valid_ai_move = false;
 			if valid{
-				while !valid_ai_move{
-					match random_num{
-						1 =>{
-							println!("Enemy Attacks");
-							log.enemy_damage = if enemy_stats.double {10} else {5} ;
-							valid_ai_move = true;
-							player_stats.double = false;
-						}
-						2 =>{
-							if enemy_stats.tp >= 20*enemy_stats.tp_cost_mult {
-								println!("Enemy Charges");
-								enemy_stats.tp -= 20*enemy_stats.tp_cost_mult;
-								log.enemy_damage = if enemy_stats.double {60} else {30};
-								valid_ai_move = true;
-								enemy_stats.double = false;
-							}else{
-								valid_ai_move = false;
+				// match ai move
+				match max_move.as_str(){
+					"Attack" =>{
+						println!("Enemy Attacks");
+						log.enemy_damage = if enemy_stats.double {2} else {1} ;
+						enemy_stats.double = false;
+					}
+					"Charge" =>{
+						println!("Enemy Charges");
+						log.enemy_tp_change -= if enemy_stats.double {8} else {4};
+						log.enemy_damage = if enemy_stats.double {6} else {3};
+						enemy_stats.double = false;
+					}
+					"Recover" =>{
+						println!("Enemy Recovers");
+						log.enemy_tp_change += 4;
+						enemy_stats.double = false;
+					}
+					"Heal" =>{
+						println!("Enemy Heals");
+						log.enemy_tp_change -= 2;
+						log.enemy_health_change += 4;
+						enemy_stats.double = false;
+					}
+					"Guard" =>{
+						println!("Enemy Guards");
+						log.enemy_tp_change -= 6;
+						enemy_stats.guard = true;
+						enemy_stats.double = false;
+					}
+					"AntiMage" =>{
+						println!("Enemy AntiMage");
+						log.enemy_tp_change -= if enemy_stats.double {2} else {1};
+						log.player_tp_change -= 2;
+						log.enemy_damage += if enemy_stats.double {2} else {1};
+						enemy_stats.double = false;
+
+					}
+					"Double" =>{
+						println!("Enemy Double");
+						log.enemy_tp_change -= 1;
+						enemy_stats.double = true;
+					}
+					"Block" =>{
+						println!("Enemy Block");
+						log.enemy_tp_change -= 2;
+						enemy_stats.block = true;
+						enemy_stats.double = false;
+					}
+					"Unleash" => {
+						match enemy_stats.token {
+							1 => {
+								log.enemy_damage = 2;
+								log.enemy_tp_change += 1;
+								enemy_stats.use_token = true;
 							}
-						}
-						3 =>{
-							println!("Enemy Recovers");
-							enemy_stats.tp = std::cmp::min(enemy_stats.tp+20, enemy_stats.max_tp);
-							valid_ai_move = true;
-							enemy_stats.double = false;
-						}
-						4 =>{
-							if enemy_stats.tp >= 10 {
-								println!("Enemy Heals");
-								enemy_stats.tp -= 10;
-								enemy_stats.health = std::cmp::min(enemy_stats.max_health, enemy_stats.health+20);
-								valid_ai_move = true;
-								enemy_stats.double = false;
-							} else {
-								valid_ai_move = false;
+	
+							2 => {
+								log.enemy_damage = 6;
+								log.enemy_tp_change += 1;
+								log.player_tp_change += -1;
+								enemy_stats.use_token = true;
 							}
-						}
-						5 =>{
-							if enemy_stats.tp >= 30 {
-								println!("Enemy Guards");
-								enemy_stats.tp -= 30;
-								enemy_stats.guard = true;
-								valid_ai_move = true;
-								enemy_stats.double = false;
-							} else {
-								valid_ai_move = false;
+	
+							3 => {
+								log.enemy_damage = 10;
+								log.enemy_health_change += 20;
+								enemy_stats.use_token = true;
 							}
-						}
-						6 =>{
-							if enemy_stats.tp >= 5*enemy_stats.tp_cost_mult {
-								println!("Enemy AntiMage");
-								enemy_stats.tp -= 5*enemy_stats.tp_cost_mult;
-								player_stats.tp = std::cmp::max(0, player_stats.tp-10);
-								log.enemy_damage = if enemy_stats.double {10} else {5};
-								valid_ai_move = true;
-								enemy_stats.double = false;
-							} else {
-								valid_ai_move = false;
+	
+							_ => {
+								println!("Token Error");
 							}
-						}
-						7 =>{
-							if enemy_stats.tp >= 5 {
-								println!("Enemy Double");
-								enemy_stats.tp -= 5;
-								enemy_stats.double = true;
-								enemy_stats.tp_cost_mult = 2;
-								valid_ai_move = true;
-							} else {
-								valid_ai_move = false;
-							}
-						}
-						8 =>{
-							if enemy_stats.tp >= 10 {
-								println!("Enemy Block");
-								enemy_stats.tp -= 10;
-								enemy_stats.block = true;
-								valid_ai_move = true;
-								enemy_stats.double = false;
-							} else {
-								valid_ai_move = false;
-							}
-						}
-						_ =>{
-							panic!("Shouldn't happen");
 						}
 					}
-					if !valid_ai_move{
-						random_num = rng.gen_range(1..9);
+					_ =>{
+						panic!("Shouldn't happen");
 					}
-				}	
-			}
-			
-			if valid {
+				}
+				
+				// log calculation
 				if log.player_damage > log.enemy_damage {
 					if enemy_stats.block { 
 						enemy_stats.health -= log.player_damage/2;
+						enemy_stats.token = std::cmp::min(enemy_stats.max_token, enemy_stats.token+1);
 					} else if enemy_stats.guard {
 						player_stats.health -= log.player_damage*2;
-						if !enemy_stats.use_token {
-							if enemy_stats.token < enemy_stats.max_token {
-								enemy_stats.token += 1;
-							}
+						if enemy_stats.token < enemy_stats.max_token {
+							enemy_stats.token += 1;
 						}
 					} else {
 						enemy_stats.health -= log.player_damage - log.enemy_damage;
@@ -364,12 +420,11 @@ pub fn combat_button_system2(
 				} else if log.enemy_damage > log.player_damage {
 					if player_stats.block { 
 						player_stats.health -= log.enemy_damage/2;
+						player_stats.token = std::cmp::min(player_stats.max_token, player_stats.token+1);
 					} else if player_stats.guard {
 						enemy_stats.health -= log.enemy_damage*2;
-						if !player_stats.use_token {
-							if player_stats.token < player_stats.max_token {
-								player_stats.token += 1;
-							}
+						if player_stats.token < player_stats.max_token {
+							player_stats.token += 1;
 						}
 					} else {
 						player_stats.health -= log.enemy_damage - log.player_damage;
@@ -380,6 +435,10 @@ pub fn combat_button_system2(
 						}
 					}
 				}
+				player_stats.health = std::cmp::max(0, std::cmp::min(player_stats.max_health, player_stats.health + log.player_health_change));
+				player_stats.tp = std::cmp::max(0, std::cmp::min(player_stats.max_tp, player_stats.tp + log.player_tp_change));
+				enemy_stats.health = std::cmp::max(0, std::cmp::min(enemy_stats.max_health, enemy_stats.health + log.enemy_health_change));
+				enemy_stats.tp = std::cmp::max(0, std::cmp::min(enemy_stats.max_tp, enemy_stats.tp + log.enemy_tp_change));
 				if player_stats.health <= 0 {
 					println!("You Lose!")
 				} else if enemy_stats.health <= 0 {
@@ -391,8 +450,6 @@ pub fn combat_button_system2(
 				enemy_stats.guard = false;
 				player_stats.use_token = false;
 				enemy_stats.use_token = false;
-				println!("Your health is {}", player_stats.health);
-				println!("Enemy health is {}", enemy_stats.health);
 			}
         }
     }
