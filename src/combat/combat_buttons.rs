@@ -2,11 +2,10 @@ use bevy::{
 	prelude::*,
 };
 
-use super::{CombatOptions, CombatStats, Enemy, CombatLog, CombatAgent};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent};
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
 
 pub fn spawn_combat_buttons(
 	commands: &mut Commands,
@@ -56,10 +55,10 @@ pub fn despawn_button(mut commands: Commands, button_query: Query<Entity, With<C
 }
 
 pub fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
+    mut interaction_query: Query<(&Interaction, &mut UiColor),(Changed<Interaction>, With<Button>)>,
+	button_query: Query<(&Interaction, &CombatOptions, &Children), (Changed<Interaction>, With<Button>)>,
+	mut text_query: Query<&mut Text>,
+	player_query: Query<&CombatStats, With<Player>>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
@@ -68,9 +67,108 @@ pub fn button_system(
             }
             Interaction::Hovered => {
 				*color = COMBAT_BUTTON.into();
+				for (_interaction, button, children) in button_query.iter(){
+					let mut text = text_query.get_mut(children[0]).unwrap();
+					match button{
+						CombatOptions::Attack => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 1 dmg".to_string();
+						}
+						CombatOptions::Charge => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 6 dmg,\nbut costs 4 TP".to_string();
+						}
+						CombatOptions::Recover => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Recover 4 TP".to_string();
+						}
+						CombatOptions::Heal => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Heal 4HP,\nbut costs 2 TP".to_string();
+						}
+						CombatOptions::Guard => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Invincible, deal\n2x damage taken,\ncosts 6 TP".to_string();
+						}
+						CombatOptions::AntiMage => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Does 1 dmg and\nsubtracts\n2TP from enemy,\ncosts 1 TP".to_string();
+						}
+						CombatOptions::Double => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "Double dmg on\nnext turn and 1.5x\n increase TP cost,\ncosts 1 TP".to_string();
+						}
+						CombatOptions::Block => {
+							text.sections[0].style.font_size = 20.0;
+							text.sections[0].value = "0.5x dmg taken\nprevent token\ngeneration,\ncosts 2TP".to_string();
+						}
+						CombatOptions::Unleash => {
+							let player_stats = player_query.single();
+							match player_stats.token{
+								1 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 2 dmg,\nreceive 1 TP".to_string();
+								}
+								2 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 6 dmg,\ntake 1 TP\nfrom enemy".to_string();
+								}
+								3 => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "Does 10 dmg,\nrecover full TP".to_string();
+								}
+								_ => {
+									text.sections[0].style.font_size = 20.0;
+									text.sections[0].value = "No tokens!".to_string();
+								}
+							}
+						}
+					}
+				}
             }
             Interaction::None => {
 				*color = COMBAT_BUTTON.into();
+				for (_interaction, button, children) in button_query.iter(){
+					let mut text = text_query.get_mut(children[0]).unwrap();
+					match button{
+						CombatOptions::Attack => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Attack".to_string();
+						}
+						CombatOptions::Charge => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Charge".to_string();
+						}
+						CombatOptions::Recover => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Recover".to_string();
+						}
+						CombatOptions::Heal => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Heal".to_string();
+						}
+						CombatOptions::Guard => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Guard".to_string();
+						}
+						CombatOptions::AntiMage => {
+							text.sections[0].style.font_size = 29.0;
+							text.sections[0].value = "AntiMage".to_string();
+						}
+						CombatOptions::Double => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Double".to_string();
+						}
+						CombatOptions::Block => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Block".to_string();
+						}
+						CombatOptions::Unleash => {
+							text.sections[0].style.font_size = 30.0;
+							text.sections[0].value = "Unleash".to_string();
+						}
+					}
+				}
             }
         }
     }
@@ -118,7 +216,6 @@ pub fn combat_button_system2(
 				};
 			}
 			
-
             match button{
                 CombatOptions::Attack => {
 					log.player_damage = if player_stats.double {2} else {1} ;
