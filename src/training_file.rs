@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 /*
     TODO: Use Serde to store AI
 */
@@ -9,13 +10,13 @@ use game::mdp::{Agent,State};
 use game::strategy::explore::RandomExplore;
 use game::strategy::learn::QLearning;
 use game::strategy::terminate::GivenIteration;
-use game::AgentTrainer;
+use game::{AgentTrainer, AgentT};
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
 
 
-#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize, Copy)]
 struct CombatState{
     player_health: i32,
     player_max_health: i32,
@@ -33,7 +34,7 @@ struct CombatState{
 	enemy_double: bool,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize, Copy)]
 enum CombatOptions{
     Attack,
 	Charge,
@@ -530,15 +531,28 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         &initial_state,
     );
 
+    let mut tr = AgentT::new();
+
+    for k in trainer.q.keys() {
+        for h1 in trainer.q.get(k){
+            for k2 in h1.keys() {
+                let v = *h1.get(k2).unwrap();
+                tr.q.entry(*k)
+                .or_insert_with(HashMap::new)
+                .insert(*k2, v as isize);
+            }
+        }
+    }
+
     let writer = File::create("agent.json").unwrap();
     
-    let _ww = serde_json::to_writer(writer, &trainer); 
+    let _ww = serde_json::to_writer(writer, &tr); 
     return Ok(())
 }
 
 impl Display for CombatState {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "player_health: {}, player_tp: {}, player_token: {}, player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
+        write!(f, "{},{},{},{},{},{},{},{}", 
         self.player_health, self.player_tp, self.player_token, self.player_double,
         self.enemy_health, self.enemy_tp, self.enemy_token, self.enemy_double)
     }

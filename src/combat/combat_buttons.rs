@@ -198,14 +198,14 @@ pub fn combat_button_system2(
 
 			let table = qtable.single_mut();
 			let q = &table.q;
-			let first_key = format!("player_health: {}, player_tp: {}, player_token: {}, player_double: {}, enemy_health: {}, enemy_tp: {}, enemy_token: {}, enemy_double: {}", 
+			let first_key = format!("{},{},{},{},{},{},{},{}", 
 				player_stats.health, player_stats.tp, player_stats.token, player_stats.double, enemy_stats.health, enemy_stats.tp, enemy_stats.token, enemy_stats.double);
 
 			let inner_table = q.get(&first_key).unwrap();
 			let max_value = 
-				inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000.);
+				inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000);
 			let mut max_move = String::new();
-			if max_value.eq(&-100000.) {
+			if max_value.eq(&-100000) {
 				max_move = "Attack".to_string();
 			} else {
 				for key in inner_table.keys() {
@@ -439,6 +439,12 @@ pub fn combat_button_system2(
 				player_stats.tp = std::cmp::max(0, std::cmp::min(player_stats.max_tp, player_stats.tp + log.player_tp_change));
 				enemy_stats.health = std::cmp::max(0, std::cmp::min(enemy_stats.max_health, enemy_stats.health + log.enemy_health_change));
 				enemy_stats.tp = std::cmp::max(0, std::cmp::min(enemy_stats.max_tp, enemy_stats.tp + log.enemy_tp_change));
+				if player_stats.use_token {
+					player_stats.token = 0;
+				}
+				if enemy_stats.use_token {
+					enemy_stats.token = 0;
+				}
 				if player_stats.health <= 0 {
 					println!("You Lose!")
 				} else if enemy_stats.health <= 0 {
