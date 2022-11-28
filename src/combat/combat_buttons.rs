@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::{
 	prelude::*,
 };
@@ -201,7 +203,9 @@ pub fn combat_button_system2(
 			let first_key = format!("{},{},{},{},{},{},{},{}", 
 				player_stats.health, player_stats.tp, player_stats.token, player_stats.double, enemy_stats.health, enemy_stats.tp, enemy_stats.token, enemy_stats.double);
 
-			let inner_table = q.get(&first_key).unwrap();
+			let mut temp_table = HashMap::new();
+			temp_table.insert("Attack".to_string(), 0);
+			let inner_table = q.get(&first_key).unwrap_or(&temp_table);
 			let max_value = 
 				inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000);
 			let mut max_move = String::new();
