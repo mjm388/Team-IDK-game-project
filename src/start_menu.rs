@@ -39,7 +39,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
 		},
     texture: asset_server.load("NameoftheGame.png"),
     ..Default::default()
-});
+}).insert(Button);
 commands.spawn_bundle(SpriteBundle {
     transform: Transform {
         translation: Vec3::new(-350., -200., 100.),
@@ -50,10 +50,10 @@ texture: asset_server.load("StartButton.png"),
 }).insert(Button);
 commands.spawn_bundle(SpriteBundle {
     transform: Transform {
-        translation: Vec3::new(-500., -160., 100.),
+        translation: Vec3::new(-800., -150., 100.),
         ..default()
     },
 texture: asset_server.load("tutorial.png"),
 ..Default::default()
-});
-}
+}).insert(Button);
+}   
