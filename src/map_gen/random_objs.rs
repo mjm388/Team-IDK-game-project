@@ -9,8 +9,8 @@ pub enum DecorType{
 	Statue,
 	Plant,
 	Sofa,
-	Chair,
-	Lamp,
+	_Chair,
+	_Lamp,
 	Pillar,
 }
 
@@ -40,7 +40,7 @@ pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Comm
 			match rng.gen_range(1..=3){
 				//pilars
 				1 => {
-					addPilars(&center,&size,commands);
+					add_pilars(&center,&size,commands);
 				},
 				//maze
 				2 => {
@@ -64,7 +64,7 @@ pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Comm
 	}
 }
 
-fn addPilars(center: &Vec2, size: &Vec2, commands: &mut Commands){
+fn add_pilars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 
 	let adj_size = Vec2::new((size.x-1.0)/2.,(size.y-1.0)/2.);
 
@@ -96,13 +96,13 @@ fn addPilars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 			DecorType::Pillar
 		)
 	);
-	println!("pillar");
-	println!("Size {},{}",size.x,size.y);
-	println!("Coord {}, {}",center.x,center.y);
+	// println!("pillar");
+	// println!("Size {},{}",size.x,size.y);
+	// println!("Coord {}, {}",center.x,center.y);
 	let mut rng = rand::thread_rng();
 	//add statues
 	if rng.gen_bool(0.6){
-		println!("statues");
+		// println!("statues");
 		//top right
 		commands.spawn().insert(
 			Decor::new(
@@ -121,7 +121,7 @@ fn addPilars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 
 	//add plants
 	if rng.gen_bool(0.6){
-		println!("plants");
+		// println!("plants");
 		//top right
 		commands.spawn().insert(
 			Decor::new(
@@ -153,7 +153,7 @@ fn addPilars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 	}
 
 	if rng.gen_bool(0.6){
-		println!("sofas");
+		// println!("sofas");
 		//top right sofa
 		commands.spawn().insert(
 			Decor::new(

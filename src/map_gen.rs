@@ -51,6 +51,12 @@ impl Room {
 #[derive(Component)]
 pub struct Edge (pub Vec2, pub Vec2);
 
+#[derive(Component)]
+pub struct BlockPath(pub Vec2);
+
+#[derive(Component)]
+pub struct StandPath(pub Vec2);
+
 fn map_generator(
     mut commands: Commands,
 ) {
@@ -60,17 +66,12 @@ fn map_generator(
 	
     let final_polygon = prims(&final_polygon);
 
-	// for edge in final_polygon.iter() {
-	// 	commands.spawn()
-	// 		.insert(Edge(edge.get_origin(), edge.get_destination()));
-	// }
-
     for edge in final_polygon.iter() {
        commands.spawn()
            .insert(Edge(edge.0, edge.1));
     }
 
-	hallway(&centers, &sizes, &final_polygon);
+	hallway(&centers, &sizes, &final_polygon, &mut commands);
 
 	place_objects(&centers,&sizes,&mut commands);
 }
