@@ -1,9 +1,5 @@
 # Team IDK
  
-## Canonical game repo URL:
- 
-https://github.com/Yanding-Liu/Team-IDK-game-project.git
- 
 ## Team Members
 * Advanced Topic Subteam 1: Procedural Generation
  
@@ -73,38 +69,10 @@ Our combat system would be a turn-based card game that takes place between the p
 
 Our combat system will be composed of 3 resources, Hp, Tp, and Tokens. Around eight moves will be implemented consisting of offensive, heals, and defensive skills which use the TP resource. The other set of skills will cost Tokens which rewards the user in the long run. Tokens can be gained each turn, and the more you use in 1 turn, the stronger the effects will be.
 
-## Concept Arts
+## Running
 
-![Map](Team_IDK_Procedual_Generated_Layout.png)
-![Combat](Team_IDK_Turn-Based_Combat.JPG)
+Unzip agent.zip
 
-## Midterm Goals
- 
-* Have a working map/room
-* Player movement and collision 
-* Implement TP moveset
-* Have a Naive Dummy AI
-* Transition from exploration to combat
-* Have working UI (Current level, Minimap, HP bar, TP bar, Token count, combat screen abilities)
- 
- 
-## Final Goals
- 
-* Functional turn-based combat (20%)
-  * Player can choose moves (10%)
-  * Transition between exploration screen and combat screen (5%)
-  * Display UI (5%)
-* Implement moveset for AI (30%)
-  * Implement Q-Learning Algorithm (10%)
-  * Have AI work with TP moveset (10%)
-  * Have AI work with Token moveset (10%)
-* Working procedural generated 100x100 "tiles" maps/rooms (30%)
-  * Randomly generated rooms from 6*6 to 12*12 "tiles" (10%)
-  * Randomly generated map made of 25 rooms (10%)
-  * Character can interact with level exit, pick up keys, move around, collide with walls/objects (10%)
- 
- 
-## Stretch Goals
- 
-* Fog of War System (5%)
-* Final Boss (5%)
+Cargo Build
+
+Cargo Run

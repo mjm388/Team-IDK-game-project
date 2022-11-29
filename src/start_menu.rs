@@ -48,4 +48,12 @@ commands.spawn_bundle(SpriteBundle {
 texture: asset_server.load("StartButton.png"),
 ..Default::default()
 }).insert(Button);
-}
+commands.spawn_bundle(SpriteBundle {
+    transform: Transform {
+        translation: Vec3::new(-800., -150., 100.),
+        ..default()
+    },
+texture: asset_server.load("tutorial.png"),
+..Default::default()
+}).insert(Button);
+}   

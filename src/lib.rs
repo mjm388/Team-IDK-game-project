@@ -17,6 +17,22 @@ where
     pub q: HashMap<S, HashMap<S::Act, f64>>,
 }
 
+pub struct AgentT<S>
+where
+    S: State + Serialize + Display,
+{
+    pub q: HashMap<S, HashMap<S::Act, isize>>,
+}
+
+impl<S> AgentT<S>
+where
+    S: State + Serialize + Display,
+{
+    pub fn new() -> AgentT<S> {
+        AgentT { q: HashMap::new() }
+    }
+}
+
 impl<S> AgentTrainer<S>
 where
     S: State + Serialize + Display,
@@ -88,8 +104,13 @@ impl<S: State + Serialize + Display> Default for AgentTrainer<S> {
     }
 }
 
+impl<S: State + Serialize + Display> Default for AgentT<S> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-impl<S: State + Serialize + Display> Serialize for AgentTrainer<S> {
+impl<S: State + Serialize + Display> Serialize for AgentT<S> {
     fn serialize<S1>(&self, serializer: S1) -> Result<S1::Ok, S1::Error>
     where
         S1: Serializer,
