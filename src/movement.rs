@@ -18,10 +18,10 @@ impl Plugin for MovementPlugin{
         app
 			.add_startup_system(setup_player)
 			.add_startup_system(initialize_key)
-			.add_system_set(SystemSet::on_update(GameState::Overworld)
-				.with_run_criteria(FixedTimestep::step(2.0 as f64))
-				.with_system(random_encounter)
-			)
+			//.add_system_set(SystemSet::on_update(GameState::Overworld)
+			//	.with_run_criteria(FixedTimestep::step(2.0 as f64))
+			//	.with_system(random_encounter)
+			//)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.with_system(move_player)
 				.with_system(move_camera)
@@ -145,7 +145,7 @@ fn random_encounter(
 	mut game_state: ResMut<State<GameState>>,
 ) {
 	if game_state.current() == &GameState::Overworld{
-		let chance = 20;	// Expected to get random encounter every (chance * 2) seconds (on average).
+		let chance = 500;	
 		let mut rng = rand::thread_rng();
 		let attack = rng.gen_range::<i32,_>(1..chance);
 
@@ -191,6 +191,7 @@ fn move_player(
 	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 	mut holding: Query<&mut HoldingKey>,
+	mut game_state: ResMut<State<GameState>>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -203,20 +204,26 @@ fn move_player(
 
 	let player_move = PLAYER_SPEED * time.delta_seconds();
 
+	let mut has_moved: bool = false;
+
 	if input.pressed(KeyCode::A) {
 		x_vel -= player_move;
+		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::D) {
 		x_vel += player_move;
+		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::W) {
 		y_vel += player_move;
+		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::S) {
 		y_vel -= player_move;
+		has_moved = true;
 	}
 
 	if (x_vel.abs() + y_vel.abs()) > player_move {
@@ -256,7 +263,10 @@ fn move_player(
 			m_player_transform.translation.x + x_vel * M_TILE_SIZE, 
 			m_player_transform.translation.y + y_vel * M_TILE_SIZE, 
 			m_player_transform.translation.z,
-		)
+		);
+		if has_moved{
+			random_encounter(game_state);
+		}
 	}
 }
 
