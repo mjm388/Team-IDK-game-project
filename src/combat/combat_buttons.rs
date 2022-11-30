@@ -4,7 +4,9 @@ use bevy::{
 	prelude::*,
 };
 
+use crate::{BossTrigger};
 use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent};
+
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
@@ -109,15 +111,15 @@ pub fn button_system(
 							match player_stats.token{
 								1 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 2 dmg,\nreceive 1 TP".to_string();
+									text.sections[0].value = "Does 2 dmg,\nreceive 1 TP\nuses all tokens".to_string();
 								}
 								2 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 6 dmg,\ntake 1 TP\nfrom enemy".to_string();
+									text.sections[0].value = "Does 6 dmg,\ntake 1 TP\nfrom enemy\nuses all tokens".to_string();
 								}
 								3 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 10 dmg,\nrecover full TP".to_string();
+									text.sections[0].value = "Does 10 dmg,\nrecover full TP\nuses all tokens".to_string();
 								}
 								_ => {
 									text.sections[0].style.font_size = 20.0;
@@ -181,9 +183,11 @@ pub fn combat_button_system2(
     query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,
 	mut enemy_query: Query<&mut CombatStats, With<Enemy>>,
 	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
-	mut qtable: Query<&mut CombatAgent>
+	mut qtable: Query<&mut CombatAgent>,
+	mut boss_flag: Query<&mut BossTrigger>,
     //mut state: ResMut<State<GameState>>,
 ) {
+	let boss_fight = boss_flag.single_mut();
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
 			let mut log = CombatLog{
@@ -197,9 +201,12 @@ pub fn combat_button_system2(
 			let mut player_stats = player_query.single_mut();
 			let mut enemy_stats = enemy_query.single_mut();
 			let mut valid = false;
-
 			let table = qtable.single_mut();
-			let q = &table.q;
+			let q = if boss_fight.boss_trigger{
+				&table.q
+			}else{
+				&table.q2
+			};
 			let first_key = format!("{},{},{},{},{},{},{},{}", 
 				player_stats.health, player_stats.tp, player_stats.token, player_stats.double, enemy_stats.health, enemy_stats.tp, enemy_stats.token, enemy_stats.double);
 
@@ -219,7 +226,7 @@ pub fn combat_button_system2(
 					}
 				};
 			}
-			
+
             match button{
                 CombatOptions::Attack => {
 					log.player_damage = if player_stats.double {2} else {1} ;

@@ -15,7 +15,7 @@ mod start_menu;
 
 
 use credits::CreditsPlugin;
-use combat::{CombatPlugin, CombatAgent, combat_ai::read_in};
+use combat::{CombatPlugin, CombatAgent, combat_ai::read_in, combat_ai::read_in2};
 use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
@@ -32,6 +32,10 @@ pub enum GameState{
 	StartMenu,
 }
 
+#[derive(Component)]
+pub struct BossTrigger{
+	pub boss_trigger: bool,
+}
 
 #[derive(Component)]
 struct Camera;
@@ -74,7 +78,13 @@ fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
 		},
 		..default()
 	}).insert(Camera);
-	let qtable = CombatAgent{q: read_in().expect("not correct")};	
+	let boss_flag = BossTrigger{
+		boss_trigger: false,
+	};
+	commands.spawn()
+	.insert(boss_flag);
+	
+	let qtable = CombatAgent{q: read_in().expect("not correct"), q2: read_in2().expect("not correct")};	
 	commands.spawn()
 	.insert(qtable);
 }

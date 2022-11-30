@@ -254,7 +254,7 @@ fn render_objects(
                 commands.spawn_bundle(SpriteBundle{
                     sprite: Sprite {
 				        color: Color::PURPLE,
-				        custom_size: Some(Vec2::new(TILE_SIZE*2.0, TILE_SIZE)),
+				        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
 				        ..default()
 			        },
 			        transform: Transform {
@@ -270,7 +270,7 @@ fn render_objects(
                 .insert(DecorTile);
             },
             //chair
-	        DecorType::_Chair => {
+	        DecorType::Chair => {
                 commands.spawn_bundle(SpriteBundle{
                     sprite: Sprite {
 				        color: Color::TEAL,
@@ -290,7 +290,7 @@ fn render_objects(
                 .insert(DecorTile);
             },
             //lamp
-	        DecorType::_Lamp => {
+	        DecorType::Lamp => {
                 commands.spawn_bundle(SpriteBundle{
                     sprite: Sprite {
 				        color: Color::GOLD,
@@ -314,6 +314,25 @@ fn render_objects(
                 commands.spawn_bundle(SpriteBundle{
                     sprite: Sprite {
 				        color: Color::BLACK,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: true
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+	        DecorType::Bookshelf => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::OLIVE,
 				        custom_size: Some(Vec2::splat(TILE_SIZE)),
 				        ..default()
 			        },

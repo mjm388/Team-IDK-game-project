@@ -20,8 +20,8 @@ const FREE: i32 = -1;
 const ROOM: i32 = -2;
 const PATH: i32 = -3;
 const OBST: i32 = -4; // obstacle
-const START:i32 = -5;
-const DEST: i32 = -6;
+// const START:i32 = -5;
+// const DEST: i32 = -6;
 
 #[derive(Clone)]
 struct Ind(usize, usize);
@@ -152,7 +152,7 @@ pub fn hallway (
 
     astar(&mut graph, &door_pairs);
 
-    _print_graph(&graph);
+    //_print_graph(&graph);
 }
 fn find_doors(
     c_start: usize, 
@@ -384,12 +384,6 @@ fn _print_graph (graph: &Vec<Vec<i32>>) {
             }
             else if num == ROOM {
                 print!("[]");
-            }
-            else if num == START {
-                print!("SS");
-            }
-            else if num == DEST {
-                print!("DD");
             }
             else {
                 let num = num % 100;
