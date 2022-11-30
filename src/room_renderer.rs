@@ -131,7 +131,7 @@ fn create_random_room(
                 
             }
         }
-        if room.id == 13 {
+        if room.id == 1 {
             commands.spawn_bundle(SpriteSheetBundle {
                 texture_atlas: door_atlas_handle.clone(),
                 transform: Transform {
@@ -147,7 +147,7 @@ fn create_random_room(
             .insert(DoorTile);
             info!("Door added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
-        if room.id == 14 {
+        if room.id == 2 {
             commands.spawn_bundle(SpriteSheetBundle {
                 texture_atlas: key_atlas_handle.clone(),
                 transform: Transform {
