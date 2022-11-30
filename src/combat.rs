@@ -77,7 +77,8 @@ pub struct Background;
 
 #[derive(Component)]
 pub struct CombatAgent{
-	pub(crate) q: HashMap<String, HashMap<String, isize>>
+	pub(crate) q: HashMap<String, HashMap<String, isize>>,
+	pub(crate) q2: HashMap<String, HashMap<String, isize>>,
 }
 
 fn spawn_combat_background(
