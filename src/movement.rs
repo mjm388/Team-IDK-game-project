@@ -193,10 +193,7 @@ fn move_player(
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
-<<<<<<< HEAD
-=======
 	mut boss_flag: Query<&mut BossTrigger>,
->>>>>>> 141d4f0cf5a534dc10e59d61f4dd004d68f1eb52
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
