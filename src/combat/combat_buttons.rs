@@ -226,8 +226,6 @@ pub fn combat_button_system2(
 					}
 				};
 			}
-			
-			let table2 = qtable.single_mut();
 
             match button{
                 CombatOptions::Attack => {
