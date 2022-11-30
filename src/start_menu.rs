@@ -16,13 +16,7 @@ impl Plugin for MainMenuPlugin {
         .add_system_set(SystemSet::on_enter(GameState::StartMenu))
         .add_system_set(SystemSet::on_exit(GameState::StartMenu)
             .with_system(despawn_button)
-            .with_system(despawn_name))
-        ;
-    }
-}
-fn despawn_name(mut commands: Commands, button_query: Query<Entity, With<Button>>){
-    for ent in button_query.iter() {
-        commands.entity(ent).despawn_recursive();
+        );
     }
 }
 fn despawn_button(mut commands: Commands, button_query: Query<Entity, With<Button>>) {
@@ -37,23 +31,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
 			translation: Vec3::new(-350., 200., 100.),
 			..default()
 		},
-    texture: asset_server.load("NameoftheGame.png"),
+        texture: asset_server.load("NameoftheGame.png"),
+        ..Default::default()
+    }).insert(Button);
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-350., -200., 100.),
+            ..default()
+        },
+    texture: asset_server.load("StartButton.png"),
     ..Default::default()
-}).insert(Button);
-commands.spawn_bundle(SpriteBundle {
-    transform: Transform {
-        translation: Vec3::new(-350., -200., 100.),
-        ..default()
-    },
-texture: asset_server.load("StartButton.png"),
-..Default::default()
-}).insert(Button);
-commands.spawn_bundle(SpriteBundle {
-    transform: Transform {
-        translation: Vec3::new(-800., -150., 100.),
-        ..default()
-    },
-texture: asset_server.load("tutorial.png"),
-..Default::default()
-}).insert(Button);
+    }).insert(Button);
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-800., -150., 100.),
+            ..default()
+        },
+    texture: asset_server.load("tutorial.png"),
+    ..Default::default()
+    }).insert(Button);
 }   
