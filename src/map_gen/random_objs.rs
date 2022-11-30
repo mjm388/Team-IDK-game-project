@@ -38,7 +38,8 @@ pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Comm
 		//generate room type
 		//large room
 		if size.x >= 11. && size.y >= 11. {
-			match rng.gen_range(1..=3){
+			add_pillars(&center,&size,commands);
+			/*match rng.gen_range(1..=3){
 				//pilars
 				1 => {
 					add_pillars(&center,&size,commands);
@@ -54,7 +55,7 @@ pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Comm
 				_ => {
 					println!("BAD");
 				}
-			}
+			}*/
 		}
 		//small room
 		else {
@@ -159,14 +160,14 @@ fn add_pillars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 		//top right sofa
 		commands.spawn().insert(
 			Decor::new(
-				Vec2::new(center.x+(adj_size.x-5.0),center.y+(adj_size.y-2.0)),
+				Vec2::new(center.x+(adj_size.x-4.0),center.y+(adj_size.y-2.0)),
 				DecorType::Sofa
 			)
 		);
 		//top left sofa 
 		commands.spawn().insert(
 			Decor::new(
-				Vec2::new(center.x-(adj_size.x-3.0),center.y+(adj_size.y-2.0)),
+				Vec2::new(center.x-(adj_size.x-2.0),center.y+(adj_size.y-2.0)),
 				DecorType::Sofa
 			)
 		);
