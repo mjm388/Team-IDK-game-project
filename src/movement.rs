@@ -7,6 +7,7 @@ use rand::Rng;
 
 use crate::{
 	GameState,
+	BossTrigger,
 	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile}, 
 	minimap::M_TILE_SIZE,
 };
@@ -192,12 +193,17 @@ fn move_player(
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
+<<<<<<< HEAD
+=======
+	mut boss_flag: Query<&mut BossTrigger>,
+>>>>>>> 141d4f0cf5a534dc10e59d61f4dd004d68f1eb52
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
 	let mut m_player_transform = m_player.single_mut();
 	let mut key_transform = key_objects.single_mut();
 	let mut holding_transform = holding.single_mut();
+	let mut boss_fight = boss_flag.single_mut();
 
 	let mut x_vel = 0.;
 	let mut y_vel = 0.;
@@ -255,6 +261,10 @@ fn move_player(
 			if door_collide(new_pos, &door_objects) {
 				for _door in door_objects.iter() {
 					info!("Collided with the door while holding key");
+					boss_fight.boss_trigger = true;
+					if game_state.current() == &GameState::Overworld{
+						game_state.set(GameState::Combat).unwrap();
+					}
 				}
 			}
 		}
