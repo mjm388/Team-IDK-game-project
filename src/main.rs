@@ -16,6 +16,7 @@ mod movement;
 mod map_gen;
 mod room_renderer;
 mod start_menu;
+mod tutorial;
 
 
 use credits::CreditsPlugin;
@@ -25,6 +26,7 @@ use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
 use start_menu::MainMenuPlugin;
+use tutorial::TutorialPlugin;
 
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
@@ -34,6 +36,7 @@ pub enum GameState{
 	Credits,
 	Map,
 	StartMenu,
+	Tutorial,
 }
 
 #[derive(Component)]
@@ -66,6 +69,7 @@ fn main() {
 		.add_plugin(MovementPlugin)
 		.add_plugin(MiniMapPlugin)
 		.add_plugin(CombatPlugin)
+		.add_plugin(TutorialPlugin)
 		.run();
 
 	}
@@ -163,6 +167,14 @@ fn change_state(
 		if input.just_pressed(KeyCode::G) && game_state.current() == &GameState::StartMenu{
 			input.reset(KeyCode::G);
 			game_state.set(GameState::Overworld).unwrap();
+		} 
+		if input.just_pressed(KeyCode::I) && game_state.current() == &GameState::StartMenu{
+			input.reset(KeyCode::I);
+			game_state.set(GameState::Tutorial).unwrap();
+		} 
+		if input.just_pressed(KeyCode::I) && game_state.current() == &GameState::Tutorial{
+			input.reset(KeyCode::I);
+			game_state.set(GameState::StartMenu).unwrap();
 		} 
 	}
 

@@ -11,9 +11,11 @@ pub struct ButtonActive(bool);
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup)
+        app
+        .add_startup_system(setup)
         .add_system_set(SystemSet::on_update(GameState::StartMenu))
-        .add_system_set(SystemSet::on_enter(GameState::StartMenu))
+        .add_system_set(SystemSet::on_enter(GameState::StartMenu)
+            .with_system(setup))
         .add_system_set(SystemSet::on_exit(GameState::StartMenu)
             .with_system(despawn_button)
         );
@@ -22,6 +24,15 @@ impl Plugin for MainMenuPlugin {
 fn despawn_button(mut commands: Commands, button_query: Query<Entity, With<Button>>) {
     for ent in button_query.iter() {
         commands.entity(ent).despawn_recursive();
+    }
+}
+
+fn render_objects(
+    mut screen: Query<(&mut Visibility, Entity), With<Button>>,
+){
+    for (mut v, _e) in screen.iter_mut() {
+        v.is_visible = true;
+        info!("rendering start menu");
     }
 }
 
@@ -42,12 +53,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
     texture: asset_server.load("StartButton.png"),
     ..Default::default()
     }).insert(Button);
-    commands.spawn_bundle(SpriteBundle {
-        transform: Transform {
-            translation: Vec3::new(-800., -150., 100.),
-            ..default()
-        },
-    texture: asset_server.load("tutorial.png"),
-    ..Default::default()
-    }).insert(Button);
+    // commands.spawn_bundle(SpriteBundle {
+    //     transform: Transform {
+    //         translation: Vec3::new(-800., -150., 100.),
+    //         ..default()
+    //     },
+    // texture: asset_server.load("tutorial.png"),
+    // ..Default::default()
+    // }).insert(Button);
 }   
