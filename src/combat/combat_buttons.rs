@@ -89,7 +89,7 @@ pub fn button_system(
 						}
 						CombatOptions::Heal => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Heal 4HP,\nbut costs 2 TP".to_string();
+							text.sections[0].value = "Heal 3 HP,\n costs 2 TP".to_string();
 						}
 						CombatOptions::Guard => {
 							text.sections[0].style.font_size = 20.0;
@@ -217,10 +217,10 @@ pub fn combat_button_system2(
 				temp_table.insert("Unleash".to_string(), 0);
 			} else if enemy_stats.tp > if enemy_stats.double {8} else {4} {
 				temp_table.insert("Charge".to_string(), 0);
-			} else if enemy_stats.tp == 0 {
+			} else if enemy_stats.tp > 5 {
+				temp_table.insert("Block".to_string(), 0);
+			} else if enemy_stats.tp <2 {
 				temp_table.insert("Recover".to_string(), 0);
-			} else if enemy_stats.token>0 {
-				temp_table.insert("Unleash".to_string(), 0);
 			} else {
 				temp_table.insert("Attack".to_string(), 0);
 			}
@@ -291,7 +291,7 @@ pub fn combat_button_system2(
 				CombatOptions::Heal => {
 					if player_stats.tp >= 2 {
 						log.player_tp_change -= 2;
-						log.player_health_change += 4;
+						log.player_health_change += 3;
 						valid = true;
 						player_stats.double = false;
 					} else {
@@ -391,7 +391,7 @@ pub fn combat_button_system2(
 					"Heal" =>{
 						println!("Enemy Heals");
 						log.enemy_tp_change -= 2;
-						log.enemy_health_change += 4;
+						log.enemy_health_change += 3;
 						enemy_stats.double = false;
 					}
 					"Guard" =>{

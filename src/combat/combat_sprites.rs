@@ -200,11 +200,14 @@ pub fn spawn_player_sprite(
 		.id();
 }
 
-pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>, player_health: Query<Entity, With<PlayerHealthBar>>){
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>, player_health: Query<Entity, With<PlayerHealthBar>>, enemy_log: Query<Entity, With<EnemyLog>>,){
     for entity in player_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
 	for entity in player_health.iter(){
+		commands.entity(entity).despawn_recursive();
+	}
+	for entity in enemy_log.iter(){
 		commands.entity(entity).despawn_recursive();
 	}
 }
