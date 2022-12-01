@@ -1,7 +1,7 @@
 use bevy::{
 	prelude::*,
 	sprite::collide_aabb::collide,
-	time::FixedTimestep,
+	//time::FixedTimestep,
 };
 use rand::Rng;
 

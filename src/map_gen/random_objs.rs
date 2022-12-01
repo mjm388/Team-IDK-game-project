@@ -31,7 +31,7 @@ impl Decor{
 }
 
 pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Commands){
-	let mut rng = rand::thread_rng();
+	let mut _rng = rand::thread_rng();
 
 	for a in centers.iter().zip(sizes.iter()){
 		let (center,size) = a;
@@ -42,7 +42,7 @@ pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Comm
 			/*match rng.gen_range(1..=3){
 				//pilars
 				1 => {
-					add_pillars(&center,&size,commands);
+					add_pilars(&center,&size,commands);
 				},
 				//maze
 				2 => {
@@ -99,13 +99,13 @@ fn add_pillars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 			DecorType::Pillar
 		)
 	);
-	println!("pillar");
-	println!("Size {},{}",size.x,size.y);
-	println!("Coord {}, {}",center.x,center.y);
+	// println!("pillar");
+	// println!("Size {},{}",size.x,size.y);
+	// println!("Coord {}, {}",center.x,center.y);
 	let mut rng = rand::thread_rng();
 	//add statues
 	if rng.gen_bool(0.6){
-		println!("statues");
+		// println!("statues");
 		//top right
 		commands.spawn().insert(
 			Decor::new(
@@ -124,7 +124,7 @@ fn add_pillars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 
 	//add plants
 	if rng.gen_bool(0.6){
-		println!("plants");
+		// println!("plants");
 		//top right
 		commands.spawn().insert(
 			Decor::new(
@@ -156,7 +156,7 @@ fn add_pillars(center: &Vec2, size: &Vec2, commands: &mut Commands){
 	}
 
 	if rng.gen_bool(0.6){
-		println!("sofas");
+		// println!("sofas");
 		//top right sofa
 		commands.spawn().insert(
 			Decor::new(
