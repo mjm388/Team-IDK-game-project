@@ -31,7 +31,7 @@ impl Decor{
 }
 
 pub fn place_objects(centers: &Vec<Vec2>, sizes: &Vec<Vec2>, commands: &mut Commands){
-	let mut rng = rand::thread_rng();
+	let mut _rng = rand::thread_rng();
 
 	for a in centers.iter().zip(sizes.iter()){
 		let (center,size) = a;

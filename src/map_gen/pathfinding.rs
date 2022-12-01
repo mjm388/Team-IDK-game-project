@@ -22,6 +22,7 @@ const PATH: i32 = -3;
 const OBST: i32 = -4; // obstacle
 // const START:i32 = -5;
 // const DEST: i32 = -6;
+const WALL: i32 = -7;
 
 #[derive(Clone)]
 struct Ind(usize, usize);
@@ -151,7 +152,23 @@ pub fn hallway (
     }
 
     astar(&mut graph, &door_pairs);
+    
 
+    for x in 0..graph.len() {
+        for y in 0..graph[0].len() {
+            if graph[x][y] == PATH {
+                commands.spawn().insert(StandPath(_ind_to_coord(x, y)));
+                for xx in x-1..=x+1 {
+                    for yy in y-1..=y+1 {
+                        if graph[xx][yy] == FREE {
+                            commands.spawn().insert(BlockPath(_ind_to_coord(xx, yy)));
+                            graph[xx][yy] = WALL;
+                        }
+                    }
+                }
+            }
+        }
+    }
     //_print_graph(&graph);
 }
 fn find_doors(
@@ -278,6 +295,7 @@ fn astar_search(graph: &mut Vec<Vec<i32>>, stepped: &mut Vec<Vec<Option<Option<I
             }
         }
     }
+    graph[start.0][start.1] = PATH;
 }
 fn distance(curr: &Ind, dest: &Ind) -> f32 {
     ((dest.0 as f32 - curr.0 as f32).powf(2.) + (dest.1 as f32 - curr.1 as f32).powf(2.)).sqrt()
@@ -384,6 +402,9 @@ fn _print_graph (graph: &Vec<Vec<i32>>) {
             }
             else if num == ROOM {
                 print!("[]");
+            }
+            else if num == WALL {
+                print!("**")
             }
             else {
                 let num = num % 100;
