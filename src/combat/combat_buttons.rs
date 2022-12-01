@@ -178,7 +178,6 @@ pub fn button_system(
         }
     }
 }
-//Can probably put this with the other button system
 //This checks which button was clicked
 pub fn combat_button_system2(
     query: Query<(&Interaction, &CombatOptions), (Changed<Interaction>, With<Button>)>,

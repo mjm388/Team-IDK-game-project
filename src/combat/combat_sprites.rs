@@ -22,7 +22,20 @@ pub fn spawn_enemy_sprite(
 	enemy_type: EnemyType,
 ){
 	let stats = match enemy_type {
-		EnemyType::Square => CombatStats{
+		EnemyType::Mob => CombatStats{
+			health: 20,
+			max_health: 20,
+			tp: 10,
+			max_tp: 10,
+			token: 0,
+			max_token: 3,
+			guard: false,
+			double: false,
+			block: false,
+			tp_cost_mult: 1,
+			use_token: false,
+		},
+		EnemyType::Boss => CombatStats{
 			health: 20,
 			max_health: 20,
 			tp: 10,
@@ -37,7 +50,8 @@ pub fn spawn_enemy_sprite(
 		},
 	};
 	let enemy_handle = match enemy_type{
-		EnemyType::Square => asset_server.load("Enemy_Combat.png"),
+		EnemyType::Mob => asset_server.load("Enemy_Combat.png"),
+		EnemyType::Boss => asset_server.load("Boss.png"),
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
@@ -200,14 +214,15 @@ pub fn spawn_player_sprite(
 		.id();
 }
 
-pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>, player_health: Query<Entity, With<PlayerHealthBar>>, enemy_log: Query<Entity, With<EnemyLog>>,){
+pub fn despawn_player(
+	mut commands: Commands, 
+	player_query: Query<Entity, With<Player>>, 
+	player_health: Query<Entity, With<PlayerHealthBar>>,
+){
     for entity in player_query.iter(){
         commands.entity(entity).despawn_recursive();
     }
 	for entity in player_health.iter(){
-		commands.entity(entity).despawn_recursive();
-	}
-	for entity in enemy_log.iter(){
 		commands.entity(entity).despawn_recursive();
 	}
 }
