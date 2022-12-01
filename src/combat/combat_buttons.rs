@@ -6,7 +6,7 @@ use bevy::{
 use rand::Rng;
 
 use crate::{BossTrigger};
-use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, combat_sprites::update_log_text, EnemyLog};
 
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
@@ -186,6 +186,7 @@ pub fn combat_button_system2(
 	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
 	mut qtable: Query<&mut CombatAgent>,
 	mut boss_flag: Query<&mut BossTrigger>,
+	mut enemy_log: Query<&mut EnemyLog>
     //mut state: ResMut<State<GameState>>,
 ) {
 	let boss_fight = boss_flag.single_mut();
@@ -262,6 +263,9 @@ pub fn combat_button_system2(
 			if player_move == 5 {
 				max_move = second_move;
 			}
+
+			let mut log_text = enemy_log.single_mut();
+			log_text.enemy_move = max_move.clone();
 
             match button{
                 CombatOptions::Attack => {

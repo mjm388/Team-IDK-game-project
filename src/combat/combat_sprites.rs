@@ -1,8 +1,10 @@
+use std::fmt::format;
+
 use bevy::{
 	prelude::*,
 };
 
-use super::{Enemy, Player};
+use super::{Enemy, Player, EnemyLog};
 use crate::combat::{EnemyType, CombatStats};
 
 #[derive(Component)]
@@ -10,6 +12,9 @@ pub struct PlayerHealthBar;
 
 #[derive(Component)]
 pub struct EnemyHealthBar;
+
+#[derive(Component)]
+pub struct LogText;
 
 pub fn spawn_enemy_sprite(
 	commands: &mut Commands,
@@ -119,7 +124,8 @@ pub fn spawn_player_sprite(
 	
 	let health_text = format!("Health: {}/{}", stats.health, stats.max_health);
 	let tp_text = format!("\nTP: {}/{}", stats.tp, stats.max_tp);
-	let token_text = format!("\nToken: {}/{}", stats.token, stats.max_token);
+	let token_text = format!("\nToken: {}/{}\n\n", stats.token, stats.max_token);
+	let log_text = format!("You Encountered An Enemy!");
     let text_style = TextStyle {
         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 30.0,
@@ -135,6 +141,12 @@ pub fn spawn_player_sprite(
         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 30.0,
         color: Color::YELLOW,
+    };
+
+	let log_text_style = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::BLACK,
     };
     //let box_size = Vec2::new(200.0, 100.0);
     //let box_position = Vec2::new(-425., -250.0);
@@ -153,12 +165,16 @@ pub fn spawn_player_sprite(
 					token_text, 
 					token_text_style,
 				),
+				TextSection::new(
+					log_text, 
+					log_text_style,
+				),
         	])
 			.with_text_alignment(TextAlignment::TOP_CENTER)
 			.with_style(Style{
 				position: UiRect{
 					left: Val::Px(100.0),
-					bottom: Val::Px(200.0),
+					bottom: Val::Px(100.0),
 					..default()
 				},
 				position_type: PositionType::Absolute,
@@ -203,7 +219,7 @@ pub fn update_player_text(
 	for mut text in &mut player_text_query {
 		text.sections[0].value = format!("Health: {}/{}", player.health, player.max_health);
 		text.sections[1].value = format!("\nTP: {}/{}", player.tp, player.max_tp);
-		text.sections[2].value = format!("\nToken: {}/{}", player.token, player.max_token);
+		text.sections[2].value = format!("\nToken: {}/{}\n\n", player.token, player.max_token);
 	}
 }
 pub fn update_enemy_text(
@@ -213,5 +229,15 @@ pub fn update_enemy_text(
 	let enemy = enemy_query.single();
 	for mut text in &mut enemy_text_query {
 		text.sections[0].value = format!("Health: {}/{}", enemy.health, enemy.max_health);
+	}
+}
+
+pub fn update_log_text(
+	mut log_text_query: Query<&mut Text, With<PlayerHealthBar>>,
+	enemy_log: Query<&EnemyLog>,
+) {
+	let log = enemy_log.single();
+	for mut text in &mut log_text_query {
+		text.sections[3].value = format!("Enemy {}",log.enemy_move);
 	}
 }
