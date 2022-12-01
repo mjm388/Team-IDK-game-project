@@ -1,10 +1,14 @@
 use bevy::prelude::*;
 
 use crate::{
-	GameState,
-    map_gen::Room,
-    map_gen::random_objs::Decor,
-    map_gen::random_objs::DecorType,
+    GameState,
+    map_gen::{
+        Room,
+        BlockPath,
+        StandPath,
+        random_objs::Decor,
+        random_objs::DecorType,
+    }
 };
 
 pub const TILE_SIZE: f32 = 40.;
@@ -47,6 +51,8 @@ fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
     asset_server: Res<AssetServer>,
+    block_path: Query<&BlockPath>,
+    stand_path: Query<&StandPath>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let wall_handle = asset_server.load("BrickWall2.png");
@@ -73,7 +79,7 @@ fn create_random_room(
         let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
         let y = (room.center.y-(room.size.y-1.)/2.) * TILE_SIZE;
         let z = 0.;
-        println!("Room {},{}", x, y);
+        // println!("Room {},{}", x, y);
         
         let x_size = room.size.x as usize;
         let y_size = room.size.y as usize;
@@ -125,7 +131,7 @@ fn create_random_room(
                 
             }
         }
-        if room.id == 13 {
+        if room.id == 1 {
             commands.spawn_bundle(SpriteSheetBundle {
                 texture_atlas: door_atlas_handle.clone(),
                 transform: Transform {
@@ -141,7 +147,7 @@ fn create_random_room(
             .insert(DoorTile);
             info!("Door added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
-        if room.id == 14 {
+        if room.id == 2 {
             commands.spawn_bundle(SpriteSheetBundle {
                 texture_atlas: key_atlas_handle.clone(),
                 transform: Transform {
@@ -158,6 +164,41 @@ fn create_random_room(
             info!("Key added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
     }
+    // fill door holes
+    for hole in block_path.iter() {
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: wall_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new((hole.0.x) * TILE_SIZE, (hole.0.y) * TILE_SIZE, 0.),
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(WallTile)
+            .insert(TileCollider);
+    }
+    for hole in stand_path.iter() {
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: floor_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new((hole.0.x) * TILE_SIZE, (hole.0.y) * TILE_SIZE, 0.),
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(FloorTile);
+    }
+
 }
 
 fn render_objects(
