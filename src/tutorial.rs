@@ -34,7 +34,7 @@ fn derender(
 ){
     for (mut v, _e) in screen.iter_mut() {
         v.is_visible = false;
-        info!("Derendering Tutorial");
+        //info!("Derendering Tutorial");
     }
 }
 
@@ -43,7 +43,7 @@ fn render(
 ){
     for (mut v, _e) in screen.iter_mut() {
         v.is_visible = true;
-        info!("Rendering Tutorial");
+        //info!("Rendering Tutorial");
     }
 }
 

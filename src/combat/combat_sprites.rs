@@ -50,8 +50,8 @@ pub fn spawn_enemy_sprite(
 		},
 	};
 	let enemy_handle = match enemy_type{
-		EnemyType::Mob => asset_server.load("Enemy_Combat.png"),
-		EnemyType::Boss => asset_server.load("Boss.png"),
+		EnemyType::Mob => asset_server.load("ghostEnemy.png"),
+		EnemyType::Boss => asset_server.load("ghostBoss.png"),
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
