@@ -50,6 +50,7 @@ impl Plugin for CombatPlugin{
 			.with_system(combat_button_system2)
 			.with_system(update_player_text)
 			.with_system(update_enemy_text)
+			.with_system(update_log_text)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
@@ -79,6 +80,11 @@ pub struct Background;
 pub struct CombatAgent{
 	pub(crate) q: HashMap<String, HashMap<String, isize>>,
 	pub(crate) q2: HashMap<String, HashMap<String, isize>>,
+}
+
+#[derive(Component)]
+pub struct EnemyLog{
+	pub enemy_move: String,
 }
 
 fn spawn_combat_background(
@@ -127,6 +133,11 @@ fn set_combat(
 		&mut texture_atlases, 
 		player_translation,
 	);
+	let enemy_log = EnemyLog{
+		enemy_move: "Encountered".to_string(),
+	};
+	commands.spawn().insert(enemy_log);
+
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(40.0);
