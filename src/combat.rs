@@ -13,6 +13,8 @@ pub(crate) mod combat_sprites;
 pub(crate) mod combat_structs;
 pub(crate) mod combat_ai;
 
+use crate::{BossTrigger};
+
 use combat_buttons::*;
 
 use combat_sprites::*;
@@ -22,9 +24,12 @@ use combat_structs::{
 	CombatStats,
 };
 
+
+
 #[derive(Clone, Copy)]
 pub enum EnemyType{
-	Square,
+	Mob,
+	Boss,
 }
 
 #[derive(Component, PartialEq, Clone, Copy)]
@@ -115,10 +120,16 @@ fn set_combat(
 	mut commands: Commands,
 	asset_server: Res<AssetServer>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,	
+	mut boss_flag: Query<&mut BossTrigger>,
 ){	
+	let boss_fight = boss_flag.single_mut();
+	let enemy = if boss_fight.boss_trigger{
+		EnemyType::Boss 
+	}else{
+		EnemyType::Mob
+	};
 	spawn_combat_background(&mut commands, &asset_server, &mut texture_atlases);
 	let enemy_translation = Vec3::new(-50., 100., 900.);
-	let enemy = EnemyType::Square;
 	spawn_enemy_sprite(
 		&mut commands,
 		&asset_server,
@@ -260,9 +271,14 @@ fn set_combat(
 }
 
 fn despawn_background(
-	mut commands: Commands, background_query: Query<Entity, With<Background>>
+	mut commands: Commands, 
+	background_query: Query<Entity, With<Background>>,
+	combat_log: Query<Entity, With<EnemyLog>>,
 ){
 	for entity in background_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
+	for entity in combat_log.iter(){
         commands.entity(entity).despawn_recursive();
     }
 }
