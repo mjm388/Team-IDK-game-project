@@ -3,9 +3,10 @@ use std::collections::HashMap;
 use bevy::{
 	prelude::*,
 };
+use rand::Rng;
 
 use crate::{BossTrigger};
-use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, EnemyLog};
 
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
@@ -185,6 +186,7 @@ pub fn combat_button_system2(
 	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
 	mut qtable: Query<&mut CombatAgent>,
 	mut boss_flag: Query<&mut BossTrigger>,
+	mut enemy_log: Query<&mut EnemyLog>
     //mut state: ResMut<State<GameState>>,
 ) {
 	let boss_fight = boss_flag.single_mut();
@@ -211,21 +213,59 @@ pub fn combat_button_system2(
 				player_stats.health, player_stats.tp, player_stats.token, player_stats.double, enemy_stats.health, enemy_stats.tp, enemy_stats.token, enemy_stats.double);
 
 			let mut temp_table = HashMap::new();
-			temp_table.insert("Attack".to_string(), 0);
+			if enemy_stats.token>2 {
+				temp_table.insert("Unleash".to_string(), 0);
+			} else if enemy_stats.tp > if enemy_stats.double {8} else {4} {
+				temp_table.insert("Charge".to_string(), 0);
+			} else if enemy_stats.tp == 0 {
+				temp_table.insert("Recover".to_string(), 0);
+			} else if enemy_stats.token>0 {
+				temp_table.insert("Unleash".to_string(), 0);
+			} else {
+				temp_table.insert("Attack".to_string(), 0);
+			}
 			let inner_table = q.get(&first_key).unwrap_or(&temp_table);
 			let max_value = 
 				inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000);
 			let mut max_move = String::new();
-			if max_value.eq(&-100000) {
-				max_move = "Attack".to_string();
-			} else {
+			let mut second_move = String::new();
+			let mut second_max = -100000;
+			let mut max_found = false;
+			if !inner_table.eq(&temp_table) && inner_table.keys().len()>1{
 				for key in inner_table.keys() {
-					if inner_table.get(key).unwrap() == max_value {
+					if !max_found && inner_table.get(key).unwrap() == max_value {
 						max_move = key.to_string();
-						break;
+						max_found = true;
+					} else if inner_table.get(key).unwrap() > &second_max {
+						second_max = *inner_table.get(key).unwrap();
+						second_move = key.to_string();
 					}
 				};
+			} else if !inner_table.eq(&temp_table) {
+				for key in inner_table.keys() {
+					if !max_found && inner_table.get(key).unwrap() == max_value {
+						max_move = key.to_string();
+						max_found = true;
+					}
+				};
+				for second_key in temp_table.keys() {
+					second_move = second_key.to_string();
+				}
+			} else {
+				for key in inner_table.keys() {
+					max_move = key.to_string();
+					second_move = key.to_string();
+				};
 			}
+
+			let mut rng = rand::thread_rng();
+        	let player_move = rng.gen_range(1..=5);
+			if player_move == 5 {
+				max_move = second_move;
+			}
+
+			let mut log_text = enemy_log.single_mut();
+			log_text.enemy_move = max_move.clone();
 
             match button{
                 CombatOptions::Attack => {
@@ -382,12 +422,14 @@ pub fn combat_button_system2(
 					"Unleash" => {
 						match enemy_stats.token {
 							1 => {
+								println!("Enemy Unleash 1");
 								log.enemy_damage = 2;
 								log.enemy_tp_change += 1;
 								enemy_stats.use_token = true;
 							}
 	
 							2 => {
+								println!("Enemy Unleash 2");
 								log.enemy_damage = 6;
 								log.enemy_tp_change += 1;
 								log.player_tp_change += -1;
@@ -395,6 +437,7 @@ pub fn combat_button_system2(
 							}
 	
 							3 => {
+								println!("Enemy Unleash 3");
 								log.enemy_damage = 10;
 								log.enemy_health_change += 20;
 								enemy_stats.use_token = true;
