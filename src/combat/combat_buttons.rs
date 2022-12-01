@@ -6,7 +6,7 @@ use bevy::{
 use rand::Rng;
 
 use crate::{BossTrigger};
-use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, combat_sprites::update_log_text, EnemyLog};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, EnemyLog};
 
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
