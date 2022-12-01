@@ -3,9 +3,10 @@ use bevy::{prelude::*,};
 
 use crate::{
 	GameState,
-    map_gen::Room,
-    //map_gen::Line,
-    map_gen::Edge,
+    map_gen::{
+        Room,
+        StandPath,
+    }
 };
 
 pub const M_TILE_SIZE: f32 = 6.;
@@ -22,7 +23,8 @@ impl Plugin for MiniMapPlugin {
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Map)
             .with_system(create_random_room)
-            .with_system(bresenhams)
+            //.with_system(bresenhams)
+            .with_system(minipaths)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Map)
 			.with_system(despawn_map)
@@ -60,36 +62,12 @@ fn despawn_map(
 	}
 }
 
-fn bresenhams(
+fn minipaths (
     mut commands: Commands,
-    edges: Query<&Edge>,
+    paths: Query<&StandPath>
 ) {
-    for line in edges.iter() {
-        let p1 = line.0;
-        let p2 = line.1;
-        let dx = (p2.x - p1.x).abs();
-        let sx = if p1.x < p2.x {
-            1
-        }
-        else {
-            -1
-        };
-        let dy = -(p2.y - p1.y).abs();
-        let sy = if p1.y < p2.y {
-            1
-        }
-        else {
-            -1
-        };
-        let mut error = dx + dy;
-
-        let mut x0 = p1.x;
-        let mut y0 = p1.y;
-        let x1 = p2.x;
-        let y1 = p2.y;
-
-        loop {
-            commands
+    for path in paths.iter() {
+        commands
             .spawn_bundle(SpriteBundle {
                 sprite: Sprite {
                     color: Color::BLUE,
@@ -97,36 +75,22 @@ fn bresenhams(
                     ..default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(x0 as f32 * 6., y0 as f32 * 6., 0.),
+                    translation: Vec3::new(path.0.x * M_TILE_SIZE, path.0.y * M_TILE_SIZE, 0.),
                     ..default()
                 },
                 ..default()
             })
             .insert(MiniMapSprite);
-
-            if x0 == x1 && y0 == y1 { break; }
-            let e2 = 2. * error;
-            if e2 >= dy {
-                if x0 == x1 { break; }
-                error = error + dy;
-                x0 = x0 + sx as f32;
-            }
-            if e2 <= dx {
-                if y0 == y1 { break; }
-                error = error + dx;
-                y0 = y0 + sy as f32;
-            }
-        }
     }
 }
 
 // fn bresenhams(
 //     mut commands: Commands,
-//     lines: Query<&Line>,
+//     edges: Query<&Edge>,
 // ) {
-//     for line in lines.iter() {
-//         let p1 = line.p1;
-//         let p2 = line.p2;
+//     for line in edges.iter() {
+//         let p1 = line.0;
+//         let p2 = line.1;
 //         let dx = (p2.x - p1.x).abs();
 //         let sx = if p1.x < p2.x {
 //             1
