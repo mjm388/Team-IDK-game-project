@@ -156,17 +156,17 @@ impl Agent<CombatState>for AIAgent{
         
         let q = &self.q;
         let first_key = format!("{},{},{},{},{},{},{},{}", 
-				self.state.player_health, self.state.player_tp, self.state.player_token, self.state.player_double, self.state.enemy_health, self.state.enemy_tp, self.state.enemy_token, self.state.enemy_double);
+				self.state.enemy_health, self.state.enemy_tp, self.state.enemy_token, self.state.enemy_double, self.state.player_health, self.state.player_tp, self.state.player_token, self.state.player_double);
 
 		let mut temp_table = HashMap::new();
 
-		if self.state.enemy_token>2 {
+		if self.state.player_token>2 {
 			temp_table.insert("Unleash".to_string(), 0);
-		} else if self.state.enemy_tp > if self.state.enemy_double {8} else {4} {
+		} else if self.state.player_tp > if self.state.player_double {8} else {4} {
 			temp_table.insert("Charge".to_string(), 0);
-		} else if self.state.enemy_tp > 5 {
+		} else if self.state.player_tp > 5 {
 			temp_table.insert("Block".to_string(), 0);
-		} else if self.state.enemy_tp <2 {
+		} else if self.state.player_tp <2 {
 			temp_table.insert("Recover".to_string(), 0);
 		} else {
 			temp_table.insert("Attack".to_string(), 0);
