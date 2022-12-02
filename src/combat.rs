@@ -130,7 +130,7 @@ fn set_combat(
 		EnemyType::Mob
 	};
 	spawn_combat_background(&mut commands, &asset_server, &mut texture_atlases);
-	let enemy_translation = Vec3::new(-50., 100., 900.);
+	let enemy_translation = Vec3::new(-50., 10., 900.);
 	spawn_enemy_sprite(
 		&mut commands,
 		&asset_server,

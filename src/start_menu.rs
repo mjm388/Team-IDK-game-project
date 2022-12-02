@@ -37,7 +37,7 @@ fn derender_objects(
 ){
     for (mut v, _e) in screen.iter_mut() {
         v.is_visible = false;
-        info!("rendering start menu");
+        //info!("rendering start menu");
     }
 }
 
@@ -46,7 +46,7 @@ fn render_objects(
 ){
     for (mut v, _e) in screen.iter_mut() {
         v.is_visible = true;
-        info!("rendering start menu");
+        //info!("rendering start menu");
     }
 }
 
