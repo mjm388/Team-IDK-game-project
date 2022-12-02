@@ -74,7 +74,7 @@ fn main() {
 	}
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
-	let zipfile = File::open("agent.zip").unwrap();
+	let zipfile = File::open("agent2.zip").unwrap();
 	let mut archive = zip::ZipArchive::new(zipfile).unwrap();
 	//Loops through all files in the zip for extraction
 	for i in 0..archive.len() {
