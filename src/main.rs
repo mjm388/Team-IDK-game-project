@@ -57,8 +57,7 @@ fn main() {
 			present_mode: PresentMode::Fifo,
 			..default()
 		})
-		.add_state(GameState::StartMenu)//change the state from overworld to startstate to test the start menu
-		//.add_state(GameState::Overworld)
+		.add_state(GameState::StartMenu)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
 		.add_system(change_state)
@@ -151,12 +150,12 @@ fn change_state(
 			game_state.set(GameState::Credits).unwrap();
 		}
 		//display map
-		if input.just_pressed(KeyCode::M) && game_state.current() != &GameState::Map{
+		if input.just_pressed(KeyCode::M) && game_state.current() != &GameState::Map && game_state.current() != &GameState::Combat{
 			input.reset(KeyCode::M);
 			game_state.set(GameState::Map).unwrap();
 		}
 		//removed map
-		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map{
+		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map && game_state.current() != &GameState::Combat{
 			input.reset(KeyCode::M);
 			game_state.set(GameState::Overworld).unwrap();
 		}
