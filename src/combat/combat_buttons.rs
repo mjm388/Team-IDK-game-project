@@ -97,15 +97,15 @@ pub fn button_system(
 						}
 						CombatOptions::AntiMage => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 1 dmg and\nsubtracts\n2TP from enemy,\ncosts 1 TP".to_string();
+							text.sections[0].value = "Does 1 dmg and\nsubtracts\n1TP from enemy,\ncosts 1 TP".to_string();
 						}
 						CombatOptions::Double => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Double dmg on\nnext turn and 2x\n increase TP cost,\ncosts 1 TP".to_string();
+							text.sections[0].value = "Double dmg on\nnext turn and 2x\n increase TP cost,\ncosts 2 TP".to_string();
 						}
 						CombatOptions::Block => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "0.5x dmg taken\nprevent token\ngeneration,\ncosts 2TP".to_string();
+							text.sections[0].value = "0.5x dmg taken\nprevent enemy token\ngeneration,\ncosts 2TP".to_string();
 						}
 						CombatOptions::Unleash => {
 							let player_stats = player_query.single();
@@ -310,7 +310,8 @@ pub fn combat_button_system2(
 				CombatOptions::AntiMage => {
 					if player_stats.tp >= if player_stats.double {2} else {1} {
 						log.player_tp_change -= if player_stats.double {2} else {1};
-						log.enemy_tp_change -= 2;
+						//log.enemy_tp_change -= if player_stats.double {2} else {1};
+						log.enemy_tp_change -= 1;
 						log.player_damage = if player_stats.double {2} else {1};
 						valid = true;
 						player_stats.double = false;
@@ -319,8 +320,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Double => {
-					if player_stats.tp >= 1 {
-						log.player_tp_change -= 1;
+					if player_stats.tp >= 2 {
+						log.player_tp_change -= 2;
 						player_stats.double = true;
 						player_stats.tp_cost_mult = 2;
 						valid = true;
@@ -402,14 +403,15 @@ pub fn combat_button_system2(
 					"AntiMage" =>{
 						println!("Enemy AntiMage");
 						log.enemy_tp_change -= if enemy_stats.double {2} else {1};
-						log.player_tp_change -= if enemy_stats.double {4} else {2};
+						//log.player_tp_change -= if enemy_stats.double {2} else {1};
+						log.player_tp_change -= 1;
 						log.enemy_damage += if enemy_stats.double {2} else {1};
 						enemy_stats.double = false;
 
 					}
 					"Double" =>{
 						println!("Enemy Double");
-						log.enemy_tp_change -= 1;
+						log.enemy_tp_change -= 2;
 						enemy_stats.double = true;
 					}
 					"Block" =>{
