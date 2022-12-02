@@ -1,3 +1,5 @@
 Cargo.lock
 target
 agent.json
+agent_hard.json
+agent_small.json

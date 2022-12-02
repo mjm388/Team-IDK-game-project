@@ -80,7 +80,12 @@ impl State for CombatState{
         if self.enemy_health <= 0{
             e_health = 0;
         }
-        let d = (self.player_max_health-p_health)*15-(self.enemy_max_health-e_health)*5+(self.enemy_token-self.player_token)-(self.enemy_max_tp-self.enemy_tp);
+        let d = (self.player_max_health-p_health)*3-(self.enemy_max_health-e_health)*3
+            + if self.enemy_token==3 {50} else {0}
+            + if p_health==0 {500} else {0}
+            + if p_health<5 {50} else {0}
+            - if self.player_token==3 {50} else {0}
+            - if e_health==0 {500} else {0};
         d.into()
     }
 
@@ -152,7 +157,7 @@ impl Agent<CombatState>for AIAgent{
         
         // randomly assumes the player's move
         let mut rng = rand::thread_rng();
-        let mut player_move = rng.gen_range(1..9);
+        let mut player_move = rng.gen_range(1..=9);
         let mut valid_move = false;
         // the following does not change the state yet but only records combat log
         while !valid_move {
@@ -183,9 +188,9 @@ impl Agent<CombatState>for AIAgent{
 
                 // heal
                 4 => {
-                    if self.state.player_tp >= if self.state.player_double {4} else {2} {
-                        log.player_tp_change += if self.state.player_double {-4} else {-2};
-                        log.player_hp_change = if self.state.player_double {-4} else {-2};
+                    if self.state.player_tp >= 2 {
+                        log.player_tp_change += -2;
+                        log.player_hp_change += 3;
                         log.player_move = 4;
                         valid_move = true;
                     }
@@ -296,9 +301,9 @@ impl Agent<CombatState>for AIAgent{
                 log.valid = true;
             },
             &CombatOptions::Heal =>{
-                if self.state.enemy_tp >= if self.state.enemy_double {4} else {2} {
-                    log.enemy_tp_change += if self.state.enemy_double {-4} else {-2};
-                    log.enemy_hp_change = if self.state.enemy_double {-4} else {-2};
+                if self.state.enemy_tp >= 2 {
+                    log.enemy_tp_change += -2;
+                    log.enemy_hp_change += 3;
                     log.valid = true;
                 }
             },
@@ -313,7 +318,7 @@ impl Agent<CombatState>for AIAgent{
                 if self.state.enemy_tp >= if self.state.enemy_double {2} else {1} {
                     log.enemy_tp_change += if self.state.enemy_double {-2} else {-1};
                     log.enemy_damage = if self.state.enemy_double {2} else {1} ;
-                    log.player_tp_change += if self.state.player_double {-4} else {-2};
+                    log.player_tp_change += -2;
                     log.valid = true;
                 }
             },
@@ -368,6 +373,7 @@ impl Agent<CombatState>for AIAgent{
             if log.enemy_damage < log.player_damage {
                 if log.enemy_block { 
                     self.state = CombatState {
+                        player_health: std::cmp::min(self.state.player_health + log.player_hp_change, self.state.player_max_health),
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: if log.player_use_token {0} else {self.state.player_token},
                         player_double: false,
@@ -379,7 +385,7 @@ impl Agent<CombatState>for AIAgent{
                     };
                 } else if log.enemy_guard {
                     self.state = CombatState {
-                        player_health: self.state.player_health - 2*log.player_damage,
+                        player_health: std::cmp::min(self.state.player_health - 2*log.player_damage + log.player_hp_change, self.state.player_max_health),
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: if log.player_use_token {0} else {self.state.player_token},
                         player_double: false,
@@ -389,10 +395,11 @@ impl Agent<CombatState>for AIAgent{
                     };
                 } else {
                     self.state = CombatState {
+                        player_health: std::cmp::min(self.state.player_health + log.player_hp_change, self.state.player_max_health),
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: if log.player_use_token {0} else {std::cmp::min(self.state.player_token + 1, self.state.player_max_token)},
                         player_double: false,
-                        enemy_health: self.state.enemy_health - log.player_damage - log.enemy_damage,
+                        enemy_health: std::cmp::min(self.state.enemy_health - log.player_damage + log.enemy_damage + log.enemy_hp_change, self.state.enemy_max_health),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_token: if log.enemy_use_token {0} else {self.state.enemy_token},
                         enemy_double: log.enemy_double,
@@ -406,6 +413,7 @@ impl Agent<CombatState>for AIAgent{
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: std::cmp::min(self.state.player_max_token, self.state.player_token + 1),
                         player_double: false,
+                        enemy_health: std::cmp::min(self.state.enemy_health + log.enemy_hp_change, self.state.enemy_max_health),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_token: if log.enemy_use_token {0} else {self.state.enemy_token},
                         enemy_double: false,
@@ -415,7 +423,7 @@ impl Agent<CombatState>for AIAgent{
                     self.state = CombatState {
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_double: false,
-                        enemy_health: self.state.enemy_health - 2*log.enemy_damage,
+                        enemy_health: std::cmp::min(self.state.enemy_health - 2*log.enemy_damage + log.enemy_hp_change, self.state.enemy_max_health),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_token: if log.enemy_use_token {0} else {self.state.enemy_token},
                         enemy_double: false,
@@ -423,10 +431,11 @@ impl Agent<CombatState>for AIAgent{
                     };
                 } else {
                     self.state = CombatState {
-                        player_health: self.state.player_health - log.enemy_damage - log.player_damage,
+                        player_health: std::cmp::min(self.state.player_health + log.player_damage - log.enemy_damage + log.player_hp_change, self.state.player_max_health),
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: if log.player_use_token {0} else {self.state.player_token},
                         player_double: log.player_double,
+                        enemy_health: std::cmp::min(self.state.enemy_health + log.enemy_hp_change, self.state.enemy_max_health),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_token: if log.enemy_use_token {0} else {std::cmp::min(self.state.enemy_token + 1, self.state.enemy_max_token)},
                         enemy_double: false,
@@ -435,8 +444,10 @@ impl Agent<CombatState>for AIAgent{
                 }
             } else {
                 self.state = CombatState {
+                    player_health: std::cmp::min(self.state.player_health + log.player_hp_change, self.state.player_max_health),
                     player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                     player_double: log.player_double,
+                    enemy_health: std::cmp::min(self.state.enemy_health + log.enemy_hp_change, self.state.enemy_max_health),
                     enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                     enemy_double: log.enemy_double,
                     ..self.state.clone()
@@ -466,7 +477,7 @@ impl Agent<CombatState>for AIAgent{
                 valid = true;
             },
             CombatOptions::Heal =>{
-                if self.state.enemy_tp >= if self.state.enemy_double {4} else {2} {
+                if self.state.enemy_tp >= 2 {
                     valid = true;
                 }
             },
