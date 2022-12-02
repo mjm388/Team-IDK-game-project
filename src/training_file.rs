@@ -4,7 +4,7 @@ use std::collections::HashMap;
 */
 
 use std::fmt::{Display, Formatter};
-use std::fs::File;
+use std::{fs::File, io::BufReader};
 
 use game::mdp::{Agent,State};
 use game::strategy::explore::RandomExplore;
@@ -13,8 +13,6 @@ use game::strategy::terminate::GivenIteration;
 use game::{AgentTrainer, AgentT};
 use rand::Rng;
 use serde::{Serialize, Deserialize};
-
-
 
 #[derive(PartialEq, Eq, Hash, Clone, Serialize, Deserialize, Copy)]
 struct CombatState{
@@ -112,6 +110,7 @@ fn random_action(&self) -> Self::Act {
 
 struct AIAgent{
     state: CombatState,
+    q: HashMap<String, HashMap<String, isize>>,
 }
 
 impl Agent<CombatState>for AIAgent{
@@ -155,8 +154,134 @@ impl Agent<CombatState>for AIAgent{
             valid: false,
         };
         
-        // randomly assumes the player's move
+        let q = &self.q;
+        let first_key = format!("{},{},{},{},{},{},{},{}", 
+				self.state.player_health, self.state.player_tp, self.state.player_token, self.state.player_double, self.state.enemy_health, self.state.enemy_tp, self.state.enemy_token, self.state.enemy_double);
+
+		let mut temp_table = HashMap::new();
+
+		if self.state.enemy_token>2 {
+			temp_table.insert("Unleash".to_string(), 0);
+		} else if self.state.enemy_tp > if self.state.enemy_double {8} else {4} {
+			temp_table.insert("Charge".to_string(), 0);
+		} else if self.state.enemy_tp > 5 {
+			temp_table.insert("Block".to_string(), 0);
+		} else if self.state.enemy_tp <2 {
+			temp_table.insert("Recover".to_string(), 0);
+		} else {
+			temp_table.insert("Attack".to_string(), 0);
+		}
+		let inner_table = q.get(&first_key).unwrap_or(&temp_table);
+		let max_value = inner_table.values().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&-100000);
+		let mut max_move = String::new();
+		let mut second_move = String::new();
+		let mut second_max = -100000;
+		let mut max_found = false;
+		if !inner_table.eq(&temp_table) && inner_table.keys().len()>1{
+			for key in inner_table.keys() {
+				if !max_found && inner_table.get(key).unwrap() == max_value {
+					max_move = key.to_string();
+					max_found = true;
+				} else if inner_table.get(key).unwrap() > &second_max {
+					second_max = *inner_table.get(key).unwrap();
+					second_move = key.to_string();
+				}
+			};
+		} else if !inner_table.eq(&temp_table) {
+			for key in inner_table.keys() {
+				if !max_found && inner_table.get(key).unwrap() == max_value {
+					max_move = key.to_string();
+					max_found = true;
+				}
+			};
+			for second_key in temp_table.keys() {
+				second_move = second_key.to_string();
+			}
+		} else {
+			for key in inner_table.keys() {
+			    max_move = key.to_string();
+			    second_move = key.to_string();
+			};
+		}
+
         let mut rng = rand::thread_rng();
+        	let player_move = rng.gen_range(1..=5);
+			if player_move == 5 {
+				max_move = second_move;
+			}
+        
+        match max_move.as_str(){
+            "Attack" =>{
+                log.player_damage = if self.state.player_double {2} else {1};
+                log.player_move = 1;
+            }
+            "Charge" =>{
+                log.player_tp_change -= if self.state.player_double {8} else {4};
+                log.player_damage = if self.state.player_double {6} else {3};   
+                log.player_move = 2; 
+            }
+            "Recover" =>{
+                log.player_tp_change += 4;
+                log.player_move = 3;
+            }
+            "Heal" =>{
+                log.player_tp_change += -2;
+                log.player_hp_change += 3;
+                log.player_move = 4;
+            }
+            "Guard" =>{
+                log.player_tp_change += -6;
+                log.player_guard = true;
+                log.player_move = 5;
+            }
+            "AntiMage" =>{
+                log.player_tp_change += if self.state.player_double {-2} else {-1};
+                log.enemy_tp_change += if self.state.player_double {-4} else {-2};
+                log.player_damage += if self.state.player_double {2} else {1};    
+                log.player_move = 6;            
+            }
+            "Double" =>{
+                log.player_tp_change += -1;
+                log.player_double = true;
+                log.player_move = 7;
+            }
+            "Block" =>{
+                log.player_tp_change += -2;
+                log.player_block = true;
+                log.player_move = 8;
+            }
+            "Unleash" => {
+                match self.state.player_token {
+                    1 => {
+                        log.player_damage = 2;
+                        log.player_tp_change += 1;
+                        log.player_use_token = true;
+                        log.player_move = 9;
+                    }
+                    2 => {
+                        log.player_damage = 6;
+                        log.player_tp_change += 1;
+                        log.enemy_tp_change += -1;
+                        log.player_use_token = true;
+                        log.player_move = 10;
+                    }
+                    3 => {
+                        log.player_damage = 10;
+                        log.player_hp_change = 20;
+                        log.player_use_token = true;
+                        log.player_move = 11;
+                    }
+                    _ => {
+                        println!("Token Error");
+                    }
+                }
+            }
+            _ =>{
+                panic!("Shouldn't happen");
+            }
+        }
+        // randomly assumes the player's move
+        /*let mut rng = rand::thread_rng();
         let mut player_move = rng.gen_range(1..=9);
         let mut valid_move = false;
         // the following does not change the state yet but only records combat log
@@ -282,7 +407,7 @@ impl Agent<CombatState>for AIAgent{
             if !valid_move {
                 player_move = rng.gen_range(1..9);
             }
-        }
+        }*/
 
         match action {
             &CombatOptions::Attack =>{
@@ -511,9 +636,54 @@ impl Agent<CombatState>for AIAgent{
     }
 }
 
-
+fn read_in() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
+    let f = File::open("agent.json")?;
+    let file = BufReader::new(f);
+    let ai_state = serde_json::from_reader(file)?;
+    Ok(ai_state)
+}
 
 fn main() -> Result<(), Result<(), serde_json::Error>>{
+    /*Unzips from a zipfile
+    let zipfile = File::open("agent.zip").unwrap();
+	let mut archive = zip::ZipArchive::new(zipfile).unwrap();
+	//Loops through all files in the zip for extraction
+	for i in 0..archive.len() {
+        let mut file = archive.by_index(i).unwrap();
+        let outpath = match file.enclosed_name() {
+            Some(path) => path.to_owned(),
+            None => continue,
+        };
+
+        if (*file.name()).ends_with('/') {
+            println!("File {} extracted to \"{}\"", i, outpath.display());
+            fs::create_dir_all(&outpath).unwrap();
+        } else {
+            println!(
+                "File {} extracted to \"{}\" ({} bytes)",
+                i,
+                outpath.display(),
+                file.size()
+            );
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    fs::create_dir_all(p).unwrap();
+                }
+            }
+            let mut outfile = fs::File::create(&outpath).unwrap();
+            io::copy(&mut file, &mut outfile).unwrap();
+        }
+		//Gives permisions for the files extracted
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            if let Some(mode) = file.unix_mode() {
+                fs::set_permissions(&outpath, fs::Permissions::from_mode(mode)).unwrap();
+            }
+        }
+    }*/
+    let sparring_agent = read_in().expect("not correct");
+
     let initial_state = CombatState {
         player_health: 20,
         player_max_health: 20,
@@ -533,6 +703,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     let mut trainer = AgentTrainer::new();
     let mut agent = AIAgent {
         state: initial_state.clone(),
+        q: sparring_agent,
     };
     trainer.train(
         &mut agent,
