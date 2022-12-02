@@ -90,6 +90,7 @@ pub struct CombatAgent{
 #[derive(Component)]
 pub struct EnemyLog{
 	pub enemy_move: String,
+	pub valid: bool,
 }
 
 fn spawn_combat_background(
@@ -146,6 +147,7 @@ fn set_combat(
 	);
 	let enemy_log = EnemyLog{
 		enemy_move: "Encountered".to_string(),
+		valid: true,
 	};
 	commands.spawn().insert(enemy_log);
 
