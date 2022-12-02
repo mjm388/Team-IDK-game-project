@@ -32,6 +32,9 @@ pub struct DoorTile;
 pub struct DecorTile;
 
 #[derive(Component)]
+pub struct Fog;
+
+#[derive(Component)]
 pub struct ViewShed {
     pub range: f32,
 }
@@ -41,11 +44,13 @@ impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_system(check_field_of_view)
+        .add_startup_system(create_fog)
         .add_system_set(SystemSet::on_update(GameState::Overworld)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
             .with_system(create_random_room)
             .with_system(render_objects)
+            .with_system(render_fog)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
 			.with_system(derender_all_rooms)
@@ -465,6 +470,7 @@ fn derender_all_rooms(
     mut doors: Query<Entity, With<DoorTile>>,
     mut keys: Query<Entity, With<KeyObject>>,
     mut decor: Query<Entity, With<DecorTile>>,
+    mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
 ){
 	for e in floors.iter_mut(){
 		commands.entity(e).despawn_recursive();
@@ -480,5 +486,42 @@ fn derender_all_rooms(
     }
     for d in decor.iter_mut(){
         commands.entity(d).despawn_recursive();
+    }
+    for (mut v, _e) in fog.iter_mut() {
+        v.is_visible = false;
+    }
+}
+
+fn render_fog(
+    mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
+){
+    for (mut v, _e) in fog.iter_mut() {
+        v.is_visible = true;
+    }
+}
+
+fn create_fog (
+    mut commands: Commands,
+) {
+    for x in -50..50 {
+        for y in -50..50 {
+            commands
+            .spawn_bundle(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLACK,
+                    custom_size: Some(Vec2::splat(TILE_SIZE)),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 1.),
+                    ..default()
+                },
+                visibility: Visibility {
+                    is_visible: false
+                },
+                ..default()
+            })
+            .insert(Fog);
+        }
     }
 }
