@@ -18,7 +18,6 @@ impl Plugin for MainMenuPlugin {
         .add_system_set(SystemSet::on_update(GameState::StartMenu))
         .add_system_set(SystemSet::on_enter(GameState::StartMenu)
             .with_system(render_objects)
-            .with_system(spawn_info_button)
         )
         .add_system_set(SystemSet::on_exit(GameState::StartMenu)
             .with_system(derender_objects)
