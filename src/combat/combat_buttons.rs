@@ -402,7 +402,7 @@ pub fn combat_button_system2(
 					"AntiMage" =>{
 						println!("Enemy AntiMage");
 						log.enemy_tp_change -= if enemy_stats.double {2} else {1};
-						log.player_tp_change -= enemy_stats.double {4} else {2};
+						log.player_tp_change -= if enemy_stats.double {4} else {2};
 						log.enemy_damage += if enemy_stats.double {2} else {1};
 						enemy_stats.double = false;
 
