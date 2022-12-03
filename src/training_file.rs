@@ -641,7 +641,7 @@ impl Agent<CombatState>for AIAgent{
 }
 
 fn read_in() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
-    let f = File::open("temp_boss.json")?;
+    let f = File::open("temp_mob.json")?;
     let file = BufReader::new(f);
     let ai_state = serde_json::from_reader(file)?;
     Ok(ai_state)
@@ -712,7 +712,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01),
-        &mut GivenIteration::new(700000000),
+        &mut GivenIteration::new(1000000000),
         &RandomExplore::new(),
         &initial_state,
     );
@@ -730,7 +730,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         }
     }
 
-    let writer = File::create("fixed_agent_strong3.json").unwrap();
+    let writer = File::create("new_temp_boss.json").unwrap();
     
     let _ww = serde_json::to_writer(writer, &tr); 
     return Ok(())
