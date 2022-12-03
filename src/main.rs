@@ -83,9 +83,8 @@ fn main() {
 	}
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
-	if !(Path::new("agent.json").exists() && Path::new("agent_strong.json").exists()) {
-
-		let zipfile = File::open("agent2.zip").unwrap();
+	if !(Path::new("temp_boss.json").exists() && Path::new("temp_mob.json").exists()) {
+		let zipfile = File::open("agent.zip").unwrap();
 		let mut archive = zip::ZipArchive::new(zipfile).unwrap();
 		//Loops through all files in the zip for extraction
 		for i in 0..archive.len() {
