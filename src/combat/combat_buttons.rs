@@ -3,7 +3,12 @@ use std::collections::HashMap;
 use bevy::{
 	prelude::*,
 };
+
 use rand::Rng;
+
+use crate::{
+	GameState,
+};
 
 use crate::{BossTrigger};
 use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, EnemyLog};
@@ -185,8 +190,8 @@ pub fn combat_button_system2(
 	mut player_query: Query<&mut CombatStats, Without<Enemy>>,
 	mut qtable: Query<&mut CombatAgent>,
 	mut boss_flag: Query<&mut BossTrigger>,
-	mut enemy_log: Query<&mut EnemyLog>
-    //mut state: ResMut<State<GameState>>,
+	mut enemy_log: Query<&mut EnemyLog>,
+    mut state: ResMut<State<GameState>>,
 ) {
 	let boss_fight = boss_flag.single_mut();
     for (interaction, button) in query.iter() {
@@ -508,9 +513,11 @@ pub fn combat_button_system2(
 					enemy_stats.token = 0;
 				}
 				if player_stats.health <= 0 {
-					println!("You Lose!")
+					println!("You Lose!");
+					state.set(GameState::Loss).unwrap();
 				} else if enemy_stats.health <= 0 {
-					println!("Victory!")
+					println!("Victory!");
+					state.set(GameState::Victory).unwrap();
 				}
 				player_stats.block = false;
 				player_stats.guard = false;
