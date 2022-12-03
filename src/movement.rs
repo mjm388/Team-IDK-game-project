@@ -8,12 +8,10 @@ use rand::Rng;
 use crate::{
 	GameState,
 	BossTrigger,
-	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile}, 
+	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed}, 
 	minimap::M_TILE_SIZE,
 };
-
 pub struct MovementPlugin;
-
 impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App){
         app
@@ -46,15 +44,13 @@ impl Plugin for MovementPlugin{
 
 #[derive(Component)]
 pub struct OverworldPlayer;
-
 #[derive(Component)]
 pub struct MiniPlayer;
-
 #[derive(Component)]
+
 pub struct HoldingKey {
     pub held: bool,
 }
-
 impl HoldingKey {
 	fn new(held: bool) -> HoldingKey {
 		HoldingKey {
@@ -92,6 +88,7 @@ fn setup_player(
 			},
 			..default()
 		})
+		.insert(ViewShed{range: 500.0})
 		.insert(OverworldPlayer);
 
 	// mini player
