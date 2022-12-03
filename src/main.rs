@@ -6,6 +6,7 @@ use bevy::{
 use std::fs::File;
 use std::io;
 use std::fs;
+use std::path::Path;
 
 pub const RESOLUTION: f32 = 16.0/9.0;
 
@@ -74,43 +75,45 @@ fn main() {
 	}
 
 fn setup(mut commands: Commands, _asset_server: Res<AssetServer>) {
-	let zipfile = File::open("agent2.zip").unwrap();
-	let mut archive = zip::ZipArchive::new(zipfile).unwrap();
-	//Loops through all files in the zip for extraction
-	for i in 0..archive.len() {
-        let mut file = archive.by_index(i).unwrap();
-        let outpath = match file.enclosed_name() {
-            Some(path) => path.to_owned(),
-            None => continue,
-        };
+	if !(Path::new("temp_boss.json").exists() && Path::new("temp_mob.json").exists()) {
+		let zipfile = File::open("agent.zip").unwrap();
+		let mut archive = zip::ZipArchive::new(zipfile).unwrap();
+		//Loops through all files in the zip for extraction
+		for i in 0..archive.len() {
+			let mut file = archive.by_index(i).unwrap();
+			let outpath = match file.enclosed_name() {
+				Some(path) => path.to_owned(),
+				None => continue,
+			};
 
-        if (*file.name()).ends_with('/') {
-            println!("File {} extracted to \"{}\"", i, outpath.display());
-            fs::create_dir_all(&outpath).unwrap();
-        } else {
-            println!(
-                "File {} extracted to \"{}\" ({} bytes)",
-                i,
-                outpath.display(),
-                file.size()
-            );
-            if let Some(p) = outpath.parent() {
-                if !p.exists() {
-                    fs::create_dir_all(p).unwrap();
-                }
-            }
-            let mut outfile = fs::File::create(&outpath).unwrap();
-            io::copy(&mut file, &mut outfile).unwrap();
-        }
-		//Gives permisions for the files extracted
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            if let Some(mode) = file.unix_mode() {
-                fs::set_permissions(&outpath, fs::Permissions::from_mode(mode)).unwrap();
-            }
-        }
-    }
+			if (*file.name()).ends_with('/') {
+				println!("File {} extracted to \"{}\"", i, outpath.display());
+				fs::create_dir_all(&outpath).unwrap();
+			} else {
+				println!(
+					"File {} extracted to \"{}\" ({} bytes)",
+					i,
+					outpath.display(),
+					file.size()
+				);
+				if let Some(p) = outpath.parent() {
+					if !p.exists() {
+						fs::create_dir_all(p).unwrap();
+					}
+				}
+				let mut outfile = fs::File::create(&outpath).unwrap();
+				io::copy(&mut file, &mut outfile).unwrap();
+			}
+			//Gives permisions for the files extracted
+			#[cfg(unix)]
+			{
+				use std::os::unix::fs::PermissionsExt;
+				if let Some(mode) = file.unix_mode() {
+					fs::set_permissions(&outpath, fs::Permissions::from_mode(mode)).unwrap();
+				}
+			}
+		}
+	}
 	commands.spawn_bundle(Camera2dBundle{
 		transform: Transform {
 			translation: Vec3::new(-360., 0., 100.),

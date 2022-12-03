@@ -253,7 +253,13 @@ pub fn update_log_text(
 	enemy_log: Query<&EnemyLog>,
 ) {
 	let log = enemy_log.single();
-	for mut text in &mut log_text_query {
-		text.sections[3].value = format!("Enemy {}",log.enemy_move);
+	if log.valid{
+		for mut text in &mut log_text_query {
+			text.sections[3].value = format!("Enemy {}",log.enemy_move);
+		}
+	} else {
+		for mut text in &mut log_text_query {
+			text.sections[3].value = format!("Resources not enough");
+		}
 	}
 }
