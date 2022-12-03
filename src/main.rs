@@ -58,7 +58,7 @@ struct Camera;
 fn main() {
 	App::new()
 		.insert_resource(WindowDescriptor {
-			title: String::from("Game"),
+			title: String::from("Luigo's Haunted House Tour"),
 			width: 1280.,
 			height: 720.,
 			present_mode: PresentMode::Fifo,
