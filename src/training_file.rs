@@ -236,12 +236,13 @@ impl Agent<CombatState>for AIAgent{
             }
             "AntiMage" =>{
                 log.player_tp_change += if self.state.player_double {-2} else {-1};
-                log.enemy_tp_change += if self.state.player_double {-4} else {-2};
+                //log.enemy_tp_change += if self.state.player_double {-2} else {-1};
+                log.enemy_tp_change += -1;
                 log.player_damage += if self.state.player_double {2} else {1};    
                 log.player_move = 6;            
             }
             "Double" =>{
-                log.player_tp_change += -1;
+                log.player_tp_change += -2;
                 log.player_double = true;
                 log.player_move = 7;
             }
@@ -442,14 +443,15 @@ impl Agent<CombatState>for AIAgent{
             &CombatOptions::AntiMage =>{
                 if self.state.enemy_tp >= if self.state.enemy_double {2} else {1} {
                     log.enemy_tp_change += if self.state.enemy_double {-2} else {-1};
+                    //log.player_tp_change += if self.state.enemy_double {-2} else {-1};
+                    log.player_tp_change += -1;
                     log.enemy_damage = if self.state.enemy_double {2} else {1} ;
-                    log.player_tp_change += -2;
                     log.valid = true;
                 }
             },
             &CombatOptions::Double =>{
-                if self.state.enemy_tp >= 1 {
-                    log.enemy_tp_change += -1;
+                if self.state.enemy_tp >= 2 {
+                    log.enemy_tp_change += -2;
                     log.enemy_double = true;
                     log.valid = true;
                 }
@@ -514,6 +516,7 @@ impl Agent<CombatState>for AIAgent{
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_token: if log.player_use_token {0} else {self.state.player_token},
                         player_double: false,
+                        enemy_token: std::cmp::min(self.state.enemy_max_token, self.state.enemy_token + 1),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_double: false,
                         ..self.state.clone()
@@ -548,6 +551,7 @@ impl Agent<CombatState>for AIAgent{
                     self.state = CombatState {
                         player_tp: std::cmp::max(std::cmp::min(self.state.player_tp + log.player_tp_change, self.state.player_max_tp), 0),
                         player_double: false,
+                        player_token: std::cmp::min(self.state.player_max_token, self.state.player_token + 1),
                         enemy_health: std::cmp::min(self.state.enemy_health - 2*log.enemy_damage + log.enemy_hp_change, self.state.enemy_max_health),
                         enemy_tp: std::cmp::max(std::cmp::min(self.state.enemy_tp + log.enemy_tp_change, self.state.enemy_max_tp), 0),
                         enemy_token: if log.enemy_use_token {0} else {self.state.enemy_token},
@@ -617,7 +621,7 @@ impl Agent<CombatState>for AIAgent{
                 }
             },
             CombatOptions::Double =>{
-                if self.state.enemy_tp >= 1 {
+                if self.state.enemy_tp >= 2 {
                     valid = true;
                 }
             },
@@ -637,7 +641,7 @@ impl Agent<CombatState>for AIAgent{
 }
 
 fn read_in() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
-    let f = File::open("agent.json")?;
+    let f = File::open("temp_boss.json")?;
     let file = BufReader::new(f);
     let ai_state = serde_json::from_reader(file)?;
     Ok(ai_state)
@@ -708,7 +712,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01),
-        &mut GivenIteration::new(100000000),
+        &mut GivenIteration::new(700000000),
         &RandomExplore::new(),
         &initial_state,
     );
@@ -726,7 +730,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         }
     }
 
-    let writer = File::create("agent.json").unwrap();
+    let writer = File::create("fixed_agent_strong3.json").unwrap();
     
     let _ww = serde_json::to_writer(writer, &tr); 
     return Ok(())
