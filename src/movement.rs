@@ -207,26 +207,26 @@ fn move_player(
 
 	let player_move = PLAYER_SPEED * time.delta_seconds();
 
-	let mut has_moved: bool = false;
+	let starting_pos = Vec3::new(
+		player_transform.translation.x,
+		player_transform.translation.y,
+		player_transform.translation.z,
+	);
 
 	if input.pressed(KeyCode::A) {
 		x_vel -= player_move;
-		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::D) {
 		x_vel += player_move;
-		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::W) {
 		y_vel += player_move;
-		has_moved = true;
 	}
 
 	if input.pressed(KeyCode::S) {
 		y_vel -= player_move;
-		has_moved = true;
 	}
 
 	if (x_vel.abs() + y_vel.abs()) > player_move {
@@ -234,11 +234,15 @@ fn move_player(
 		y_vel *= 0.70710678118;
 	}
 
-	let new_pos = Vec3::new (
+	let potential_pos = Vec3::new (
 		player_transform.translation.x + x_vel * TILE_SIZE,
 		player_transform.translation.y + y_vel * TILE_SIZE,
 		player_transform.translation.z,
 	);
+
+	if starting_pos.eq(&potential_pos) {
+		return;
+	}
 
 	let target_x = player_transform.translation + Vec3::new(x_vel,0.,0.) * TILE_SIZE;
 	if collision_check(target_x, &collision_tiles)
@@ -256,7 +260,7 @@ fn move_player(
 
 	if holding_transform.held == false {
 		let collision = collide (
-			new_pos,
+			player_transform.translation,
 			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
 			key_transform.translation,
 			Vec2::splat(TILE_SIZE),
@@ -268,7 +272,7 @@ fn move_player(
 	}
 	if holding_transform.held == true {
 		key_transform.translation = player_transform.translation;
-		if door_collide(new_pos, &door_objects) {
+		if door_collide(player_transform.translation, &door_objects) {
 			for _door in door_objects.iter() {
 				info!("Collided with the door while holding key");
 				boss_fight.boss_trigger = true;
@@ -279,7 +283,7 @@ fn move_player(
 		}
 	}
 
-	if has_moved{
+	if !starting_pos.eq(&player_transform.translation) {
 		random_encounter(game_state);
 	}
 }
