@@ -50,8 +50,8 @@ pub fn spawn_enemy_sprite(
 		},
 	};
 	let enemy_handle = match enemy_type{
-		EnemyType::Mob => asset_server.load("Enemy_Combat.png"),
-		EnemyType::Boss => asset_server.load("Boss.png"),
+		EnemyType::Mob => asset_server.load("ghostEnemy.png"),
+		EnemyType::Boss => asset_server.load("ghostBoss.png"),
 	};
 	let enemy_atlas = TextureAtlas::from_grid(enemy_handle, Vec2 {x:(300.), y: (500.)}, 1,1);
 	let enemy_atlas_handle = texture_atlases.add(enemy_atlas);
@@ -253,7 +253,13 @@ pub fn update_log_text(
 	enemy_log: Query<&EnemyLog>,
 ) {
 	let log = enemy_log.single();
-	for mut text in &mut log_text_query {
-		text.sections[3].value = format!("Enemy {}",log.enemy_move);
+	if log.valid{
+		for mut text in &mut log_text_query {
+			text.sections[3].value = format!("Enemy {}",log.enemy_move);
+		}
+	} else {
+		for mut text in &mut log_text_query {
+			text.sections[3].value = format!("Resources not enough");
+		}
 	}
 }

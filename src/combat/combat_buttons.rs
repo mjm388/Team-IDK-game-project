@@ -279,7 +279,8 @@ pub fn combat_button_system2(
 						valid = true;
 						player_stats.double = false;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
 				CombatOptions::Recover => {
@@ -294,7 +295,8 @@ pub fn combat_button_system2(
 						valid = true;
 						player_stats.double = false;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
 				CombatOptions::Guard => {
@@ -304,7 +306,8 @@ pub fn combat_button_system2(
 						valid = true;
 						player_stats.double = false;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
 				CombatOptions::AntiMage => {
@@ -316,7 +319,8 @@ pub fn combat_button_system2(
 						valid = true;
 						player_stats.double = false;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
 				CombatOptions::Double => {
@@ -326,7 +330,8 @@ pub fn combat_button_system2(
 						player_stats.tp_cost_mult = 2;
 						valid = true;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
 				CombatOptions::Block=> {
@@ -336,7 +341,8 @@ pub fn combat_button_system2(
 						valid = true;
 						player_stats.double = false;
 					} else {
-						println!("TP Low!")
+						println!("TP Low!");
+						log_text.valid = false;
 					}
                 }
                 CombatOptions::Unleash => {
@@ -364,12 +370,13 @@ pub fn combat_button_system2(
 						}
 
 						// this line is to avoid compile error
-						_ => println!("No Token!")
+						_ => {log_text.valid = false;}
 					}
 				},
             }
 
 			if valid{
+				log_text.valid = true;
 				// match ai move
 				match max_move.as_str(){
 					"Attack" =>{
