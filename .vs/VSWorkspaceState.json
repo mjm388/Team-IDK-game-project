@@ -1,7 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\assets",
+    "\\src",
+    "\\src\\combat",
+    "\\src\\map_gen"
   ],
-  "SelectedNode": "\\C:\\Users\\Mike\\Source\\Repos\\Team-IDK-game-project",
+  "SelectedNode": "\\src\\main.rs",
   "PreviewInSolutionExplorer": false
 }
