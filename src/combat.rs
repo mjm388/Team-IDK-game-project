@@ -56,6 +56,7 @@ impl Plugin for CombatPlugin{
 			.with_system(update_player_text)
 			.with_system(update_enemy_text)
 			.with_system(update_log_text)
+			.with_system(update_outcome_log)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Combat)
 			.with_system(set_combat)
@@ -65,12 +66,10 @@ impl Plugin for CombatPlugin{
 			.with_system(despawn_enemy)
 			.with_system(despawn_player)
 			.with_system(despawn_background)
+			.with_system(despawn_outcome_log)
 		);
     }
 }
-
-
-
 
 #[derive(Component)]
 pub struct Player;
@@ -91,6 +90,13 @@ pub struct CombatAgent{
 pub struct EnemyLog{
 	pub enemy_move: String,
 	pub valid: bool,
+}
+
+#[derive(Component)]
+pub struct OutcomeLog{
+	pub damage_taken: isize,
+	pub damage_done: isize,
+	pub double: bool,
 }
 
 fn spawn_combat_background(
@@ -138,6 +144,13 @@ fn set_combat(
 		enemy_translation,
 		enemy,
 	);
+	let outcome_log = OutcomeLog{
+		damage_taken: 0,
+		damage_done: 0,
+		double: false,
+	};
+	commands.spawn().insert(outcome_log);
+
 	let player_translation = Vec3::new(-450., 100., 900.);
 	spawn_player_sprite(
 		&mut commands, 
@@ -151,6 +164,10 @@ fn set_combat(
 	};
 	commands.spawn().insert(enemy_log);
 
+	spawn_outcome_text(
+		&mut commands,
+		&asset_server,
+	);
 	//The code below sets up the button positions using the spawn function
 	let mut left = Val::Px(850.0);
 	let mut top = Val::Px(40.0);
