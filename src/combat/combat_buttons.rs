@@ -11,7 +11,7 @@ use crate::{
 };
 
 use crate::{BossTrigger};
-use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, EnemyLog};
+use super::{CombatOptions, CombatStats, Enemy, Player, CombatLog, CombatAgent, EnemyLog, OutcomeLog};
 
 
 const COMBAT_BUTTON: Color = Color::rgb(0.15, 0.15, 0.235);
@@ -82,50 +82,50 @@ pub fn button_system(
 					match button{
 						CombatOptions::Attack => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 1 dmg".to_string();
+							text.sections[0].value = "Dmg: 1".to_string();
 						}
 						CombatOptions::Charge => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 3 dmg,\nbut costs 3 TP".to_string();
+							text.sections[0].value = "Dmg: 3,\nTP: -3".to_string();
 						}
 						CombatOptions::Recover => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Recover 3 TP".to_string();
+							text.sections[0].value = "TP: +3".to_string();
 						}
 						CombatOptions::Heal => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Heal 3 HP,\n costs 2 TP".to_string();
+							text.sections[0].value = "HP: +3,\nTP: -2".to_string();
 						}
 						CombatOptions::Guard => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Invincible, reflect\n 2x dmg back,\ncosts 4 TP".to_string();
+							text.sections[0].value = "TP: -4\nEffect: reflect 2x\ndmg back".to_string();
 						}
 						CombatOptions::AntiMage => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 1 dmg and\nsubtracts\n1TP from enemy,\ncosts 1 TP".to_string();
+							text.sections[0].value = "Dmg: 1\nTP: -1\nEffect: subtracts\n1TP from enemy".to_string();
 						}
 						CombatOptions::Double => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Double dmg on\nnext turn and 2x\n increase TP cost,\ncosts 2 TP".to_string();
+							text.sections[0].value = "TP: -2\nEffect: Double dmg \non next turn and 2x\nincrease TP cost".to_string();
 						}
 						CombatOptions::Block => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "0.5x dmg taken\nprevent enemy token\ngeneration,\ncosts 2TP".to_string();
+							text.sections[0].value = "TP: -2\nEffect: 0.5x dmg\ntaken, prevent\n enemy token \ngeneration".to_string();
 						}
 						CombatOptions::Unleash => {
 							let player_stats = player_query.single();
 							match player_stats.token{
 								1 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 3 dmg,\nreceive 2 TP\nuses all tokens".to_string();
+									text.sections[0].value = "Dmg: 3\nTP: +2\nEffect: uses all tokens".to_string();
 								}
 								2 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 6 dmg,\ntake 2 TP\nfrom enemy\nuses all tokens".to_string();
+									text.sections[0].value = "Dmg: 6\nEffect: take 2 TP\nfrom enemy,\nuses all tokens".to_string();
 								}
 								3 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 10 dmg,\nrecover 15 HP\nuses all tokens".to_string();
+									text.sections[0].value = "Dmg: 10,\nHP: +15\nEffect: uses all tokens".to_string();
 								}
 								_ => {
 									text.sections[0].style.font_size = 20.0;
@@ -192,8 +192,10 @@ pub fn combat_button_system2(
 	mut boss_flag: Query<&mut BossTrigger>,
 	mut enemy_log: Query<&mut EnemyLog>,
     mut state: ResMut<State<GameState>>,
+	mut outcome_log: Query<&mut OutcomeLog>,
 ) {
 	let boss_fight = boss_flag.single_mut();
+	let mut outcome = outcome_log.single_mut();
     for (interaction, button) in query.iter() {
         if *interaction == Interaction::Clicked{
 			let mut log = CombatLog{
@@ -467,17 +469,22 @@ pub fn combat_button_system2(
 				}
 				
 				// log calculation
+				outcome.damage_done = 0;
+				outcome.damage_taken = 0;
 				if log.player_damage > log.enemy_damage {
 					if enemy_stats.block { 
 						enemy_stats.health -= log.player_damage/2;
+						outcome.damage_done = log.player_damage/2;
 						enemy_stats.token = std::cmp::min(enemy_stats.max_token, enemy_stats.token+1);
 					} else if enemy_stats.guard {
 						player_stats.health -= log.player_damage*2;
+						outcome.damage_taken = log.player_damage*2;
 						if enemy_stats.token < enemy_stats.max_token {
 							enemy_stats.token += 1;
 						}
 					} else {
 						enemy_stats.health -= log.player_damage - log.enemy_damage;
+						outcome.damage_done = log.player_damage - log.enemy_damage;
 						if !player_stats.use_token {
 							if player_stats.token < player_stats.max_token {
 								player_stats.token += 1;
@@ -487,21 +494,30 @@ pub fn combat_button_system2(
 				} else if log.enemy_damage > log.player_damage {
 					if player_stats.block { 
 						player_stats.health -= log.enemy_damage/2;
+						outcome.damage_taken = log.enemy_damage/2;
 						player_stats.token = std::cmp::min(player_stats.max_token, player_stats.token+1);
 					} else if player_stats.guard {
 						enemy_stats.health -= log.enemy_damage*2;
+						outcome.damage_done = log.enemy_damage*2;
 						if player_stats.token < player_stats.max_token {
 							player_stats.token += 1;
 						}
 					} else {
 						player_stats.health -= log.enemy_damage - log.player_damage;
+						outcome.damage_taken = log.enemy_damage - log.player_damage;
 						if !enemy_stats.use_token {
 							if enemy_stats.token < enemy_stats.max_token {
 								enemy_stats.token += 1;
 							}
 						}
-					}
+					}		
 				}
+				outcome.damage_taken = if outcome.damage_taken > log.player_health_change {
+					outcome.damage_taken - log.player_health_change
+				}else{
+					0
+				};
+				outcome.double = player_stats.double;
 				player_stats.health = std::cmp::max(0, std::cmp::min(player_stats.max_health, player_stats.health + log.player_health_change));
 				player_stats.tp = std::cmp::max(0, std::cmp::min(player_stats.max_tp, player_stats.tp + log.player_tp_change));
 				enemy_stats.health = std::cmp::max(0, std::cmp::min(enemy_stats.max_health, enemy_stats.health + log.enemy_health_change));
