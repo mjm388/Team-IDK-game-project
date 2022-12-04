@@ -78,11 +78,15 @@ impl State for CombatState{
         if self.enemy_health <= 0{
             e_health = 0;
         }
-        let d = (self.player_max_health-p_health)*3-(self.enemy_max_health-e_health)*3
-            + if self.enemy_token==3 {50} else {0}
+        let d = (self.player_max_health-p_health)*3 - (self.enemy_max_health-e_health)*3
+            + if self.enemy_token==1 {25} else {0}
+            + if self.enemy_token==2 {50} else {0}
+            + if self.enemy_token==3 {100} else {0}
             + if p_health==0 {500} else {0}
             + if p_health<5 {50} else {0}
-            - if self.player_token==3 {50} else {0}
+            - if self.player_token==1 {25} else {0}
+            - if self.player_token==2 {50} else {0}
+            - if self.player_token==3 {100} else {0}
             - if e_health==0 {500} else {0};
         d.into()
     }
@@ -216,12 +220,12 @@ impl Agent<CombatState>for AIAgent{
                 log.player_move = 1;
             }
             "Charge" =>{
-                log.player_tp_change -= if self.state.player_double {8} else {4};
-                log.player_damage = if self.state.player_double {6} else {3};   
+                log.player_tp_change -= if self.state.player_double {6} else {3};
+                log.player_damage = if self.state.player_double {6} else {3};
                 log.player_move = 2; 
             }
             "Recover" =>{
-                log.player_tp_change += 4;
+                log.player_tp_change += 3;
                 log.player_move = 3;
             }
             "Heal" =>{
@@ -230,7 +234,7 @@ impl Agent<CombatState>for AIAgent{
                 log.player_move = 4;
             }
             "Guard" =>{
-                log.player_tp_change += -6;
+                log.player_tp_change += -4;
                 log.player_guard = true;
                 log.player_move = 5;
             }
@@ -254,21 +258,21 @@ impl Agent<CombatState>for AIAgent{
             "Unleash" => {
                 match self.state.player_token {
                     1 => {
-                        log.player_damage = 2;
-                        log.player_tp_change += 1;
+                        log.player_damage = 3;
+                        log.player_tp_change += 2;
                         log.player_use_token = true;
                         log.player_move = 9;
                     }
                     2 => {
                         log.player_damage = 6;
-                        log.player_tp_change += 1;
-                        log.enemy_tp_change += -1;
+                        log.player_tp_change += 2;
+                        log.enemy_tp_change += -2;
                         log.player_use_token = true;
                         log.player_move = 10;
                     }
                     3 => {
                         log.player_damage = 10;
-                        log.player_hp_change = 20;
+                        log.player_hp_change = 15;
                         log.player_use_token = true;
                         log.player_move = 11;
                     }
@@ -416,14 +420,14 @@ impl Agent<CombatState>for AIAgent{
                 log.valid = true;
             },
             &CombatOptions::Charge =>{
-                if self.state.enemy_tp >= if self.state.enemy_double {8} else {4}{
-                    log.enemy_tp_change += if self.state.enemy_double {-8} else {-4};
+                if self.state.enemy_tp >= if self.state.enemy_double {6} else {3}{
+                    log.enemy_tp_change += if self.state.enemy_double {-6} else {-3};
                     log.enemy_damage = if self.state.enemy_double {6} else {3};
                     log.valid = true;
                 }
             },
             &CombatOptions::Recover =>{
-                log.enemy_tp_change += 4;
+                log.enemy_tp_change += 3;
                 log.valid = true;
             },
             &CombatOptions::Heal =>{
@@ -434,8 +438,8 @@ impl Agent<CombatState>for AIAgent{
                 }
             },
             &CombatOptions::Guard =>{
-                if self.state.enemy_tp >= 6{
-                    log.enemy_tp_change += -6;
+                if self.state.enemy_tp >= 4{
+                    log.enemy_tp_change += -4;
                     log.enemy_guard = true;
                     log.valid = true;
                 }
@@ -467,23 +471,23 @@ impl Agent<CombatState>for AIAgent{
                 if self.state.enemy_token != 0 {
                     match self.state.enemy_token {
                         1 => {
-                            log.enemy_damage = 2;
-                            log.enemy_tp_change += 1;
+                            log.enemy_damage = 3;
+                            log.enemy_tp_change += 2;
                             log.enemy_use_token = true;
                             log.valid = true;
                         }
 
                         2 => {
                             log.enemy_damage = 6;
-                            log.enemy_tp_change += 1;
-                            log.player_tp_change += -1;
+                            log.enemy_tp_change += 2;
+                            log.player_tp_change += -2;
                             log.enemy_use_token = true;
                             log.valid = true;
                         }
 
                         3 => {
                             log.enemy_damage = 10;
-                            log.enemy_hp_change = 20;
+                            log.enemy_hp_change = 15;
                             log.enemy_use_token = true;
                             log.valid = true;
                         }
@@ -598,7 +602,7 @@ impl Agent<CombatState>for AIAgent{
                 valid = true;
             },
             CombatOptions::Charge =>{
-                if self.state.enemy_tp >= if self.state.enemy_double {8} else {4}{
+                if self.state.enemy_tp >= if self.state.enemy_double {6} else {3}{
                     valid = true;
                 }
             },
@@ -611,7 +615,7 @@ impl Agent<CombatState>for AIAgent{
                 }
             },
             CombatOptions::Guard =>{
-                if self.state.enemy_tp >= 6{
+                if self.state.enemy_tp >= 4{
                     valid = true;
                 }
             },
@@ -641,7 +645,7 @@ impl Agent<CombatState>for AIAgent{
 }
 
 fn read_in() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
-    let f = File::open("temp_mob.json")?;
+    let f = File::open("final_boss_ai.json")?;
     let file = BufReader::new(f);
     let ai_state = serde_json::from_reader(file)?;
     Ok(ai_state)
@@ -712,7 +716,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01),
-        &mut GivenIteration::new(1000000000),
+        &mut GivenIteration::new(2),
         &RandomExplore::new(),
         &initial_state,
     );
@@ -730,7 +734,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         }
     }
 
-    let writer = File::create("new_temp_boss.json").unwrap();
+    let writer = File::create("new_temp_boss4.json").unwrap();
     
     let _ww = serde_json::to_writer(writer, &tr); 
     return Ok(())
