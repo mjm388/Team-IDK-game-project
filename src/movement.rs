@@ -88,7 +88,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		.insert(ViewShed{range:500.0})
+		//.insert(ViewShed{range:500.0})
 		.insert(OverworldPlayer);
 
 	// mini player
@@ -239,6 +239,8 @@ fn move_player(
 		player_transform.translation.z,
 	);
 
+	fog_collide(&player_transform.translation, &fog_tiles, commands);
+
 	if starting_pos.eq(&potential_pos) {
 		return;
 	}
@@ -284,7 +286,6 @@ fn move_player(
 
 	if !starting_pos.eq(&player_transform.translation) {
 		random_encounter(game_state);
-		fog_collide(&player_transform.translation, &fog_tiles, commands);
 	}
 }
 
@@ -307,16 +308,16 @@ fn collision_check(
 }
 
 fn fog_collide(
-	player: Vec3,
+	player: &Vec3,
 	fog_tiles: &Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
 	mut commands: Commands,
 ) {
 	for (fog, s) in fog_tiles.iter() {
 		let collision = collide (
-			player,
+			*player,
 			Vec2::splat(PLAYER_SZ*TILE_SIZE*2.0),
 			fog.translation,
-			Vec2::splat(TILE_SIZE * 3.0),
+			Vec2::splat(TILE_SIZE * 6.0),
 		);
 		if collision.is_some() {
 			commands.entity(s).despawn_recursive();
