@@ -40,13 +40,12 @@ pub struct RoomRendPlugin;
 impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
-        //.add_system(check_field_of_view)
+        .add_system(check_field_of_view)
         .add_system_set(SystemSet::on_update(GameState::Overworld)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
             .with_system(create_random_room)
             .with_system(render_objects)
-            .with_system(check_field_of_view)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
 			.with_system(derender_all_rooms)
@@ -54,71 +53,6 @@ impl Plugin for RoomRendPlugin {
         
         ;
     }
-}
-fn check_field_of_view(
-    mut commands: Commands,
-	mut floors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<FloorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-	mut walls: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<WallTile>, Without<TileCollider>,Without<FloorTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut decor: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DecorTile>, Without<TileCollider>,Without<WallTile>,Without<FloorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut doors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DoorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut keys: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<KeyObject>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut rooms: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<Room>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
-    mut block_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<BlockPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<FloorTile>,Without<StandPath>)>,
-    mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<FloorTile>)>,
-    mut player : Query<(Entity, &Transform, &mut ViewShed), (With<OverworldPlayer>, Without<TileCollider>)>,
-){
-    let(_,player_transform,view_shed)=player.single_mut();
-    
-    for (_,floors_sprite,floors_transform,mut floors_visibility) in floors.iter_mut(){
-            if (floors_transform.translation-player_transform.translation).length() < view_shed.range {
-
-              floors_visibility.is_visible=true ;
-            } 
-    }
-    for (_,walls_sprite,walls_transform,mut walls_visibilityy) in walls.iter_mut(){
-        if (walls_transform.translation-player_transform.translation).length() < view_shed.range {
-
-              walls_visibilityy.is_visible=true;
-          } 
-    }
-    for (_,decor_sprite,decors_transformm,mut decors_visibility) in decor.iter_mut(){
-        if (decors_transformm.translation-player_transform.translation).length() < view_shed.range {
-
-            decors_visibility.is_visible=true ;
-          } 
-    }
-    for (_,doors_sprite ,doors_transformm,mut doors_visibility) in doors.iter_mut(){
-        if (doors_transformm.translation-player_transform.translation).length() < view_shed.range {
-
-            doors_visibility.is_visible=true ;
-          } 
-    }
-    for (_,keys_sprite,keys_transform,mut keys_visibility) in keys.iter_mut(){
-        if (keys_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            keys_visibility.is_visible=true ;
-          } 
-
-    }
-    for (_,rooms_sprite, rooms_transform,mut rooms_visibility) in rooms.iter_mut(){
-        if (rooms_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            rooms_visibility.is_visible=true ;
-          } 
-    }
-    for (_,block_sprite, block_transform,mut block_visibilityy) in block_path.iter_mut(){
-        if (block_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            block_visibilityy.is_visible=true ;
-          } 
-    }
-    for (_,stand_sprite,stand_transform,mut stand_visibility) in stand_path.iter_mut(){
-        if (stand_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            stand_visibility.is_visible=true ;
-          } 
-    }
-    
 }
 
 fn create_random_room(
@@ -449,6 +383,81 @@ fn render_objects(
         }
     }
 }
+
+fn check_field_of_view(
+    mut commands: Commands,
+	mut floors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<FloorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
+	mut walls: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<WallTile>, Without<TileCollider>,Without<FloorTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
+    mut decor: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DecorTile>, Without<TileCollider>,Without<WallTile>,Without<FloorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
+    mut doors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DoorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
+    mut keys: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<KeyObject>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
+    mut rooms: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<Room>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut block_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<BlockPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<FloorTile>,Without<StandPath>)>,
+    mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<FloorTile>)>,
+    mut player : Query<(Entity, &Transform, &mut ViewShed), (With<OverworldPlayer>, Without<TileCollider>)>,
+){
+    let(_,player_transform,view_shed)=player.single_mut();
+    
+    for (_,floors_sprite,floors_transform,mut floors_visibility) in floors.iter_mut(){
+        
+        if (floors_transform.translation-player_transform.translation).length() < view_shed.range {
+
+            floors_visibility.is_visible=true ;    
+            } 
+    }
+    for (_,walls_sprite,walls_transform,mut walls_visibilityy) in walls.iter_mut(){
+       
+        if (walls_transform.translation-player_transform.translation).length() < view_shed.range {
+            walls_visibilityy.is_visible=true;
+              
+          } 
+    }
+    for (_,decor_sprite,decors_transformm,mut decors_visibility) in decor.iter_mut(){
+       ;
+        if (decors_transformm.translation-player_transform.translation).length() < view_shed.range {
+            decors_visibility.is_visible=true 
+            
+          } 
+    }
+    for (_,doors_sprite ,doors_transformm,mut doors_visibility) in doors.iter_mut(){
+        
+        if (doors_transformm.translation-player_transform.translation).length() < view_shed.range {
+
+            doors_visibility.is_visible=true ;
+          } 
+    }
+    for (_,keys_sprite,keys_transform,mut keys_visibility) in keys.iter_mut(){
+       
+        if (keys_transform.translation-player_transform.translation).length() < view_shed.range {
+
+            keys_visibility.is_visible=true ;
+          } 
+
+    }
+    for (_,rooms_sprite, rooms_transform,mut rooms_visibility) in rooms.iter_mut(){
+        
+        if (rooms_transform.translation-player_transform.translation).length() < view_shed.range {
+            rooms_visibility.is_visible=true ;
+           
+          } 
+    }
+    for (_,block_sprite, block_transform,mut block_visibilityy) in block_path.iter_mut(){
+        
+        if (block_transform.translation-player_transform.translation).length() < view_shed.range {
+            block_visibilityy.is_visible=true ;
+            
+          } 
+    }
+    for (_,stand_sprite,stand_transform,mut stand_visibility) in stand_path.iter_mut(){
+       
+        if (stand_transform.translation-player_transform.translation).length() < view_shed.range {
+
+            stand_visibility.is_visible=true ;
+          } 
+    }
+    
+}
+
 
 fn derender_all_rooms(
 	mut commands: Commands,
