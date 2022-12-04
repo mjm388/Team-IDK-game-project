@@ -18,6 +18,8 @@ mod map_gen;
 mod room_renderer;
 mod start_menu;
 mod tutorial;
+mod loss;
+mod victory;
 
 
 use credits::CreditsPlugin;
@@ -28,6 +30,8 @@ use map_gen::RoomGenPlugin;
 use room_renderer::RoomRendPlugin;
 use start_menu::MainMenuPlugin;
 use tutorial::TutorialPlugin;
+use loss::LossPlugin;
+use victory::VictoryPlugin;
 
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
@@ -38,6 +42,8 @@ pub enum GameState{
 	Map,
 	StartMenu,
 	Tutorial,
+	Loss,
+	Victory,
 }
 
 #[derive(Component)]
@@ -52,7 +58,7 @@ struct Camera;
 fn main() {
 	App::new()
 		.insert_resource(WindowDescriptor {
-			title: String::from("Game"),
+			title: String::from("Luigo's Haunted House Tour"),
 			width: 1280.,
 			height: 720.,
 			present_mode: PresentMode::Fifo,
@@ -70,6 +76,8 @@ fn main() {
 		.add_plugin(MiniMapPlugin)
 		.add_plugin(CombatPlugin)
 		.add_plugin(TutorialPlugin)
+		.add_plugin(LossPlugin)
+		.add_plugin(VictoryPlugin)
 		.run();
 
 	}
