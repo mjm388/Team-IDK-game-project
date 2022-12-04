@@ -88,7 +88,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		.insert(ViewShed{range: 1000.0})
+		.insert(ViewShed{range:500.0})
 		.insert(OverworldPlayer);
 
 	// mini player

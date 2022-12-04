@@ -385,15 +385,15 @@ fn render_objects(
 }
 
 fn check_field_of_view(
-    mut commands: Commands,
-	mut floors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<FloorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-	mut walls: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<WallTile>, Without<TileCollider>,Without<FloorTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut decor: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DecorTile>, Without<TileCollider>,Without<WallTile>,Without<FloorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut doors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DoorTile>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut keys: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<KeyObject>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<Room>,Without<BlockPath>,Without<StandPath>)>,
-    mut rooms: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<Room>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
-    mut block_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<BlockPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<FloorTile>,Without<StandPath>)>,
-    mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<TileCollider>,Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<Room>,Without<BlockPath>,Without<FloorTile>)>,
+	mut floors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<FloorTile>)>,
+	mut walls: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<WallTile>,Without<FloorTile>)>,
+    
+    mut decor: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DecorTile>,Without<WallTile>,Without<FloorTile>)>,
+    mut doors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DoorTile>, Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut keys: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<KeyObject>, Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut rooms: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<Room>, Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut block_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<BlockPath>, Without<WallTile>,Without<DecorTile>,Without<FloorTile>)>,
+    mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<WallTile>,Without<DecorTile>,Without<BlockPath>,Without<FloorTile>)>,
     mut player : Query<(Entity, &Transform, &mut ViewShed), (With<OverworldPlayer>, Without<TileCollider>)>,
 ){
     let(_,player_transform,view_shed)=player.single_mut();
@@ -457,7 +457,6 @@ fn check_field_of_view(
     }
     
 }
-
 
 fn derender_all_rooms(
 	mut commands: Commands,
