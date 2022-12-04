@@ -385,12 +385,12 @@ fn render_objects(
 }
 
 fn check_field_of_view(
-	mut floors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<FloorTile>)>,
-	mut walls: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<WallTile>,Without<FloorTile>)>,
+	mut floors: Query<(Entity, &mut TextureAtlasSprite,&Transform,&mut Visibility), (With<FloorTile>)>,
+	mut walls: Query<(Entity, &mut TextureAtlasSprite,&Transform,&mut Visibility), (With<WallTile>,Without<FloorTile>)>,
     
     mut decor: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DecorTile>,Without<WallTile>,Without<FloorTile>)>,
-    mut doors: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<DoorTile>, Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
-    mut keys: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<KeyObject>, Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut doors: Query<(Entity, &mut TextureAtlasSprite,&Transform,&mut Visibility), (With<DoorTile>, Without<WallTile>,Without<DecorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
+    mut keys: Query<(Entity, &mut TextureAtlasSprite,&Transform,&mut Visibility), (With<KeyObject>, Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
     mut rooms: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<Room>, Without<WallTile>,Without<DecorTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>,Without<BlockPath>,Without<StandPath>)>,
     mut block_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<BlockPath>, Without<WallTile>,Without<DecorTile>,Without<FloorTile>)>,
     mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<WallTile>,Without<DecorTile>,Without<BlockPath>,Without<FloorTile>)>,
