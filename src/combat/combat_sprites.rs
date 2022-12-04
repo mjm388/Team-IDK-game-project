@@ -3,7 +3,7 @@ use bevy::{
 };
 
 use super::{Enemy, Player, EnemyLog};
-use crate::combat::{EnemyType, CombatStats};
+use crate::combat::{EnemyType, CombatStats, OutcomeLog};
 
 #[derive(Component)]
 pub struct PlayerHealthBar;
@@ -12,7 +12,65 @@ pub struct PlayerHealthBar;
 pub struct EnemyHealthBar;
 
 #[derive(Component)]
+pub struct OutcomeTracker;
+
+#[derive(Component)]
 pub struct LogText;
+
+pub fn spawn_outcome_text(
+	commands: &mut Commands,
+	asset_server: &Res<AssetServer>,
+	//outcome_log: OutcomeLog,
+	//outcome_log_query: Query<&mut OutcomeLog>,
+){
+	//let outcome = outcome_log_query.single();
+	//let outcome = outcome_log;
+	let outcome_dmg = format!("Damage Done: 0");
+	let outcome_taken = format!("\nDamage Taken: 0");
+	let outcome_double = format!("\nDouble: False");
+    let text_style = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::WHITE,
+    };
+	let text_style2 = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::WHITE,
+    };
+	let text_style3 = TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 30.0,
+        color: Color::WHITE,
+    };
+	let _outcome_text_entity = commands
+		.spawn_bundle(TextBundle::from_sections([
+            	TextSection::new(
+                	outcome_dmg,
+                	text_style,
+            	),
+				TextSection::new(
+                	outcome_taken,
+                	text_style2,
+            	),
+				TextSection::new(
+                	outcome_double,
+                	text_style3,
+            	),
+        	])
+			.with_style(Style{
+				position: UiRect{
+					left: Val::Px(500.0),
+					bottom: Val::Px(100.0),
+					..default()
+				},
+				position_type: PositionType::Absolute,
+				..default()
+			}),
+		)
+		.insert(OutcomeTracker)
+        .id();
+}
 
 pub fn spawn_enemy_sprite(
 	commands: &mut Commands,
@@ -262,4 +320,29 @@ pub fn update_log_text(
 			text.sections[3].value = format!("Resources not enough");
 		}
 	}
+}
+
+pub fn update_outcome_log(
+	mut outcome_log_query:  Query<&mut Text, With<OutcomeTracker>>,
+	outcome_log: Query<&OutcomeLog>,
+){
+	let log = outcome_log.single();
+	for mut text in &mut outcome_log_query {
+		text.sections[0].value = format!("Damage Done: {}", log.damage_done);
+		text.sections[1].value = format!("\nDamage Taken: {}", log.damage_taken);
+		text.sections[2].value = format!("\nDouble: {}", log.double);
+	}
+}
+
+pub fn despawn_outcome_log(
+	mut commands: Commands, 
+	outcome_tracker_query: Query<Entity, With<OutcomeTracker>>,
+	outcome_log_query: Query<Entity, With<OutcomeLog>>
+){
+    for entity in outcome_tracker_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
+	for entity in outcome_log_query.iter(){
+        commands.entity(entity).despawn_recursive();
+    }
 }
