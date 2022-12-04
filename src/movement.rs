@@ -8,7 +8,7 @@ use rand::Rng;
 use crate::{
 	GameState,
 	BossTrigger,
-	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed}, 
+	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed, Fog}, 
 	minimap::M_TILE_SIZE,
 };
 pub struct MovementPlugin;
@@ -88,7 +88,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		.insert(ViewShed{range:500.0})
+		//.insert(ViewShed{range:500.0})
 		.insert(OverworldPlayer);
 
 	// mini player
@@ -180,6 +180,7 @@ fn put_back_camera (	// Resets camera position back to player
 }
 
 fn move_player(
+	mut commands: Commands,
 	input: Res<Input<KeyCode>>,
 	mut player: Query<&mut Transform, (With<OverworldPlayer>, Without<MiniPlayer>, Without<TileCollider>)>,
 	mut m_player: Query<&mut Transform, (With<MiniPlayer>, Without<OverworldPlayer>, Without<TileCollider>)>,
@@ -188,6 +189,7 @@ fn move_player(
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
 	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
+	fog_tiles: Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
 	mut boss_flag: Query<&mut BossTrigger>,
@@ -236,6 +238,8 @@ fn move_player(
 		player_transform.translation.y + y_vel * TILE_SIZE,
 		player_transform.translation.z,
 	);
+
+	fog_collide(&player_transform.translation, &fog_tiles, commands);
 
 	if starting_pos.eq(&potential_pos) {
 		return;
@@ -301,6 +305,24 @@ fn collision_check(
 		}
 	}
 	true
+}
+
+fn fog_collide(
+	player: &Vec3,
+	fog_tiles: &Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
+	mut commands: Commands,
+) {
+	for (fog, s) in fog_tiles.iter() {
+		let collision = collide (
+			*player,
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*2.0),
+			fog.translation,
+			Vec2::splat(TILE_SIZE * 6.0),
+		);
+		if collision.is_some() {
+			commands.entity(s).despawn_recursive();
+		}
+	}
 }
 
 
