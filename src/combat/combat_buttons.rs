@@ -81,11 +81,11 @@ pub fn button_system(
 						}
 						CombatOptions::Charge => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Does 3 dmg,\nbut costs 4 TP".to_string();
+							text.sections[0].value = "Does 3 dmg,\nbut costs 3 TP".to_string();
 						}
 						CombatOptions::Recover => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Recover 4 TP".to_string();
+							text.sections[0].value = "Recover 3 TP".to_string();
 						}
 						CombatOptions::Heal => {
 							text.sections[0].style.font_size = 20.0;
@@ -93,7 +93,7 @@ pub fn button_system(
 						}
 						CombatOptions::Guard => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "Invincible, reflect\n 2x dmg back,\ncosts 6 TP".to_string();
+							text.sections[0].value = "Invincible, reflect\n 2x dmg back,\ncosts 4 TP".to_string();
 						}
 						CombatOptions::AntiMage => {
 							text.sections[0].style.font_size = 20.0;
@@ -112,15 +112,15 @@ pub fn button_system(
 							match player_stats.token{
 								1 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 2 dmg,\nreceive 1 TP\nuses all tokens".to_string();
+									text.sections[0].value = "Does 3 dmg,\nreceive 2 TP\nuses all tokens".to_string();
 								}
 								2 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 6 dmg,\ntake 1 TP\nfrom enemy\nuses all tokens".to_string();
+									text.sections[0].value = "Does 6 dmg,\ntake 2 TP\nfrom enemy\nuses all tokens".to_string();
 								}
 								3 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Does 10 dmg,\nrecover full TP\nuses all tokens".to_string();
+									text.sections[0].value = "Does 10 dmg,\nrecover 15 HP\nuses all tokens".to_string();
 								}
 								_ => {
 									text.sections[0].style.font_size = 20.0;
@@ -214,11 +214,11 @@ pub fn combat_button_system2(
 			let mut temp_table = HashMap::new();
 			if enemy_stats.token>2 {
 				temp_table.insert("Unleash".to_string(), 0);
-			} else if enemy_stats.tp > if enemy_stats.double {8} else {4} {
-				temp_table.insert("Charge".to_string(), 0);
 			} else if enemy_stats.tp > 5 {
 				temp_table.insert("Block".to_string(), 0);
-			} else if enemy_stats.tp <2 {
+			} else if enemy_stats.tp > if enemy_stats.double {6} else {3}  {
+				temp_table.insert("Charge".to_string(), 0);
+			} else if enemy_stats.tp < 3 {
 				temp_table.insert("Recover".to_string(), 0);
 			} else {
 				temp_table.insert("Attack".to_string(), 0);
@@ -273,8 +273,8 @@ pub fn combat_button_system2(
 					player_stats.double = false;
                 }
                 CombatOptions::Charge => {
-					if player_stats.tp >= if player_stats.double {8} else {4} {
-						log.player_tp_change -= if player_stats.double {8} else {4};
+					if player_stats.tp >= if player_stats.double {6} else {3} {
+						log.player_tp_change -= if player_stats.double {6} else {3};
 						log.player_damage = if player_stats.double {6} else {3} ;
 						valid = true;
 						player_stats.double = false;
@@ -284,7 +284,7 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Recover => {
-					log.player_tp_change += 4;
+					log.player_tp_change += 3;
 					valid = true;
 					player_stats.double = false;
                 }
@@ -300,8 +300,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Guard => {
-					if player_stats.tp >= 6 {
-						log.player_tp_change -= 6;
+					if player_stats.tp >= 4 {
+						log.player_tp_change -= 4;
 						player_stats.guard = true;
 						valid = true;
 						player_stats.double = false;
@@ -348,23 +348,23 @@ pub fn combat_button_system2(
                 CombatOptions::Unleash => {
 					match player_stats.token{
 						1 => {
-							log.player_damage = 2;
-							log.player_tp_change += 1;
+							log.player_damage = 3;
+							log.player_tp_change += 2;
 							player_stats.use_token = true;
 							valid = true;
 						}
 
 						2 => {
 							log.player_damage = 6;
-							log.player_tp_change += 1;
-							log.enemy_tp_change -= 1;
+							log.player_tp_change += 2;
+							log.enemy_tp_change -= 2;
 							player_stats.use_token = true;
 							valid = true;
 						}
 
 						3 => {
 							log.player_damage = 10;
-							log.player_health_change += 20;
+							log.player_health_change += 15;
 							player_stats.use_token = true;
 							valid = true;
 						}
@@ -386,13 +386,13 @@ pub fn combat_button_system2(
 					}
 					"Charge" =>{
 						println!("Enemy Charges");
-						log.enemy_tp_change -= if enemy_stats.double {8} else {4};
+						log.enemy_tp_change -= if enemy_stats.double {6} else {3};
 						log.enemy_damage = if enemy_stats.double {6} else {3};
 						enemy_stats.double = false;
 					}
 					"Recover" =>{
 						println!("Enemy Recovers");
-						log.enemy_tp_change += 4;
+						log.enemy_tp_change += 3;
 						enemy_stats.double = false;
 					}
 					"Heal" =>{
@@ -403,7 +403,7 @@ pub fn combat_button_system2(
 					}
 					"Guard" =>{
 						println!("Enemy Guards");
-						log.enemy_tp_change -= 6;
+						log.enemy_tp_change -= 4;
 						enemy_stats.guard = true;
 						enemy_stats.double = false;
 					}
@@ -431,23 +431,23 @@ pub fn combat_button_system2(
 						match enemy_stats.token {
 							1 => {
 								println!("Enemy Unleash 1");
-								log.enemy_damage = 2;
-								log.enemy_tp_change += 1;
+								log.enemy_damage = 3;
+								log.enemy_tp_change += 2;
 								enemy_stats.use_token = true;
 							}
 	
 							2 => {
 								println!("Enemy Unleash 2");
 								log.enemy_damage = 6;
-								log.enemy_tp_change += 1;
-								log.player_tp_change += -1;
+								log.enemy_tp_change += 2;
+								log.player_tp_change += -2;
 								enemy_stats.use_token = true;
 							}
 	
 							3 => {
 								println!("Enemy Unleash 3");
 								log.enemy_damage = 10;
-								log.enemy_health_change += 20;
+								log.enemy_health_change += 15;
 								enemy_stats.use_token = true;
 							}
 	
