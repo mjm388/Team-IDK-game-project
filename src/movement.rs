@@ -29,7 +29,6 @@ impl Plugin for MovementPlugin{
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
 				.with_system(put_back_camera)
-				.with_system(restart_dt)
 			)
 			.add_system_set(SystemSet::on_exit(GameState::Overworld)
 				.with_system(remove_player)
@@ -37,6 +36,9 @@ impl Plugin for MovementPlugin{
 			)
 			.add_system_set(SystemSet::on_enter(GameState::Map)
 				.with_system(activate_m_player)
+			)
+			.add_system_set(SystemSet::on_exit(GameState::Combat)
+				.with_system(restart_dt)
 			)
 			.add_system_set(SystemSet::on_exit(GameState::Map)
 				.with_system(remove_m_player)
@@ -316,7 +318,7 @@ fn move_player(
 
 	//println!("{}",d.distance);
 
-	if !starting_pos.eq(&player_transform.translation) && d.distance >= 200. {
+	if !starting_pos.eq(&player_transform.translation) && d.distance >= 400. {
 		random_encounter(game_state);
 		restart_dt(dis);
 	}
