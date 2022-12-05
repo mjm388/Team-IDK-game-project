@@ -284,15 +284,19 @@ fn render_objects(
     //let plant_atlas_len = plant_atlas.textures.len();
     let sofa_atlas_handle = texture_atlases.add(sofa_atlas);
 
+    let statue_handle = asset_server.load("Statue.png");
+    let statue_atlas = TextureAtlas::from_grid(statue_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    let statue_atlas_handle = texture_atlases.add(statue_atlas);
+
     for d in decor.iter_mut(){
         //render decor based on type
         match d.decor_type{
             //statue
             DecorType::Statue => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::GRAY,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: statue_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
