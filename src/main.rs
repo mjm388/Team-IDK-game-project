@@ -4,6 +4,7 @@ use bevy::{
 	utils::HashMap
 };
 
+
 use std::fs::File;
 use std::io;
 use std::fs;
@@ -34,7 +35,7 @@ use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
 use room_renderer::{create_random_room, render_objects};
-
+use room_renderer::RoomWasCreated;
 
 #[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
@@ -60,22 +61,17 @@ struct Camera;
 
 fn main() {
 	App::new()
-		.insert_resource(WindowDescriptor {
-			title: String::from("Luigo's Haunted House Tour"),
-			width: 1280.,
-			height: 720.,
-			present_mode: PresentMode::Fifo,
-			..default()
+	.insert_resource(WindowDescriptor {
+		title: String::from("Luigo's Haunted House Tour"),
+		width: 1280.,
+		height: 720.,
+		present_mode: PresentMode::Fifo,
+		..default()
 		})
+		.insert_resource(RoomWasCreated(true))
 		.add_state(GameState::StartMenu)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
-		.add_startup_system_set(
-			SystemSet::new()
-			.before(GameState::Overworld)
-			.with_system(create_random_room)
-			.with_system(render_objects),
-			)
 		.add_system(change_state)
 		.add_plugin(MainMenuPlugin)
 		.add_plugin(RoomGenPlugin)

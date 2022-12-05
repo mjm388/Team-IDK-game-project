@@ -35,6 +35,9 @@ pub struct DecorTile;
 pub struct Fog;*/
 
 #[derive(Component)]
+pub struct RoomWasCreated(pub bool);
+
+#[derive(Component)]
 pub struct ViewShed {
     pub range: f32,
     pub viewed_tiles: HashMap<Entity, Color>,
@@ -44,8 +47,20 @@ pub struct RoomRendPlugin;
 impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_startup_system(create_random_room)
-        .add_startup_system(render_objects)
+        .add_startup_system(
+            create_random_room.after("map_gen").label("room_render")
+            )
+            /* .add_startup_system(
+            render_objects.after("room_render")
+            )
+        .add_startup_system_set(
+            SystemSet::new()
+            .after("map_gen")
+            .with_system(create_random_room)
+            .with_system(render_objects),
+            )*/
+        //.add_startup_system(create_random_room)
+        //.add_startup_system(render_objects)
         //.add_system(check_field_of_view)
         //.add_startup_system(create_fog)
         .add_system_set(SystemSet::on_update(GameState::Overworld)
@@ -54,8 +69,8 @@ impl Plugin for RoomRendPlugin {
         //.with_system(render_objects)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
-            //.with_system(create_random_room)
-            //.with_system(render_objects)
+            .with_system(create_random_room)
+            .with_system(render_objects)
             //.with_system(render_fog)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
@@ -71,7 +86,11 @@ pub(crate) fn create_random_room(
     block_path: Query<&BlockPath>,
     stand_path: Query<&StandPath>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut room_was_created: ResMut<RoomWasCreated>,
 ) {
+    if room_was_created.0 {
+        return
+        }
     let wall_handle = asset_server.load("BrickWall2.png");
     let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
     let wall_atlas_len = wall_atlas.textures.len();
@@ -239,6 +258,8 @@ pub(crate) fn create_random_room(
             })
             .insert(FloorTile);
     }
+    room_was_created.0 = true;
+    
 
 }
 
@@ -391,6 +412,7 @@ pub(crate) fn render_objects(
             },
         }
     }
+   
 }
 
 fn check_field_of_view(
@@ -558,28 +580,28 @@ fn check_field_of_view(
 
 fn derender_all_rooms(
 	mut commands: Commands,
-	mut floors: Query<Entity, With<FloorTile>>,
-	mut walls: Query<Entity, With<WallTile>>,
-    mut doors: Query<Entity, With<DoorTile>>,
-    mut keys: Query<Entity, With<KeyObject>>,
-    mut decor: Query<Entity, With<DecorTile>>,
+	mut floors: Query<(Entity, &mut Visibility),(With<FloorTile>,Without<WallTile>,Without<DoorTile>,Without<KeyObject>,Without<DecorTile>)>,
+	mut walls: Query<(Entity, &mut Visibility), (With<WallTile>,Without<FloorTile>,Without<DoorTile>,Without<KeyObject>,Without<DecorTile>)>,
+    mut doors: Query<(Entity, &mut Visibility), (With<DoorTile>,Without<WallTile>,Without<FloorTile>,Without<KeyObject>,Without<DecorTile>)>,
+    mut keys: Query<(Entity, &mut Visibility), (With<KeyObject>,Without<WallTile>,Without<DoorTile>,Without<FloorTile>,Without<DecorTile>)>,
+    mut decor: Query<(Entity, &mut Visibility), (With<DecorTile>,Without<WallTile>,Without<DoorTile>,Without<KeyObject>,Without<FloorTile>)>,
     //mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
 ){
-	for e in floors.iter_mut(){
-		commands.entity(e).despawn_recursive();
+	for (floors_entity,mut floors_visibility) in floors.iter_mut(){
+		floors_visibility.is_visible=false;
 	}
-	for e in walls.iter_mut(){
-		commands.entity(e).despawn_recursive();
+	for (walls_entity,mut walls_visibility) in floors.iter_mut(){
+		walls_visibility.is_visible=false;
 	}
-    for e in doors.iter_mut(){
-        commands.entity(e).despawn_recursive();
-    }
-    for e in keys.iter_mut(){
-        commands.entity(e).despawn_recursive();
-    }
-    for d in decor.iter_mut(){
-        commands.entity(d).despawn_recursive();
-    }
+    for (doors_entity,mut doors_visibility) in floors.iter_mut(){
+		doors_visibility.is_visible=false;
+	}
+    for (keys_entity,mut keys_visibility) in floors.iter_mut(){
+		keys_visibility.is_visible=false;
+	}
+    for (decor_entity,mut decor_visibility) in floors.iter_mut(){
+		decor_visibility.is_visible=false;
+	}
     /*for (mut v, _e) in fog.iter_mut() {
         v.is_visible = false;
     }*/
