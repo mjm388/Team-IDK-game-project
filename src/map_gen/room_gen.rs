@@ -14,7 +14,7 @@ pub const Y_BOUND: f32 = 50.;
 const SIZE_LOWER_BOUND: f32 = 3.;  //7
 pub const SIZE_UPPER_BOUND: f32 = 7.;  //15
 
-pub const NUM_OF_ROOMS: i32 = 15;
+pub const NUM_OF_ROOMS: i32 = 17;
 const ROOM_BUFFER_SPACE: f32 = 10.;
 
 // pub const X_BOUND: f32 = 15.;
