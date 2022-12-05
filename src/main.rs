@@ -5,6 +5,7 @@ use bevy::{
 };
 
 
+
 use std::fs::File;
 use std::io;
 use std::fs;
@@ -34,8 +35,8 @@ use start_menu::MainMenuPlugin;
 use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
-use room_renderer::{create_random_room, render_objects};
 use room_renderer::RoomWasCreated;
+//use room_renderer::DecorWasCreated;
 
 #[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
@@ -68,7 +69,8 @@ fn main() {
 		present_mode: PresentMode::Fifo,
 		..default()
 		})
-		.insert_resource(RoomWasCreated(true))
+		.insert_resource(RoomWasCreated(false))
+		//.insert_resource(DecorWasCreated(false))
 		.add_state(GameState::StartMenu)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
