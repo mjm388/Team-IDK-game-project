@@ -252,12 +252,7 @@ fn render_objects(
     mut decor: Query<&Decor, With<Decor>>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    //mut decor_was_created:ResMut<DecorWasCreated>
 ){
-    /*if decor_was_created.0{
-        return;
-    }*/
-    //load all assets in first
     let wall_handle = asset_server.load("BrickWall2.png");
     let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
     //let wall_atlas_len = wall_atlas.textures.len();
@@ -418,7 +413,6 @@ fn render_objects(
             },
         }
     }
-    //decor_was_created.0=true;
 }
 
 fn check_field_of_view(
