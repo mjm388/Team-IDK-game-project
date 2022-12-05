@@ -4,7 +4,6 @@ use bevy::{
 	//time::FixedTimestep,
 };
 use rand::Rng;
-
 use crate::{
 	GameState,
 	BossTrigger,
@@ -23,6 +22,7 @@ impl Plugin for MovementPlugin{
 			//	.with_system(random_encounter)
 			//)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
+				.label(GameState::Overworld)
 				.with_system(move_player)
 				.with_system(move_camera)
 			)

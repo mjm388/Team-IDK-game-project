@@ -44,14 +44,18 @@ pub struct RoomRendPlugin;
 impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
+        .add_startup_system(create_random_room)
+        .add_startup_system(render_objects)
         //.add_system(check_field_of_view)
         //.add_startup_system(create_fog)
         .add_system_set(SystemSet::on_update(GameState::Overworld)
         .with_system(check_field_of_view)
+        //.with_system(create_random_room)
+        //.with_system(render_objects)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
-            .with_system(create_random_room)
-            .with_system(render_objects)
+            //.with_system(create_random_room)
+            //.with_system(render_objects)
             //.with_system(render_fog)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
@@ -60,7 +64,7 @@ impl Plugin for RoomRendPlugin {
     }
 }
 
-fn create_random_room(
+pub(crate) fn create_random_room(
     mut commands: Commands,
     rooms: Query<&Room>,
     asset_server: Res<AssetServer>,
@@ -85,7 +89,7 @@ fn create_random_room(
 
     let key_handle = asset_server.load("Key.png");
     let key_atlas = TextureAtlas::from_grid(key_handle, Vec2::splat(TILE_SIZE), 1, 1);
-    //  let key_atlas_len = key_atlas.textures.len();
+     let key_atlas_len = key_atlas.textures.len();
     let key_atlas_handle = texture_atlases.add(key_atlas);
     
     for room in rooms.iter() {
@@ -238,7 +242,7 @@ fn create_random_room(
 
 }
 
-fn render_objects(
+pub(crate) fn render_objects(
     mut commands: Commands,
     mut decor: Query<&Decor, With<Decor>>,
 ){
@@ -406,7 +410,7 @@ fn check_field_of_view(
     for (Entity,mut floors_sprite,floors_transform,mut floors_visibility) in floors.iter_mut(){
         
             let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={floors_transform.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(floors_transform.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -425,7 +429,7 @@ fn check_field_of_view(
     for (Entity,mut walls_sprite,walls_transform,mut walls_visibilityy) in walls.iter_mut(){
        
             let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={walls_transform.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(walls_transform.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -443,7 +447,7 @@ fn check_field_of_view(
     for (Entity,mut decor_sprite,decors_transformm,mut decors_visibility) in decor.iter_mut(){
        
         let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={decors_transformm.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(decors_transformm.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -461,7 +465,7 @@ fn check_field_of_view(
     for (Entity,mut doors_sprite ,doors_transformm,mut doors_visibility) in doors.iter_mut(){
         
         let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={doors_transformm.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(doors_transformm.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -479,7 +483,7 @@ fn check_field_of_view(
     for (Entity,mut keys_sprite,keys_transform,mut keys_visibility) in keys.iter_mut(){
        
         let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={keys_transform.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(keys_transform.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -498,7 +502,7 @@ fn check_field_of_view(
     for (Entity,mut rooms_sprite, rooms_transform,mut rooms_visibility) in rooms.iter_mut(){
         
         let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={rooms_transform.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(rooms_transform.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -516,7 +520,7 @@ fn check_field_of_view(
     for (Entity,mut block_sprite, block_transform,mut block_visibilityy) in block_path.iter_mut(){
         
         let search_res=view_shed.viewed_tiles.get(&Entity);
-            let is_inside_field_of_view={block_transform.translation-player_transform.translation}.length()<view_shed.range;
+            let is_inside_field_of_view=(block_transform.translation-player_transform.translation).length()<view_shed.range;
             if is_inside_field_of_view
             {
             if search_res.is_none() {
@@ -534,7 +538,7 @@ fn check_field_of_view(
     for (Entity,mut stand_sprite,stand_transform,mut stand_visibility) in stand_path.iter_mut(){
        
         let search_res=view_shed.viewed_tiles.get(&Entity);
-        let is_inside_field_of_view={stand_transform.translation-player_transform.translation}.length()<view_shed.range;
+        let is_inside_field_of_view=(stand_transform.translation-player_transform.translation).length()<view_shed.range;
         if is_inside_field_of_view
         {
         if search_res.is_none() {

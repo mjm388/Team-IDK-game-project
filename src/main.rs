@@ -1,6 +1,7 @@
 use bevy::{
 	prelude::*,
 	window::PresentMode,
+	utils::HashMap
 };
 
 use std::fs::File;
@@ -23,7 +24,7 @@ mod victory;
 
 
 use credits::CreditsPlugin;
-use combat::{CombatPlugin, CombatAgent, combat_ai::read_in, combat_ai::read_in2};
+use combat::{CombatPlugin, CombatAgent, combat_ai::read_in, combat_ai::read_in2,};
 use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
@@ -32,8 +33,10 @@ use start_menu::MainMenuPlugin;
 use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
+use room_renderer::{create_random_room, render_objects};
 
 
+#[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
 	Overworld,
@@ -67,6 +70,12 @@ fn main() {
 		.add_state(GameState::StartMenu)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
+		.add_startup_system_set(
+			SystemSet::new()
+			.before(GameState::Overworld)
+			.with_system(create_random_room)
+			.with_system(render_objects),
+			)
 		.add_system(change_state)
 		.add_plugin(MainMenuPlugin)
 		.add_plugin(RoomGenPlugin)
