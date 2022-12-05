@@ -17,7 +17,7 @@ impl Plugin for MovementPlugin{
         app
 			.add_startup_system(setup_player)
 			.add_startup_system(initialize_key)
-			.add_startup_system(init_displacement)
+			.add_startup_system(init_dt)
 			//.add_system_set(SystemSet::on_update(GameState::Overworld)
 			//	.with_run_criteria(FixedTimestep::step(2.0 as f64))
 			//	.with_system(random_encounter)
@@ -29,7 +29,7 @@ impl Plugin for MovementPlugin{
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
 				.with_system(put_back_camera)
-				.with_system(restart_displacement)
+				.with_system(restart_dt)
 			)
 			.add_system_set(SystemSet::on_exit(GameState::Overworld)
 				.with_system(remove_player)
@@ -49,25 +49,25 @@ pub struct OverworldPlayer;
 #[derive(Component)]
 pub struct MiniPlayer;
 #[derive(Component)]
-pub struct Displacement {
-	pub displacement: f32,
+pub struct DistanceTraveled {
+	pub distance: f32,
 }
 
-impl Displacement {
-	fn new() -> Displacement {
-		Displacement{
-			displacement: 0.,
+impl DistanceTraveled {
+	fn new() -> DistanceTraveled {
+		DistanceTraveled{
+			distance: 0.,
 		}
 	}
 }
 
-fn init_displacement(mut commands: Commands){
-	commands.spawn().insert(Displacement::new());
+fn init_dt(mut commands: Commands){
+	commands.spawn().insert(DistanceTraveled::new());
 }
 
-fn restart_displacement(mut dist: Query<&mut Displacement,With<Displacement>>){
+fn restart_dt(mut dist: Query<&mut DistanceTraveled,With<DistanceTraveled>>){
 	let mut d = dist.single_mut();
-	d.displacement = 0.;
+	d.distance = 0.;
 }
 
 #[derive(Component)]
@@ -216,7 +216,7 @@ fn move_player(
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
 	mut boss_flag: Query<&mut BossTrigger>,
-	mut dis: Query<&mut Displacement,With<Displacement>>,
+	mut dis: Query<&mut DistanceTraveled,With<DistanceTraveled>>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -312,13 +312,13 @@ fn move_player(
 	let d_y = (starting_pos.y - player_transform.translation.y).abs();
 
 	let mut d = dis.single_mut();
-	d.displacement += (d_x.powf(2.) + d_y.powf(2.)).sqrt();
+	d.distance += (d_x.powf(2.) + d_y.powf(2.)).sqrt();
 
-	//println!("{}",d.displacement);
+	//println!("{}",d.distance);
 
-	if !starting_pos.eq(&player_transform.translation) && d.displacement >= 200. {
+	if !starting_pos.eq(&player_transform.translation) && d.distance >= 200. {
 		random_encounter(game_state);
-		restart_displacement(dis);
+		restart_dt(dis);
 	}
 }
 
