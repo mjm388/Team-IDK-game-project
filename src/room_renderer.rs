@@ -1,9 +1,14 @@
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    map_gen::{random_objs::Decor, random_objs::DecorType, BlockPath, Room, StandPath},
-    movement::OverworldPlayer,
     GameState,
+    map_gen::{
+        Room,
+        BlockPath,
+        StandPath,
+        random_objs::Decor,
+        random_objs::DecorType,
+    }, movement::OverworldPlayer
 };
 
 pub const TILE_SIZE: f32 = 40.;
@@ -31,7 +36,8 @@ pub struct Fog;*/
 
 #[derive(Component)]
 pub struct RoomWasCreated(pub bool);
-//pub struct DecorWasCreated(pub bool);
+#[derive(Component)]
+pub struct DecorWasCreated(pub bool);
 
 #[derive(Component)]
 pub struct ViewShed {
@@ -43,31 +49,19 @@ pub struct RoomRendPlugin;
 impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
-            /* .add_startup_system(
-                render_objects.after("room_render")
-                )
-            .add_startup_system_set(
-                SystemSet::new()
-                .after("map_gen")
-                .with_system(create_random_room)
-                .with_system(render_objects),
-                )*/
-            //.add_startup_system(create_random_room)
-            //.add_startup_system(render_objects)
-            //.add_system(check_field_of_view)
-            //.add_startup_system(create_fog)
-            .add_system_set(
-                SystemSet::on_update(GameState::Overworld).with_system(check_field_of_view), //.with_system(create_random_room)
-                                                                                             //.with_system(render_objects)
-            )
-            .add_system_set(
-                SystemSet::on_enter(GameState::Overworld)
-                    .with_system(create_random_room)
-                    .with_system(render_objects), //.with_system(render_fog)
-            )
-            .add_system_set(
-                SystemSet::on_exit(GameState::Overworld).with_system(derender_all_rooms),
-            );
+        //.add_system(check_field_of_view)
+        //.add_startup_system(create_fog)
+        .add_system_set(SystemSet::on_update(GameState::Overworld)
+        .with_system(check_field_of_view)
+		)
+		.add_system_set(SystemSet::on_enter(GameState::Overworld)
+            .with_system(create_random_room)
+            .with_system(render_objects)
+            //.with_system(render_fog)
+		)
+		.add_system_set(SystemSet::on_exit(GameState::Overworld)
+			.with_system(derender_all_rooms)
+        );
     }
 }
 
@@ -77,7 +71,7 @@ fn create_random_room(
     asset_server: Res<AssetServer>,
     block_path: Query<&BlockPath>,
     stand_path: Query<&StandPath>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut room_was_created: ResMut<RoomWasCreated>,
 ) {
     if room_was_created.0 {
@@ -100,63 +94,33 @@ fn create_random_room(
 
     let key_handle = asset_server.load("Key.png");
     let key_atlas = TextureAtlas::from_grid(key_handle, Vec2::splat(TILE_SIZE), 1, 1);
-    let key_atlas_len = key_atlas.textures.len();
+    //  let key_atlas_len = key_atlas.textures.len();
     let key_atlas_handle = texture_atlases.add(key_atlas);
-
+    
     for room in rooms.iter() {
-        let x = (room.center.x - (room.size.x - 1.) / 2.) * TILE_SIZE;
-        let y = (room.center.y - (room.size.y - 1.) / 2.) * TILE_SIZE;
+        let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
+        let y = (room.center.y-(room.size.y-1.)/2.) * TILE_SIZE;
         let z = 0.;
         // println!("Room {},{}", x, y);
-
+        
         let x_size = room.size.x as usize;
         let y_size = room.size.y as usize;
 
         //floor
         for i in 0..x_size {
             for j in 0..y_size {
-                if i == 0 || j == 0 || i == x_size - 1 || j == y_size - 1 {
+                if i == 0 || j == 0 || i == x_size-1 || j == y_size-1 {
                     // doors
-                    if i == x_size / 2 || j == y_size / 2 {
+                    if i == x_size/2 || j == y_size/2 {
+                        
                     }
                     // walls
                     else {
                         commands
-                            .spawn_bundle(SpriteSheetBundle {
-                                texture_atlas: wall_atlas_handle.clone(),
-                                transform: Transform {
-                                    translation: Vec3::new(
-                                        x + i as f32 * TILE_SIZE,
-                                        y + j as f32 * TILE_SIZE,
-                                        z,
-                                    ),
-                                    ..default()
-                                },
-                                visibility: Visibility {
-                                    is_visible: false,
-                                    ..default()
-                                },
-                                sprite: TextureAtlasSprite {
-                                    index: i % wall_atlas_len,
-                                    ..default()
-                                },
-                                ..default()
-                            })
-                            .insert(WallTile)
-                            .insert(TileCollider);
-                    }
-                }
-                // floors
-                else {
-                    commands
                         .spawn_bundle(SpriteSheetBundle {
-                            texture_atlas: floor_atlas_handle.clone(),
+                            texture_atlas: wall_atlas_handle.clone(),
                             transform: Transform {
-                                translation: Vec3::new(
-                                    x + i as f32 * TILE_SIZE,
-                                    y + j as f32 * TILE_SIZE,
-                                    z,
-                                ),
+                                translation: Vec3::new(x+i as f32 * TILE_SIZE, y+j as f32 * TILE_SIZE, z),
                                 ..default()
                             },
                             visibility: Visibility {
@@ -164,63 +128,77 @@ fn create_random_room(
                                 ..default()
                             },
                             sprite: TextureAtlasSprite {
-                                index: i % floor_atlas_len,
+                                index: i % wall_atlas_len,
                                 ..default()
                             },
                             ..default()
                         })
-                        .insert(FloorTile);
+                        .insert(WallTile)
+                        .insert(TileCollider);
+                    }
                 }
+                // floors
+                else {
+                    commands
+                    .spawn_bundle(SpriteSheetBundle {
+                        texture_atlas: floor_atlas_handle.clone(),
+                        transform: Transform {
+                            translation: Vec3::new(x+i as f32 * TILE_SIZE, y+j as f32 * TILE_SIZE, z),
+                            ..default()
+                        },
+                        visibility: Visibility {
+                            is_visible: false,
+                            ..default()
+                        },
+                        sprite: TextureAtlasSprite {
+                            index: i % floor_atlas_len,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(FloorTile);
+                }
+                
             }
         }
         if room.id == 1 {
-            commands
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: door_atlas_handle.clone(),
-                    transform: Transform {
-                        translation: Vec3::new(
-                            x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2.,
-                            y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2.,
-                            z + 1.,
-                        ),
-                        ..default()
-                    },
-                    visibility: Visibility {
-                        is_visible: false,
-                        ..default()
-                    },
-                    sprite: TextureAtlasSprite {
-                        index: 0,
-                        ..default()
-                    },
+            commands.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: door_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new(x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2., y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2., z + 1.),
                     ..default()
-                })
-                .insert(DoorTile);
+                },
+                visibility: Visibility {
+                    is_visible: false,
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(DoorTile);
             info!("Door added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
         if room.id == 2 {
-            commands
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: key_atlas_handle.clone(),
-                    transform: Transform {
-                        translation: Vec3::new(
-                            x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2.,
-                            y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2.,
-                            z + 1.,
-                        ),
-                        ..default()
-                    },
-                    visibility: Visibility {
-                        is_visible: false,
-                        ..default()
-                    },
-                    sprite: TextureAtlasSprite {
-                        index: 0,
-                        ..default()
-                    },
+            commands.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: key_atlas_handle.clone(),
+                transform: Transform {
+                    translation: Vec3::new(x as f32 + (x_size as f32 - 1.) * TILE_SIZE / 2., y as f32 + (y_size as f32 - 1.) * TILE_SIZE / 2., z + 1.),
                     ..default()
-                })
-                .insert(KeyObject);
+                },
+                visibility: Visibility {
+                    is_visible: false,
+                    ..default()
+                },
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(KeyObject);
             info!("Key added: {},{}", x / TILE_SIZE, y / TILE_SIZE);
         }
     }
@@ -266,176 +244,181 @@ fn create_random_room(
             })
             .insert(FloorTile);
     }
-        room_was_created.0 = true;
+    room_was_created.0 = true;
 }
 
-fn render_objects(mut commands: Commands, mut decor: Query<&Decor, With<Decor>>) {
-    for d in decor.iter_mut() {
+fn render_objects(
+    mut commands: Commands,
+    mut decor: Query<&Decor, With<Decor>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    //mut decor_was_created:ResMut<DecorWasCreated>
+){
+    /*if decor_was_created.0{
+        return;
+    }*/
+    //load all assets in first
+    let wall_handle = asset_server.load("BrickWall2.png");
+    let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
+    //let wall_atlas_len = wall_atlas.textures.len();
+    let wall_atlas_handle = texture_atlases.add(wall_atlas);
+
+    let plant_handle = asset_server.load("Plant.png");
+    let plant_atlas = TextureAtlas::from_grid(plant_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let plant_atlas_handle = texture_atlases.add(plant_atlas);
+
+    let book_handle = asset_server.load("Bookshelf.png");
+    let book_atlas = TextureAtlas::from_grid(book_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let book_atlas_handle = texture_atlases.add(book_atlas);
+
+    for d in decor.iter_mut(){
         //render decor based on type
-        match d.decor_type {
+        match d.decor_type{
             //statue
             DecorType::Statue => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::GRAY,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::GRAY,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
             //plant
-            DecorType::Plant => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::DARK_GREEN,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-                println!("{},{}", d.location.x, d.location.y);
-            }
+	        DecorType::Plant => {
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: plant_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
             //sofa
-            DecorType::Sofa => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::PURPLE,
-                            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
+	        DecorType::Sofa => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::PURPLE,
+				        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
             //chair
-            DecorType::Chair => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::TEAL,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
+	        DecorType::Chair => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::TEAL,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
             //lamp
-            DecorType::Lamp => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::GOLD,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
+	        DecorType::Lamp => {
+                commands.spawn_bundle(SpriteBundle{
+                    sprite: Sprite {
+				        color: Color::GOLD,
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
             //lamp
-            DecorType::Pillar => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::BLACK,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
-            DecorType::Bookshelf => {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::OLIVE,
-                            custom_size: Some(Vec2::splat(TILE_SIZE)),
-                            ..default()
-                        },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                d.location.x * TILE_SIZE,
-                                d.location.y * TILE_SIZE,
-                                1.,
-                            ),
-                            ..default()
-                        },
-                        visibility: Visibility { is_visible: false },
-                        ..default()
-                    })
-                    .insert(TileCollider)
-                    .insert(DecorTile);
-            }
+	        DecorType::Pillar => {
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: wall_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
+            //bookshelf
+	        DecorType::Bookshelf => {
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: book_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
+				        ..default()
+			        },
+			        transform: Transform {
+				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        ..default()
+			        },
+			        visibility: Visibility {
+				        is_visible: false
+			        },
+			        ..default()
+                })
+                .insert(TileCollider)
+                .insert(DecorTile);
+            },
         }
     }
+    //decor_was_created.0=true;
 }
 
 fn check_field_of_view(
@@ -449,7 +432,7 @@ fn check_field_of_view(
     >,
 
     mut decor: Query<
-        (Entity, &mut Sprite, &Transform, &mut Visibility),
+        (Entity, &mut TextureAtlasSprite,&Transform, &mut Visibility),
         (With<DecorTile>, Without<WallTile>, Without<FloorTile>),
     >,
     mut doors: Query<
@@ -551,7 +534,7 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut decor_sprite, decors_transformm, mut decors_visibility) in decor.iter_mut() {
+    for (Entity, mut decor_sprite,mut decors_transformm, mut decors_visibility) in decor.iter_mut() {
         let search_res = view_shed.viewed_tiles.get(&Entity);
         let is_inside_field_of_view =
             (decors_transformm.translation - player_transform.translation).length()
@@ -745,6 +728,7 @@ fn derender_all_rooms(
         v.is_visible = true;
     }
 }
+
 fn create_fog (
     mut commands: Commands,
 ) {
