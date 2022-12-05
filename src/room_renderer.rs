@@ -258,6 +258,21 @@ fn render_objects(
     //let plant_atlas_len = plant_atlas.textures.len();
     let book_atlas_handle = texture_atlases.add(book_atlas);
 
+    let lamp_handle = asset_server.load("Lamp.png");
+    let lamp_atlas = TextureAtlas::from_grid(lamp_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let lamp_atlas_handle = texture_atlases.add(lamp_atlas);
+
+    let chair_handle = asset_server.load("Bad_Chair.png");
+    let chair_atlas = TextureAtlas::from_grid(chair_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let chair_atlas_handle = texture_atlases.add(chair_atlas);
+
+    let sofa_handle = asset_server.load("Sofa.png");
+    let sofa_atlas = TextureAtlas::from_grid(sofa_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let sofa_atlas_handle = texture_atlases.add(sofa_atlas);
+
     for d in decor.iter_mut(){
         //render decor based on type
         match d.decor_type{
@@ -270,7 +285,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
@@ -303,14 +318,14 @@ fn render_objects(
             },
             //sofa
 	        DecorType::Sofa => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::PURPLE,
-				        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: sofa_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
@@ -323,14 +338,14 @@ fn render_objects(
             },
             //chair
 	        DecorType::Chair => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::TEAL,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: chair_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
@@ -343,14 +358,14 @@ fn render_objects(
             },
             //lamp
 	        DecorType::Lamp => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::GOLD,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: lamp_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
@@ -390,7 +405,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
