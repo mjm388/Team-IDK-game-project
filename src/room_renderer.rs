@@ -239,7 +239,25 @@ fn create_random_room(
 fn render_objects(
     mut commands: Commands,
     mut decor: Query<&Decor, With<Decor>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ){
+    //load all assets in first
+    let wall_handle = asset_server.load("BrickWall2.png");
+    let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
+    //let wall_atlas_len = wall_atlas.textures.len();
+    let wall_atlas_handle = texture_atlases.add(wall_atlas);
+
+    let plant_handle = asset_server.load("Plant.png");
+    let plant_atlas = TextureAtlas::from_grid(plant_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let plant_atlas_handle = texture_atlases.add(plant_atlas);
+
+    let book_handle = asset_server.load("Bookshelf.png");
+    let book_atlas = TextureAtlas::from_grid(book_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    //let plant_atlas_len = plant_atlas.textures.len();
+    let book_atlas_handle = texture_atlases.add(book_atlas);
+
     for d in decor.iter_mut(){
         //render decor based on type
         match d.decor_type{
@@ -265,14 +283,14 @@ fn render_objects(
             },
             //plant
 	        DecorType::Plant => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::DARK_GREEN,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: plant_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,d.location.y * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
 				        ..default()
 			        },
 			        visibility: Visibility {
@@ -282,7 +300,6 @@ fn render_objects(
                 })
                 .insert(TileCollider)
                 .insert(DecorTile);
-                println!("{},{}",d.location.x,d.location.y);
             },
             //sofa
 	        DecorType::Sofa => {
@@ -346,9 +363,9 @@ fn render_objects(
             },
             //lamp
 	        DecorType::Pillar => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::BLACK,
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: wall_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
 				        custom_size: Some(Vec2::splat(TILE_SIZE)),
 				        ..default()
 			        },
@@ -364,11 +381,12 @@ fn render_objects(
                 .insert(TileCollider)
                 .insert(DecorTile);
             },
+            //bookshelf
 	        DecorType::Bookshelf => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::OLIVE,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: book_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
