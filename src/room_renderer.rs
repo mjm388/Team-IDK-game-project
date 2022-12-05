@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     GameState,
@@ -31,12 +31,13 @@ pub struct DoorTile;
 #[derive(Component)]
 pub struct DecorTile;
 
-#[derive(Component)]
-pub struct Fog;
+/*#[derive(Component)]
+pub struct Fog;*/
 
 #[derive(Component)]
 pub struct ViewShed {
     pub range: f32,
+    pub viewed_tiles: HashMap<Entity, Color>,
 }
 pub struct RoomRendPlugin;
 
@@ -44,13 +45,14 @@ impl Plugin for RoomRendPlugin {
     fn build(&self, app: &mut App) {
         app
         //.add_system(check_field_of_view)
-        .add_startup_system(create_fog)
+        //.add_startup_system(create_fog)
         .add_system_set(SystemSet::on_update(GameState::Overworld)
+        .with_system(check_field_of_view)
 		)
 		.add_system_set(SystemSet::on_enter(GameState::Overworld)
             .with_system(create_random_room)
             .with_system(render_objects)
-            .with_system(render_fog)
+            //.with_system(render_fog)
 		)
 		.add_system_set(SystemSet::on_exit(GameState::Overworld)
 			.with_system(derender_all_rooms)
@@ -113,7 +115,7 @@ fn create_random_room(
                                 ..default()
                             },
                             visibility: Visibility {
-                                is_visible: true,
+                                is_visible: false,
                                 ..default()
                             },
                             sprite: TextureAtlasSprite {
@@ -136,7 +138,7 @@ fn create_random_room(
                             ..default()
                         },
                         visibility: Visibility {
-                            is_visible: true,
+                            is_visible: false,
                             ..default()
                         },
                         sprite: TextureAtlasSprite {
@@ -158,7 +160,7 @@ fn create_random_room(
                     ..default()
                 },
                 visibility: Visibility {
-                    is_visible: true,
+                    is_visible: false,
                     ..default()
                 },
                 sprite: TextureAtlasSprite {
@@ -178,7 +180,7 @@ fn create_random_room(
                     ..default()
                 },
                 visibility: Visibility {
-                    is_visible: true,
+                    is_visible: false,
                     ..default()
                 },
                 sprite: TextureAtlasSprite {
@@ -201,7 +203,7 @@ fn create_random_room(
                     ..default()
                 },
                 visibility: Visibility {
-                    is_visible: true,
+                    is_visible: false,
                     ..default()
                 },
                 sprite: TextureAtlasSprite {
@@ -222,7 +224,7 @@ fn create_random_room(
                     ..default()
                 },
                 visibility: Visibility {
-                    is_visible: true,
+                    is_visible: false,
                     ..default()
                 },
                 sprite: TextureAtlasSprite {
@@ -256,7 +258,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -276,7 +278,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -297,7 +299,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -317,7 +319,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -337,7 +339,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -357,7 +359,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -376,7 +378,7 @@ fn render_objects(
 				        ..default()
 			        },
 			        visibility: Visibility {
-				        is_visible: true
+				        is_visible: false
 			        },
 			        ..default()
                 })
@@ -399,64 +401,153 @@ fn check_field_of_view(
     mut stand_path: Query<(Entity, &mut Sprite,&Transform,&mut Visibility), (With<StandPath>, Without<WallTile>,Without<DecorTile>,Without<BlockPath>,Without<FloorTile>)>,
     mut player : Query<(Entity, &Transform, &mut ViewShed), (With<OverworldPlayer>, Without<TileCollider>)>,
 ){
-    let(_,player_transform,view_shed)=player.single_mut();
+    let(_,player_transform,mut view_shed)=player.single_mut();
     
-    for (_,floors_sprite,floors_transform,mut floors_visibility) in floors.iter_mut(){
+    for (Entity,mut floors_sprite,floors_transform,mut floors_visibility) in floors.iter_mut(){
         
-        if (floors_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            floors_visibility.is_visible=true ;    
-            } 
-    }
-    for (_,walls_sprite,walls_transform,mut walls_visibilityy) in walls.iter_mut(){
-       
-        if (walls_transform.translation-player_transform.translation).length() < view_shed.range {
-            walls_visibilityy.is_visible=true;
-              
-          } 
-    }
-    for (_,decor_sprite,decors_transformm,mut decors_visibility) in decor.iter_mut(){
-       ;
-        if (decors_transformm.translation-player_transform.translation).length() < view_shed.range {
-            decors_visibility.is_visible=true 
+            let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={floors_transform.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, floors_sprite.color);
+            } else {
+            floors_sprite.color = *search_res.unwrap();
+            }
+            floors_visibility.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            floors_sprite.color = Color::GRAY;
+            }
+            }
             
-          } 
     }
-    for (_,doors_sprite ,doors_transformm,mut doors_visibility) in doors.iter_mut(){
-        
-        if (doors_transformm.translation-player_transform.translation).length() < view_shed.range {
-
-            doors_visibility.is_visible=true ;
-          } 
-    }
-    for (_,keys_sprite,keys_transform,mut keys_visibility) in keys.iter_mut(){
+    for (Entity,mut walls_sprite,walls_transform,mut walls_visibilityy) in walls.iter_mut(){
        
-        if (keys_transform.translation-player_transform.translation).length() < view_shed.range {
-
-            keys_visibility.is_visible=true ;
-          } 
-
+            let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={walls_transform.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, walls_sprite.color);
+            } else {
+            walls_sprite.color = *search_res.unwrap();
+            }
+            walls_visibilityy.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            walls_sprite.color = Color::GRAY;
+            }
+            }
     }
-    for (_,rooms_sprite, rooms_transform,mut rooms_visibility) in rooms.iter_mut(){
-        
-        if (rooms_transform.translation-player_transform.translation).length() < view_shed.range {
-            rooms_visibility.is_visible=true ;
-           
-          } 
-    }
-    for (_,block_sprite, block_transform,mut block_visibilityy) in block_path.iter_mut(){
-        
-        if (block_transform.translation-player_transform.translation).length() < view_shed.range {
-            block_visibilityy.is_visible=true ;
-            
-          } 
-    }
-    for (_,stand_sprite,stand_transform,mut stand_visibility) in stand_path.iter_mut(){
+    for (Entity,mut decor_sprite,decors_transformm,mut decors_visibility) in decor.iter_mut(){
        
-        if (stand_transform.translation-player_transform.translation).length() < view_shed.range {
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={decors_transformm.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, decor_sprite.color);
+            } else {
+            decor_sprite.color = *search_res.unwrap();
+            }
+            decors_visibility.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            decor_sprite.color = Color::GRAY;
+            }
+            }
+    }
+    for (Entity,mut doors_sprite ,doors_transformm,mut doors_visibility) in doors.iter_mut(){
+        
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={doors_transformm.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, doors_sprite.color);
+            } else {
+            doors_sprite.color = *search_res.unwrap();
+            }
+            doors_visibility.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            doors_sprite.color = Color::GRAY;
+            }
+            }
+    }
+    for (Entity,mut keys_sprite,keys_transform,mut keys_visibility) in keys.iter_mut(){
+       
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={keys_transform.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, keys_sprite.color);
+            } else {
+            keys_sprite.color = *search_res.unwrap();
+            }
+            keys_visibility.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            keys_sprite.color = Color::GRAY;
+            }
+            }
 
-            stand_visibility.is_visible=true ;
-          } 
+    }
+    for (Entity,mut rooms_sprite, rooms_transform,mut rooms_visibility) in rooms.iter_mut(){
+        
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={rooms_transform.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, rooms_sprite.color);
+            } else {
+            rooms_sprite.color = *search_res.unwrap();
+            }
+            rooms_visibility.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            rooms_sprite.color = Color::GRAY;
+            }
+            }
+    }
+    for (Entity,mut block_sprite, block_transform,mut block_visibilityy) in block_path.iter_mut(){
+        
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+            let is_inside_field_of_view={block_transform.translation-player_transform.translation}.length()<view_shed.range;
+            if is_inside_field_of_view
+            {
+            if search_res.is_none() {
+            view_shed.viewed_tiles.insert(Entity, block_sprite.color);
+            } else {
+            block_sprite.color = *search_res.unwrap();
+            }
+            block_visibilityy.is_visible = is_inside_field_of_view;
+            } else {
+            if search_res.is_some() {
+            block_sprite.color = Color::GRAY;
+            }
+            }
+    }
+    for (Entity,mut stand_sprite,stand_transform,mut stand_visibility) in stand_path.iter_mut(){
+       
+        let search_res=view_shed.viewed_tiles.get(&Entity);
+        let is_inside_field_of_view={stand_transform.translation-player_transform.translation}.length()<view_shed.range;
+        if is_inside_field_of_view
+        {
+        if search_res.is_none() {
+        view_shed.viewed_tiles.insert(Entity, stand_sprite.color);
+        } else {
+        stand_sprite.color = *search_res.unwrap();
+        }
+        stand_visibility.is_visible = is_inside_field_of_view;
+        } else {
+        if search_res.is_some() {
+        stand_sprite.color = Color::GRAY;
+        }
+        }
     }
     
 }
@@ -468,7 +559,7 @@ fn derender_all_rooms(
     mut doors: Query<Entity, With<DoorTile>>,
     mut keys: Query<Entity, With<KeyObject>>,
     mut decor: Query<Entity, With<DecorTile>>,
-    mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
+    //mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
 ){
 	for e in floors.iter_mut(){
 		commands.entity(e).despawn_recursive();
@@ -485,12 +576,12 @@ fn derender_all_rooms(
     for d in decor.iter_mut(){
         commands.entity(d).despawn_recursive();
     }
-    for (mut v, _e) in fog.iter_mut() {
+    /*for (mut v, _e) in fog.iter_mut() {
         v.is_visible = false;
-    }
+    }*/
 }
 
-fn render_fog(
+/*fn render_fog(
     mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
 ){
     for (mut v, _e) in fog.iter_mut() {
@@ -522,4 +613,4 @@ fn create_fog (
             .insert(Fog);
         }
     }
-}
+}*/

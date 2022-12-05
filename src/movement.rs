@@ -1,6 +1,6 @@
 use bevy::{
 	prelude::*,
-	sprite::collide_aabb::collide,
+	sprite::collide_aabb::collide,utils::hashbrown::HashMap,
 	//time::FixedTimestep,
 };
 use rand::Rng;
@@ -8,7 +8,7 @@ use rand::Rng;
 use crate::{
 	GameState,
 	BossTrigger,
-	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed, Fog}, 
+	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed}, 
 	minimap::M_TILE_SIZE,
 };
 pub struct MovementPlugin;
@@ -111,7 +111,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		//.insert(ViewShed{range:500.0})
+		.insert(ViewShed{range:500.0, viewed_tiles: HashMap::<Entity,Color>::new()})
 		.insert(OverworldPlayer);
 
 	// mini player
@@ -212,7 +212,7 @@ fn move_player(
 	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
 	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
-	fog_tiles: Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
+	//fog_tiles: Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
 	mut boss_flag: Query<&mut BossTrigger>,
@@ -263,7 +263,7 @@ fn move_player(
 		player_transform.translation.z,
 	);
 
-	fog_collide(&player_transform.translation, &fog_tiles, commands);
+	//fog_collide(&player_transform.translation, &fog_tiles, commands);
 
 	let target_x = player_transform.translation + Vec3::new(x_vel,0.,0.) * TILE_SIZE;
 	if collision_check(target_x, &collision_tiles)
@@ -340,7 +340,7 @@ fn collision_check(
 	true
 }
 
-fn fog_collide(
+/*fn fog_collide(
 	player: &Vec3,
 	fog_tiles: &Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
 	mut commands: Commands,
@@ -356,7 +356,7 @@ fn fog_collide(
 			commands.entity(s).despawn_recursive();
 		}
 	}
-}
+}*/
 
 
 fn door_collide(
