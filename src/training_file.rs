@@ -166,9 +166,9 @@ impl Agent<CombatState>for AIAgent{
 
 		if self.state.player_token>2 {
 			temp_table.insert("Unleash".to_string(), 0);
-		} else if self.state.player_tp > if self.state.player_double {8} else {4} {
+		} else if self.state.player_tp > 4 {
 			temp_table.insert("Charge".to_string(), 0);
-		} else if self.state.player_tp > 5 {
+		} else if self.state.player_tp > if self.state.player_double {6} else {3} {
 			temp_table.insert("Block".to_string(), 0);
 		} else if self.state.player_tp <2 {
 			temp_table.insert("Recover".to_string(), 0);
@@ -716,7 +716,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
     trainer.train(
         &mut agent,
         &QLearning::new(0.2, 0.01),
-        &mut GivenIteration::new(2),
+        &mut GivenIteration::new(700000000),
         &RandomExplore::new(),
         &initial_state,
     );
@@ -734,7 +734,7 @@ fn main() -> Result<(), Result<(), serde_json::Error>>{
         }
     }
 
-    let writer = File::create("new_temp_boss4.json").unwrap();
+    let writer = File::create("new_mob_ai.json").unwrap();
     
     let _ww = serde_json::to_writer(writer, &tr); 
     return Ok(())

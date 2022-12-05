@@ -8,7 +8,7 @@ pub fn read_in() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
 }
 
 pub fn read_in2() -> std::io::Result<HashMap<String, HashMap<String, isize>>>{
-    let f = File::open("final_mob_ai.json")?;
+    let f = File::open("final_mob_ai2.json")?;
     let file = BufReader::new(f);
     let ai_state = serde_json::from_reader(file)?;
     Ok(ai_state)
