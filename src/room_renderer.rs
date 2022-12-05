@@ -269,12 +269,9 @@ fn create_random_room(
         room_was_created.0 = true;
 }
 
-fn render_objects(mut commands: Commands, mut decor: Query<&Decor, With<Decor>>/* ,mut decor_was_created: ResMut<DecorWasCreated>,*/) {
+fn render_objects(mut commands: Commands, mut decor: Query<&Decor, With<Decor>>) {
     for d in decor.iter_mut() {
         //render decor based on type
-       /*  if(decor_was_created.0){
-            return;
-        }*/
         match d.decor_type {
             //statue
             DecorType::Statue => {
@@ -439,7 +436,6 @@ fn render_objects(mut commands: Commands, mut decor: Query<&Decor, With<Decor>>/
             }
         }
     }
-    //decor_was_created.0=true;
 }
 
 fn check_field_of_view(
