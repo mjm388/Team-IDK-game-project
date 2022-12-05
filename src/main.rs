@@ -3,6 +3,8 @@ use bevy::{
 	window::PresentMode,
 };
 
+
+
 use std::fs::File;
 use std::io;
 use std::fs;
@@ -23,7 +25,7 @@ mod victory;
 
 
 use credits::CreditsPlugin;
-use combat::{CombatPlugin, CombatAgent, combat_ai::read_in, combat_ai::read_in2};
+use combat::{CombatPlugin, CombatAgent, combat_ai::read_in, combat_ai::read_in2,};
 use minimap::MiniMapPlugin;
 use movement::MovementPlugin;
 use map_gen::RoomGenPlugin;
@@ -32,8 +34,10 @@ use start_menu::MainMenuPlugin;
 use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
+use room_renderer::RoomWasCreated;
+use room_renderer::DecorWasCreated;
 
-
+#[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState{
 	Overworld,
@@ -57,13 +61,15 @@ struct Camera;
 
 fn main() {
 	App::new()
-		.insert_resource(WindowDescriptor {
-			title: String::from("Luigo's Haunted House Tour"),
-			width: 1280.,
-			height: 720.,
-			present_mode: PresentMode::Fifo,
-			..default()
+	.insert_resource(WindowDescriptor {
+		title: String::from("Luigo's Haunted House Tour"),
+		width: 1280.,
+		height: 720.,
+		present_mode: PresentMode::Fifo,
+		..default()
 		})
+		.insert_resource(RoomWasCreated(false))
+		//.insert_resource(DecorWasCreated(false))
 		.add_state(GameState::StartMenu)
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
