@@ -22,7 +22,7 @@ pub struct RoomGenPlugin;
 impl Plugin for RoomGenPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_startup_system(map_generator)
+        .add_startup_system(map_generator.label("map_gen"))
         .add_system_set(SystemSet::on_update(GameState::Overworld))
 		.add_system_set(SystemSet::on_enter(GameState::Overworld))
 		.add_system_set(SystemSet::on_exit(GameState::Overworld))
