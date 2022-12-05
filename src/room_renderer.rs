@@ -253,6 +253,7 @@ fn render_objects(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ){
+     //load all assets in first
     let wall_handle = asset_server.load("BrickWall2.png");
     let wall_atlas = TextureAtlas::from_grid(wall_handle, Vec2::splat(TILE_SIZE), 1, 1);
     //let wall_atlas_len = wall_atlas.textures.len();
