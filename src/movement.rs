@@ -17,6 +17,7 @@ impl Plugin for MovementPlugin{
         app
 			.add_startup_system(setup_player)
 			.add_startup_system(initialize_key)
+			.add_startup_system(init_dt)
 			//.add_system_set(SystemSet::on_update(GameState::Overworld)
 			//	.with_run_criteria(FixedTimestep::step(2.0 as f64))
 			//	.with_system(random_encounter)
@@ -28,6 +29,7 @@ impl Plugin for MovementPlugin{
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
 				.with_system(put_back_camera)
+				.with_system(restart_dt)
 			)
 			.add_system_set(SystemSet::on_exit(GameState::Overworld)
 				.with_system(remove_player)
@@ -47,7 +49,28 @@ pub struct OverworldPlayer;
 #[derive(Component)]
 pub struct MiniPlayer;
 #[derive(Component)]
+pub struct DistanceTraveled {
+	pub distance: f32,
+}
 
+impl DistanceTraveled {
+	fn new() -> DistanceTraveled {
+		DistanceTraveled{
+			distance: 0.,
+		}
+	}
+}
+
+fn init_dt(mut commands: Commands){
+	commands.spawn().insert(DistanceTraveled::new());
+}
+
+fn restart_dt(mut dist: Query<&mut DistanceTraveled,With<DistanceTraveled>>){
+	let mut d = dist.single_mut();
+	d.distance = 0.;
+}
+
+#[derive(Component)]
 pub struct HoldingKey {
     pub held: bool,
 }
@@ -143,7 +166,7 @@ fn random_encounter(
 	mut game_state: ResMut<State<GameState>>,
 ) {
 	if game_state.current() == &GameState::Overworld{
-		let chance = 500;	
+		let chance = 10;	
 		let mut rng = rand::thread_rng();
 		let attack = rng.gen_range::<i32,_>(1..chance);
 
@@ -167,7 +190,7 @@ fn adjust_camera (	// Stores current position of camera
 	mut camera: Query<&mut Transform, (With<Camera>,Without<OverworldPlayer>)>
 ){
 	let mut cam_transform = camera.single_mut();
-	cam_transform.translation = Vec3::new(0., 0., 999.)
+	cam_transform.translation = Vec3::new(0., 0., 999.);
 }
 
 fn put_back_camera (	// Resets camera position back to player
@@ -193,6 +216,7 @@ fn move_player(
 	mut holding: Query<&mut HoldingKey>,
 	mut game_state: ResMut<State<GameState>>,
 	mut boss_flag: Query<&mut BossTrigger>,
+	mut dis: Query<&mut DistanceTraveled,With<DistanceTraveled>>,
 ){
 	//let window = windows.get_primary().unwrap();
 	let mut player_transform = player.single_mut();
@@ -241,10 +265,6 @@ fn move_player(
 
 	fog_collide(&player_transform.translation, &fog_tiles, commands);
 
-	if starting_pos.eq(&potential_pos) {
-		return;
-	}
-
 	let target_x = player_transform.translation + Vec3::new(x_vel,0.,0.) * TILE_SIZE;
 	if collision_check(target_x, &collision_tiles)
 	{
@@ -284,8 +304,21 @@ fn move_player(
 		}
 	}
 
-	if !starting_pos.eq(&player_transform.translation) {
+	if starting_pos.eq(&potential_pos) {
+		return;
+	}
+
+	let d_x = (starting_pos.x - player_transform.translation.x).abs();
+	let d_y = (starting_pos.y - player_transform.translation.y).abs();
+
+	let mut d = dis.single_mut();
+	d.distance += (d_x.powf(2.) + d_y.powf(2.)).sqrt();
+
+	//println!("{}",d.distance);
+
+	if !starting_pos.eq(&player_transform.translation) && d.distance >= 200. {
 		random_encounter(game_state);
+		restart_dt(dis);
 	}
 }
 
