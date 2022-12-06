@@ -110,7 +110,7 @@ pub fn button_system(
 						}
 						CombatOptions::Block => {
 							text.sections[0].style.font_size = 20.0;
-							text.sections[0].value = "TP: -2\nEffect: 0.5x dmg\ntaken, prevent\n enemy token \ngeneration".to_string();
+							text.sections[0].value = "TP: -3\nEffect: 0.5x dmg\ntaken, prevent\n enemy token \ngeneration".to_string();
 						}
 						CombatOptions::Unleash => {
 							let player_stats = player_query.single();
@@ -125,7 +125,7 @@ pub fn button_system(
 								}
 								3 => {
 									text.sections[0].style.font_size = 20.0;
-									text.sections[0].value = "Dmg: 10,\nHP: +15\nEffect: uses all tokens".to_string();
+									text.sections[0].value = "Dmg: 8,\nHP: +12\nEffect: uses all tokens".to_string();
 								}
 								_ => {
 									text.sections[0].style.font_size = 20.0;
@@ -221,8 +221,8 @@ pub fn combat_button_system2(
 			let mut temp_table = HashMap::new();
 			if enemy_stats.token>2 {
 				temp_table.insert("Unleash".to_string(), 0);
-			} else if enemy_stats.tp > 5 {
-				temp_table.insert("Block".to_string(), 0);
+			} else if enemy_stats.tp > 3 {
+				temp_table.insert("Guard".to_string(), 0);
 			} else if enemy_stats.tp > if enemy_stats.double {6} else {3}  {
 				temp_table.insert("Charge".to_string(), 0);
 			} else if enemy_stats.tp < 3 {
@@ -342,8 +342,8 @@ pub fn combat_button_system2(
 					}
                 }
 				CombatOptions::Block=> {
-					if player_stats.tp >= 2 {
-						log.player_tp_change -= 2;
+					if player_stats.tp >= 3 {
+						log.player_tp_change -= 3;
 						player_stats.block = true;
 						valid = true;
 						player_stats.double = false;
@@ -370,8 +370,8 @@ pub fn combat_button_system2(
 						}
 
 						3 => {
-							log.player_damage = 10;
-							log.player_health_change += 15;
+							log.player_damage = 8;
+							log.player_health_change += 12;
 							player_stats.use_token = true;
 							valid = true;
 						}
@@ -430,7 +430,7 @@ pub fn combat_button_system2(
 					}
 					"Block" =>{
 						println!("Enemy Block");
-						log.enemy_tp_change -= 2;
+						log.enemy_tp_change -= 3;
 						enemy_stats.block = true;
 						enemy_stats.double = false;
 					}
@@ -453,8 +453,8 @@ pub fn combat_button_system2(
 	
 							3 => {
 								println!("Enemy Unleash 3");
-								log.enemy_damage = 10;
-								log.enemy_health_change += 15;
+								log.enemy_damage = 8;
+								log.enemy_health_change += 12;
 								enemy_stats.use_token = true;
 							}
 	
