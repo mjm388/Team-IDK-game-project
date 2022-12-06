@@ -96,6 +96,10 @@ fn create_random_room(
     let key_atlas = TextureAtlas::from_grid(key_handle, Vec2::splat(TILE_SIZE), 1, 1);
     //  let key_atlas_len = key_atlas.textures.len();
     let key_atlas_handle = texture_atlases.add(key_atlas);
+
+    let hall_handle = asset_server.load("HallwayFloor.png");
+    let hall_atlas = TextureAtlas::from_grid(hall_handle, Vec2::splat(TILE_SIZE), 1, 1);
+    let hall_atlas_handle = texture_atlases.add(hall_atlas);
     
     for room in rooms.iter() {
         let x = (room.center.x-(room.size.x-1.)/2.) * TILE_SIZE;
@@ -227,7 +231,7 @@ fn create_random_room(
     for hole in stand_path.iter() {
         commands
             .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: floor_atlas_handle.clone(),
+                texture_atlas: hall_atlas_handle.clone(),
                 transform: Transform {
                     translation: Vec3::new((hole.0.x) * TILE_SIZE, (hole.0.y) * TILE_SIZE, 0.),
                     ..default()
@@ -284,19 +288,23 @@ fn render_objects(
     //let plant_atlas_len = plant_atlas.textures.len();
     let sofa_atlas_handle = texture_atlases.add(sofa_atlas);
 
+    let statue_handle = asset_server.load("Statue2.png");
+    let statue_atlas = TextureAtlas::from_grid(statue_handle, Vec2::new(TILE_SIZE,TILE_SIZE*2.), 1, 1);
+    let statue_atlas_handle = texture_atlases.add(statue_atlas);
+
     for d in decor.iter_mut(){
         //render decor based on type
         match d.decor_type{
             //statue
             DecorType::Statue => {
-                commands.spawn_bundle(SpriteBundle{
-                    sprite: Sprite {
-				        color: Color::GRAY,
-				        custom_size: Some(Vec2::splat(TILE_SIZE)),
+                commands.spawn_bundle(SpriteSheetBundle{
+                    texture_atlas: statue_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+				        custom_size: Some(Vec2::new(TILE_SIZE*1.5,TILE_SIZE*4.)),
 				        ..default()
 			        },
 			        transform: Transform {
-				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 1.),
+				        translation: Vec3::new(d.location.x * TILE_SIZE,(d.location.y+0.5) * TILE_SIZE, 10.),
 				        ..default()
 			        },
 			        visibility: Visibility {
