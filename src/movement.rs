@@ -113,7 +113,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		.insert(ViewShed{range:200.0, viewed_tiles: HashMap::<Entity,Color>::new()})
+		.insert(ViewShed{range:215.0, viewed_tiles: HashMap::<Entity,Color>::new()})
 		.insert(OverworldPlayer);
 
 	// mini player
