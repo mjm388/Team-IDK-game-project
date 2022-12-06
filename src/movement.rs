@@ -100,7 +100,7 @@ fn setup_player(
 	commands
 		.spawn_bundle(SpriteBundle {
 			sprite: Sprite {
-				color: Color::CRIMSON,
+				color: Color::rgb(0.012,0.475,0.016),
 				custom_size: Some(Vec2::splat(PLAYER_SZ * TILE_SIZE)),
 				..default()
 			},
@@ -120,7 +120,7 @@ fn setup_player(
 	commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite {
-                color: Color::RED,
+                color: Color::LIME_GREEN,
                 custom_size: Some(Vec2::new(2. * M_TILE_SIZE, 2. * M_TILE_SIZE)),
                 ..default()
             },
@@ -318,7 +318,7 @@ fn move_player(
 
 	//println!("{}",d.distance);
 
-	if !starting_pos.eq(&player_transform.translation) && d.distance >= 400. {
+	if !starting_pos.eq(&player_transform.translation) && d.distance >= 800. {
 		random_encounter(game_state);
 		restart_dt(dis);
 	}
