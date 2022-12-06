@@ -223,7 +223,7 @@ pub fn combat_button_system2(
 				temp_table.insert("Unleash".to_string(), 0);
 			} else if enemy_stats.tp > 3 {
 				temp_table.insert("Guard".to_string(), 0);
-			} else if enemy_stats.tp > if enemy_stats.double {6} else {3}  {
+			} else if enemy_stats.tp >= if enemy_stats.double {6} else {3}  {
 				temp_table.insert("Charge".to_string(), 0);
 			} else if enemy_stats.tp < 3 {
 				temp_table.insert("Recover".to_string(), 0);
