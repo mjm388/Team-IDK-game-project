@@ -9,6 +9,7 @@ use crate::{
 	BossTrigger,
 	room_renderer::{TILE_SIZE, TileCollider, KeyObject, DoorTile, ViewShed}, 
 	minimap::M_TILE_SIZE,
+	room_renderer::DecorTile,
 };
 pub struct MovementPlugin;
 impl Plugin for MovementPlugin{
@@ -23,8 +24,8 @@ impl Plugin for MovementPlugin{
 			//)
 			.add_system_set(SystemSet::on_update(GameState::Overworld)
 				.label(GameState::Overworld)
-				.with_system(move_player)
-				.with_system(move_camera)
+				.with_system(move_player.label("move"))
+				.with_system(move_camera.after("move"))
 			)
 			.add_system_set(SystemSet::on_enter(GameState::Overworld)
 				.with_system(activate_player)
@@ -211,7 +212,8 @@ fn move_player(
 	mut m_player: Query<&mut Transform, (With<MiniPlayer>, Without<OverworldPlayer>, Without<TileCollider>)>,
     time: Res<Time>,
 	//windows: Res<Windows>,
-	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>)>,
+	collision_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>, Without<DecorTile>)>,
+	furniture_tiles: Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>, With<DecorTile>)>,
 	mut key_objects: Query<&mut Transform, (With<KeyObject>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>)>,
 	door_objects: Query<&Transform, (With<DoorTile>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>)>,
 	//fog_tiles: Query<(&Transform, Entity), (With<Fog>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<TileCollider>, Without<KeyObject>, Without<DoorTile>)>,
@@ -268,14 +270,14 @@ fn move_player(
 	//fog_collide(&player_transform.translation, &fog_tiles, commands);
 
 	let target_x = player_transform.translation + Vec3::new(x_vel,0.,0.) * TILE_SIZE;
-	if collision_check(target_x, &collision_tiles)
+	if collision_check(target_x, &collision_tiles) && furniture_check(target_x,&furniture_tiles)
 	{
 		player_transform.translation = target_x;
 		m_player_transform.translation.x += x_vel * M_TILE_SIZE;
 	}
 
 	let target_y = player_transform.translation + Vec3::new(0.,y_vel,0.) * TILE_SIZE;
-	if collision_check(target_y, &collision_tiles)
+	if collision_check(target_y, &collision_tiles) && furniture_check(target_y,&furniture_tiles)
 	{
 		player_transform.translation = target_y;
 		m_player_transform.translation.y += y_vel * M_TILE_SIZE;
@@ -326,7 +328,7 @@ fn move_player(
 
 fn collision_check(
 	target_player_pos: Vec3,
-	collision_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>,  Without<MiniPlayer>)>,
+	collision_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>,  Without<MiniPlayer>, Without<DecorTile>)>,
 ) -> bool {
 	for obs_transform in collision_tile.iter() {
 		let collision = collide (
@@ -336,6 +338,26 @@ fn collision_check(
 			Vec2::splat(TILE_SIZE),
 		);
 		if collision.is_some() {
+			println!("collide_w");
+			return false;
+		}
+	}
+	true
+}
+
+fn furniture_check(
+	target_player_pos: Vec3,
+	furniture_tile: &Query<&Transform, (With<TileCollider>, Without<OverworldPlayer>, Without<MiniPlayer>, With<DecorTile>)>,
+) -> bool {
+	for f in furniture_tile.iter() {
+		let collision = collide (
+			target_player_pos,
+			Vec2::splat(PLAYER_SZ*TILE_SIZE*0.9),
+			f.translation,
+			Vec2::new(TILE_SIZE,TILE_SIZE*2.0),
+		);
+		if collision.is_some() {
+			println!("collide_f");
 			return false;
 		}
 	}

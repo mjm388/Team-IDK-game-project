@@ -166,17 +166,17 @@ fn change_state(
 			game_state.set(GameState::Overworld).unwrap();
 		}
 		//roll credits
-		if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Combat{
-			input.reset(KeyCode::C);
-			game_state.set(GameState::Credits).unwrap();
-		}
+		//if input.just_pressed(KeyCode::C) && game_state.current() != &GameState::Combat{
+		//	input.reset(KeyCode::C);
+		//	game_state.set(GameState::Credits).unwrap();
+		//}
 		//display map
-		if input.just_pressed(KeyCode::M) && game_state.current() != &GameState::Map && game_state.current() != &GameState::Combat{
+		if input.just_pressed(KeyCode::M) && game_state.current() != &GameState::Map && game_state.current() == &GameState::Overworld{
 			input.reset(KeyCode::M);
 			game_state.set(GameState::Map).unwrap();
 		}
 		//removed map
-		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map && game_state.current() != &GameState::Combat{
+		if input.just_pressed(KeyCode::M) && game_state.current() == &GameState::Map{
 			input.reset(KeyCode::M);
 			game_state.set(GameState::Overworld).unwrap();
 		}
