@@ -413,7 +413,7 @@ fn render_objects(
 			        ..default()
                 })
                 .insert(TileCollider)
-                .insert(DecorTile);
+                .insert(WallTile);
             },
             //bookshelf
 	        DecorType::Bookshelf => {
