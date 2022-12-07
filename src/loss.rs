@@ -67,8 +67,8 @@ fn check_timer(
 ) {
 	for mut timer in loss_list.iter_mut(){
 		timer.tick(time.delta());
-		if timer.just_finished(){
-            game_state.set(GameState::Overworld).unwrap();
+		if timer.just_finished() {
+            game_state.set(GameState::Credits).unwrap();
 		}
 	}
 
