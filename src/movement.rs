@@ -113,7 +113,7 @@ fn setup_player(
 			},
 			..default()
 		})
-		.insert(ViewShed{range:200.0, viewed_tiles: HashMap::<Entity,Color>::new()})
+		.insert(ViewShed{range:215.0, viewed_tiles: HashMap::<Entity,Color>::new()})
 		.insert(OverworldPlayer);
 
 	// mini player
@@ -205,7 +205,7 @@ fn put_back_camera (	// Resets camera position back to player
 }
 
 fn move_player(
-	mut commands: Commands,
+	mut _commands: Commands,
 	input: Res<Input<KeyCode>>,
 	mut player: Query<&mut Transform, (With<OverworldPlayer>, Without<MiniPlayer>, Without<TileCollider>)>,
 	mut m_player: Query<&mut Transform, (With<MiniPlayer>, Without<OverworldPlayer>, Without<TileCollider>)>,
