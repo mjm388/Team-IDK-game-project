@@ -36,8 +36,8 @@ pub struct Fog;*/
 
 #[derive(Component)]
 pub struct RoomWasCreated(pub bool);
-#[derive(Component)]
-pub struct DecorWasCreated(pub bool);
+/*#[derive(Component)]
+pub struct DecorWasCreated(pub bool);*/
 
 #[derive(Component)]
 pub struct ViewShed {
@@ -442,7 +442,7 @@ fn render_objects(
 fn check_field_of_view(
     mut floors: Query<
         (Entity, &mut TextureAtlasSprite, &Transform, &mut Visibility),
-        (With<FloorTile>),
+        With<FloorTile>,
     >,
     mut walls: Query<
         (Entity, &mut TextureAtlasSprite, &Transform, &mut Visibility),
@@ -515,14 +515,14 @@ fn check_field_of_view(
 ) {
     let (_, player_transform, mut view_shed) = player.single_mut();
 
-    for (Entity, mut floors_sprite, floors_transform, mut floors_visibility) in floors.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (floors_entity, mut floors_sprite, floors_transform, mut floors_visibility) in floors.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&floors_entity);
         let is_inside_field_of_view = (floors_transform.translation - player_transform.translation)
             .length()
             < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, floors_sprite.color);
+                view_shed.viewed_tiles.insert(floors_entity, floors_sprite.color);
             } else {
                 floors_sprite.color = *search_res.unwrap();
             }
@@ -534,13 +534,13 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut walls_sprite, walls_transform, mut walls_visibilityy) in walls.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (walls_entity, mut walls_sprite, walls_transform, mut walls_visibilityy) in walls.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&walls_entity);
         let is_inside_field_of_view =
             (walls_transform.translation - player_transform.translation).length() < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, walls_sprite.color);
+                view_shed.viewed_tiles.insert(walls_entity, walls_sprite.color);
             } else {
                 walls_sprite.color = *search_res.unwrap();
             }
@@ -552,14 +552,14 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut decor_sprite,mut decors_transformm, mut decors_visibility) in decor.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (decor_entity, mut decor_sprite,decors_transformm, mut decors_visibility) in decor.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&decor_entity);
         let is_inside_field_of_view =
             (decors_transformm.translation - player_transform.translation).length()
                 < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, decor_sprite.color);
+                view_shed.viewed_tiles.insert(decor_entity, decor_sprite.color);
             } else {
                 decor_sprite.color = *search_res.unwrap();
             }
@@ -571,14 +571,14 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut doors_sprite, doors_transformm, mut doors_visibility) in doors.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (doors_entity, mut doors_sprite, doors_transformm, mut doors_visibility) in doors.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&doors_entity);
         let is_inside_field_of_view = (doors_transformm.translation - player_transform.translation)
             .length()
             < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, doors_sprite.color);
+                view_shed.viewed_tiles.insert(doors_entity, doors_sprite.color);
             } else {
                 doors_sprite.color = *search_res.unwrap();
             }
@@ -590,13 +590,13 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut keys_sprite, keys_transform, mut keys_visibility) in keys.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (keys_entity, mut keys_sprite, keys_transform, mut keys_visibility) in keys.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&keys_entity);
         let is_inside_field_of_view =
             (keys_transform.translation - player_transform.translation).length() < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, keys_sprite.color);
+                view_shed.viewed_tiles.insert(keys_entity, keys_sprite.color);
             } else {
                 keys_sprite.color = *search_res.unwrap();
             }
@@ -608,13 +608,13 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut rooms_sprite, rooms_transform, mut rooms_visibility) in rooms.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (rooms_entity, mut rooms_sprite, rooms_transform, mut rooms_visibility) in rooms.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&rooms_entity);
         let is_inside_field_of_view =
             (rooms_transform.translation - player_transform.translation).length() < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, rooms_sprite.color);
+                view_shed.viewed_tiles.insert(rooms_entity, rooms_sprite.color);
             } else {
                 rooms_sprite.color = *search_res.unwrap();
             }
@@ -626,14 +626,14 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut block_sprite, block_transform, mut block_visibilityy) in block_path.iter_mut()
+    for (block_entity, mut block_sprite, block_transform, mut block_visibilityy) in block_path.iter_mut()
     {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+        let search_res = view_shed.viewed_tiles.get(&block_entity);
         let is_inside_field_of_view =
             (block_transform.translation - player_transform.translation).length() < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, block_sprite.color);
+                view_shed.viewed_tiles.insert(block_entity, block_sprite.color);
             } else {
                 block_sprite.color = *search_res.unwrap();
             }
@@ -645,13 +645,13 @@ fn check_field_of_view(
             }
         }
     }
-    for (Entity, mut stand_sprite, stand_transform, mut stand_visibility) in stand_path.iter_mut() {
-        let search_res = view_shed.viewed_tiles.get(&Entity);
+    for (stand_entity, mut stand_sprite, stand_transform, mut stand_visibility) in stand_path.iter_mut() {
+        let search_res = view_shed.viewed_tiles.get(&stand_entity);
         let is_inside_field_of_view =
             (stand_transform.translation - player_transform.translation).length() < view_shed.range;
         if is_inside_field_of_view {
             if search_res.is_none() {
-                view_shed.viewed_tiles.insert(Entity, stand_sprite.color);
+                view_shed.viewed_tiles.insert(stand_entity, stand_sprite.color);
             } else {
                 stand_sprite.color = *search_res.unwrap();
             }
@@ -666,7 +666,7 @@ fn check_field_of_view(
 }
 
 fn derender_all_rooms(
-    mut commands: Commands,
+    //mut commands: Commands,
     mut floors: Query<
         (Entity, &mut Visibility),
         (
@@ -719,19 +719,19 @@ fn derender_all_rooms(
     >,
     //mut fog: Query<(&mut Visibility, Entity), With<Fog>>,
 ) {
-    for (floors_entity, mut floors_visibility) in floors.iter_mut() {
+    for (_floors_entity, mut floors_visibility) in floors.iter_mut() {
         floors_visibility.is_visible = false;
     }
-    for (walls_entity, mut walls_visibility) in walls.iter_mut() {
+    for (_walls_entity, mut walls_visibility) in walls.iter_mut() {
         walls_visibility.is_visible = false;
     }
-    for (doors_entity, mut doors_visibility) in doors.iter_mut() {
+    for (_doors_entity, mut doors_visibility) in doors.iter_mut() {
         doors_visibility.is_visible = false;
     }
-    for (keys_entity, mut keys_visibility) in keys.iter_mut() {
+    for (_keys_entity, mut keys_visibility) in keys.iter_mut() {
         keys_visibility.is_visible = false;
     }
-    for (decor_entity, mut decor_visibility) in decor.iter_mut() {
+    for (_decor_entity, mut decor_visibility) in decor.iter_mut() {
         decor_visibility.is_visible = false;
     }
     /*for (mut v, _e) in fog.iter_mut() {
@@ -746,7 +746,6 @@ fn derender_all_rooms(
         v.is_visible = true;
     }
 }
-
 fn create_fog (
     mut commands: Commands,
 ) {

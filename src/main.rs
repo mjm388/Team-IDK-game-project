@@ -35,7 +35,7 @@ use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
 use room_renderer::RoomWasCreated;
-use room_renderer::DecorWasCreated;
+//use room_renderer::DecorWasCreated;
 
 #[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
