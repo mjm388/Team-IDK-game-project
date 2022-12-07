@@ -22,6 +22,7 @@ mod start_menu;
 mod tutorial;
 mod loss;
 mod victory;
+mod end;
 
 
 use credits::CreditsPlugin;
@@ -34,8 +35,9 @@ use start_menu::MainMenuPlugin;
 use tutorial::TutorialPlugin;
 use loss::LossPlugin;
 use victory::VictoryPlugin;
+use end::EndPlugin;
 use room_renderer::RoomWasCreated;
-use room_renderer::DecorWasCreated;
+//use room_renderer::DecorWasCreated;
 
 #[derive(SystemLabel)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
@@ -48,6 +50,7 @@ pub enum GameState{
 	Tutorial,
 	Loss,
 	Victory,
+	End,
 }
 
 #[derive(Component)]
@@ -84,6 +87,7 @@ fn main() {
 		.add_plugin(TutorialPlugin)
 		.add_plugin(LossPlugin)
 		.add_plugin(VictoryPlugin)
+		.add_plugin(EndPlugin)
 		.run();
 
 	}
@@ -150,7 +154,7 @@ fn change_state(
 	mut input: ResMut<Input<KeyCode>>,
 	mut game_state: ResMut<State<GameState>>,
 ){
-	if game_state.current() != &GameState::Credits{
+	if game_state.current() != &GameState::Credits && game_state.current() != &GameState::End{
 		//switch to combat
 		if input.just_pressed(KeyCode::X) && game_state.current() == &GameState::Overworld{
 			input.reset(KeyCode::X);

@@ -126,7 +126,7 @@ fn check_if_done(
 		Some(_a) => {
 		},
 		None => {
-			game_state.set(GameState::Overworld).unwrap();
+			game_state.set(GameState::End).unwrap();
 		},
 	}
 
