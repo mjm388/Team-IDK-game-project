@@ -746,7 +746,6 @@ fn derender_all_rooms(
         v.is_visible = true;
     }
 }
-
 fn create_fog (
     mut commands: Commands,
 ) {
